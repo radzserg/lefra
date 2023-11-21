@@ -27,4 +27,52 @@ describe("Ledger entry", () => {
       ),
     );
   });
+
+  test("create an entry with a comment", () => {
+    const debitOperation = debit(
+      account("USER_RECEIVABLES", 1),
+      new Money(100, "USD"),
+    );
+    const creditOperation = credit(
+      account("INCOME_GOODS"),
+      new Money(100, "USD"),
+    );
+    const entry = new Entry(
+      debitOperation,
+      creditOperation,
+      "User owes money for goods",
+    );
+    expect(entry.debitOperations()).toEqual([debitOperation]);
+    expect(entry.creditOperations()).toEqual([creditOperation]);
+    expect(entry.comment).toEqual("User owes money for goods");
+  });
+
+  test("create an entry with divided credit operation", () => {
+    const debitOperation = debit(
+      account("EXPENSES_PAYOUTS", 1),
+      new Money(100, "USD"),
+    );
+    const creditPayablesLocked = credit(
+      account("PAYABLES_LOCKED"),
+      new Money(70, "USD"),
+    );
+    const creditPayables = credit(
+      account("PAYABLES_LOCKED"),
+      new Money(30, "USD"),
+    );
+    const entry = new Entry(
+      debitOperation,
+      [creditPayablesLocked, creditPayables],
+      "Platform owes $30.00 to the contractor and and owes $70.00 but it is locked",
+    );
+
+    expect(entry.debitOperations()).toEqual([debitOperation]);
+    expect(entry.creditOperations()).toEqual([
+      creditPayablesLocked,
+      creditPayables,
+    ]);
+    expect(entry.comment).toEqual(
+      "Platform owes $30.00 to the contractor and and owes $70.00 but it is locked",
+    );
+  });
 });

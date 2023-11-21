@@ -94,7 +94,7 @@ export class UniformOperationsSet<O extends DebitOperation | CreditOperation> {
     return new UniformOperationsSet(operationList);
   }
 
-  public operations(): DebitOperation[] | CreditOperation[] {
+  public operations(): NonEmptyArray<O> {
     return this.operationList;
   }
 

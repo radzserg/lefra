@@ -10,23 +10,31 @@ import { LedgerError } from "../../errors";
  * Represents double-entry bookkeeping entry.
  */
 export class Entry {
-  private debitOperations: UniformOperationsSet<DebitOperation>;
-  private creditOperations: UniformOperationsSet<CreditOperation>;
+  private readonly debitOperationSet: UniformOperationsSet<DebitOperation>;
+  private readonly creditOperationSet: UniformOperationsSet<CreditOperation>;
 
   public constructor(
     debitOperations: DebitOperation | NonEmptyArray<DebitOperation>,
     creditOperations: CreditOperation | NonEmptyArray<CreditOperation>,
-    private readonly comment?: string,
+    public readonly comment: string | null = null,
   ) {
-    this.debitOperations = UniformOperationsSet.build(debitOperations);
-    this.creditOperations = UniformOperationsSet.build(creditOperations);
+    this.debitOperationSet = UniformOperationsSet.build(debitOperations);
+    this.creditOperationSet = UniformOperationsSet.build(creditOperations);
 
-    const debitSum = this.debitOperations.sum();
-    const creditSum = this.creditOperations.sum();
+    const debitSum = this.debitOperationSet.sum();
+    const creditSum = this.creditOperationSet.sum();
     if (!debitSum.equals(creditSum)) {
       throw new LedgerError(
         `Debit and credit operations must have the same money amount. Debit sum: ${debitSum.format()}, credit sum: ${creditSum.format()}`,
       );
     }
+  }
+
+  public debitOperations(): NonEmptyArray<DebitOperation> {
+    return this.debitOperationSet.operations();
+  }
+
+  public creditOperations(): NonEmptyArray<CreditOperation> {
+    return this.creditOperationSet.operations();
   }
 }
