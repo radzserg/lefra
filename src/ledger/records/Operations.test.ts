@@ -50,4 +50,19 @@ describe("UniformOperations", () => {
       credit(account("Receivables", 1), new Money(100, "USD")),
     ]);
   });
+
+  test("cannot have zero sum of operations", () => {
+    expect(() => {
+      new UniformOperationsSet([
+        debit(account("Receivables", 1), new Money(0, "USD")),
+      ]);
+    }).toThrow(new LedgerError("Operations must not sum to zero"));
+
+    expect(() => {
+      new UniformOperationsSet([
+        debit(account("Receivables", 1), new Money(0, "USD")),
+        debit(account("Receivables", 1), new Money(0, "USD")),
+      ]);
+    }).toThrow(new LedgerError("Operations must not sum to zero"));
+  });
 });

@@ -39,6 +39,7 @@ export class Money<C extends CurrencyCode = CurrencyCode> {
   public readonly currencyCode: C;
 
   protected readonly amount: BigNumber;
+  protected readonly amountString: string;
 
   public constructor(amount: BigNumber | number | string, currencyCode: C) {
     const currency = currencyByCode[currencyCode];
@@ -49,6 +50,7 @@ export class Money<C extends CurrencyCode = CurrencyCode> {
     this.currency = currency;
     this.currencyCode = currencyCode;
     this.amount = new BigNumber(amount);
+    this.amountString = this.formatCompact();
 
     if (this.amount.isNaN()) {
       throw new Error(`Invalid money amount: ${amount}`);

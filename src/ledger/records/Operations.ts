@@ -52,6 +52,7 @@ export class UniformOperationsSet {
 
   private readonly type: OperationType;
   private readonly currencyCode: CurrencyCode;
+  private readonly operationsSum: Money;
 
   public constructor(
     operations:
@@ -77,6 +78,7 @@ export class UniformOperationsSet {
     this.type = this.operationList[0].type;
     this.currencyCode = this.operationList[0].amount.currencyCode;
 
+    let sum = new Money(0, this.currencyCode);
     this.operationList.forEach((operation) => {
       if (operation.type !== this.type) {
         throw new LedgerError("All operations must be of the same type");
@@ -84,10 +86,20 @@ export class UniformOperationsSet {
       if (operation.amount.currencyCode !== this.currencyCode) {
         throw new LedgerError("All operations must be of the same currency");
       }
+      sum = sum.plus(operation.amount);
     });
+
+    if (sum.isZero()) {
+      throw new LedgerError("Operations must not sum to zero");
+    }
+    this.operationsSum = sum;
   }
 
   public operations(): DebitOperation[] | CreditOperation[] {
     return this.operationList;
+  }
+
+  public sum(): Money {
+    return this.operationsSum;
   }
 }
