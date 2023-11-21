@@ -7,7 +7,7 @@ import { LedgerError } from "../../errors";
 describe("UniformOperations", () => {
   test("cannot create UniformOperations with different operation types", () => {
     expect(() => {
-      new UniformOperationsSet([
+      UniformOperationsSet.build([
         // @ts-ignore
         debit(account("Receivables", 1), new Money(100, "USD")),
         credit(account("Expenses"), new Money(100, "USD")),
@@ -17,7 +17,7 @@ describe("UniformOperations", () => {
 
   test("cannot create UniformOperations with different currency codes", () => {
     expect(() => {
-      new UniformOperationsSet([
+      UniformOperationsSet.build([
         credit(account("Receivables", 1), new Money(100, "CAD")),
         credit(account("Expenses"), new Money(100, "USD")),
       ]);
@@ -26,7 +26,7 @@ describe("UniformOperations", () => {
 
   test("cannot create UniformOperations with empty operations", () => {
     expect(() => {
-      new UniformOperationsSet(
+      UniformOperationsSet.build(
         // @ts-ignore
         [],
       );
@@ -34,7 +34,7 @@ describe("UniformOperations", () => {
   });
 
   test("create UniformOperations from one debit operation", () => {
-    const operationsSet = new UniformOperationsSet(
+    const operationsSet = UniformOperationsSet.build(
       debit(account("Receivables", 1), new Money(100, "USD")),
     );
     expect(operationsSet.operations()).toEqual([
@@ -43,7 +43,7 @@ describe("UniformOperations", () => {
   });
 
   test("create UniformOperations from one credit operation", () => {
-    const operationsSet = new UniformOperationsSet(
+    const operationsSet = UniformOperationsSet.build(
       credit(account("Receivables", 1), new Money(100, "USD")),
     );
     expect(operationsSet.operations()).toEqual([
@@ -53,13 +53,13 @@ describe("UniformOperations", () => {
 
   test("cannot have zero sum of operations", () => {
     expect(() => {
-      new UniformOperationsSet([
+      UniformOperationsSet.build([
         debit(account("Receivables", 1), new Money(0, "USD")),
       ]);
     }).toThrow(new LedgerError("Operations must not sum to zero"));
 
     expect(() => {
-      new UniformOperationsSet([
+      UniformOperationsSet.build([
         debit(account("Receivables", 1), new Money(0, "USD")),
         debit(account("Receivables", 1), new Money(0, "USD")),
       ]);

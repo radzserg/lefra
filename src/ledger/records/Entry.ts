@@ -1,12 +1,17 @@
-import { CreditOperation, DebitOperation } from "./Operations";
+import {
+  CreditOperation,
+  DebitOperation,
+  UniformOperationsSet,
+} from "./Operations";
 
 /**
  * Represents double-entry bookkeeping entry.
  */
 export class Entry {
+  private debitOperations: UniformOperationsSet[];
   public constructor(
-    private readonly debit: DebitOperation | DebitOperation[],
-    private readonly credit: CreditOperation | CreditOperation[],
+    debitOperations: DebitOperation | DebitOperation[],
+    creditOperations: CreditOperation | CreditOperation[],
     private readonly comment?: string,
   ) {}
 }

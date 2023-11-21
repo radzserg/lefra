@@ -47,32 +47,16 @@ type NonEmptyArray<T> = [T, ...T[]];
  * List of operations of the same type. Either all debit or all credit.
  * All money amounts must be of the same currency.
  */
-export class UniformOperationsSet {
-  private readonly operationList: DebitOperation[] | CreditOperation[];
-
+export class UniformOperationsSet<O extends DebitOperation | CreditOperation> {
   private readonly type: OperationType;
   private readonly currencyCode: CurrencyCode;
   private readonly operationsSum: Money;
 
-  public constructor(
-    operations:
-      | DebitOperation
-      | NonEmptyArray<DebitOperation>
-      | CreditOperation
-      | NonEmptyArray<CreditOperation>,
-  ) {
-    if (Array.isArray(operations)) {
-      if (operations.length === 0) {
+  private constructor(private readonly operationList: NonEmptyArray<O>) {
+    if (Array.isArray(this.operationList)) {
+      if (this.operationList.length === 0) {
         throw new LedgerError("Operations array must not be empty");
       }
-    }
-
-    if (operations instanceof DebitOperation) {
-      this.operationList = [operations];
-    } else if (operations instanceof CreditOperation) {
-      this.operationList = [operations];
-    } else {
-      this.operationList = operations;
     }
 
     this.type = this.operationList[0].type;
@@ -93,6 +77,24 @@ export class UniformOperationsSet {
       throw new LedgerError("Operations must not sum to zero");
     }
     this.operationsSum = sum;
+  }
+
+  public static build(
+    operations:
+      | DebitOperation
+      | NonEmptyArray<DebitOperation>
+      | CreditOperation
+      | NonEmptyArray<CreditOperation>,
+  ) {
+    let operationList: NonEmptyArray<DebitOperation | CreditOperation>;
+    if (operations instanceof DebitOperation) {
+      operationList = [operations];
+    } else if (operations instanceof CreditOperation) {
+      operationList = [operations];
+    } else {
+      operationList = operations;
+    }
+    return new UniformOperationsSet(operationList);
   }
 
   public operations(): DebitOperation[] | CreditOperation[] {
