@@ -2,8 +2,7 @@ import { LedgerAccount } from "../accounts/LedgerAccount";
 import { Money } from "../../money/Money";
 import { LedgerError } from "../../errors";
 import { CurrencyCode } from "../../money/currencies";
-
-export type OperationType = "DEBIT" | "CREDIT";
+import { NonEmptyArray, OperationType } from "../../types";
 
 export interface Operation {
   type: OperationType;
@@ -40,8 +39,6 @@ export const debit = (
 ): DebitOperation => {
   return new DebitOperation(account, amount);
 };
-
-type NonEmptyArray<T> = [T, ...T[]];
 
 /**
  * List of operations of the same type. Either all debit or all credit.
