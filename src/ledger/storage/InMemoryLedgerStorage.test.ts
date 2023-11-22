@@ -5,8 +5,9 @@ import { Transaction } from "../records/Transaction";
 import { DoubleEntry } from "../records/DoubleEntry";
 import { credit, debit } from "../records/Entry";
 import { InMemoryLedgerStorage } from "./InMemoryStorage";
-import { createAccountFactory } from "../../index";
 import { v4 as uuid } from "uuid";
+
+import { createAccountFactory } from "../accounts/LedgerAccount";
 
 const ledgerId = uuid();
 const account = createAccountFactory(ledgerId);

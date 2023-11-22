@@ -3,8 +3,9 @@ import { DoubleEntry } from "./DoubleEntry";
 import { credit, debit } from "./Entry";
 import { Money } from "../../money/Money";
 import { LedgerError } from "../../errors";
-import { createAccountFactory } from "../../index";
 import { v4 as uuid } from "uuid";
+
+import { createAccountFactory } from "../accounts/LedgerAccount";
 
 const ledgerId = uuid();
 const account = createAccountFactory(ledgerId);

@@ -362,3 +362,19 @@ export class Money<C extends CurrencyCode = CurrencyCode> {
 }`;
   }
 }
+
+/**
+ * Shorthand to create a Money object.
+ * @param amount
+ * @param currencyCode
+ */
+export const money = (
+  amount: BigNumber | number | string,
+  currencyCode: CurrencyCode,
+) => {
+  return new Money(amount, currencyCode);
+};
+
+export const usd = (amount: BigNumber | number | string) => {
+  return new Money(amount, "USD");
+};
