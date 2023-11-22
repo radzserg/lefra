@@ -20,4 +20,23 @@ describe("Transaction", () => {
       ),
     ]);
   });
+
+  test("transaction is is assigned to all operations", () => {
+    const operations = [
+      debit(account("RECEIVABLES", 1), new Money(100, "USD")),
+      credit(account("INCOME_PAID_PROJECTS"), new Money(100, "USD")),
+      debit(account("RECEIVABLES", 1), new Money(3, "USD")),
+      credit(account("INCOME_PAYMENT_FEE"), new Money(3, "USD")),
+    ];
+    const transaction = new Transaction([
+      new Entry(operations[0], operations[1]),
+      new Entry(operations[2], operations[3]),
+    ]);
+
+    for (const operation of operations) {
+      expect(operation.transactionId()).toEqual(transaction.id);
+    }
+
+    expect(transaction.operations()).toEqual(operations);
+  });
 });

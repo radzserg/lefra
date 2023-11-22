@@ -17,7 +17,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     // @todo check dynamic account creation
     // ledger_account_id_for_user
 
-    transaction.entries.map((entry) => {});
+    // transaction.entries.map((entry) => {});
 
     this.transactions.push(transaction);
   }

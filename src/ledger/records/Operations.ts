@@ -5,7 +5,7 @@ import { CurrencyCode } from "../../money/currencies";
 import { NonEmptyArray, OperationType } from "../../types";
 import { v4 as uuid } from "uuid";
 
-abstract class Operation {
+export abstract class Operation {
   public abstract readonly type: OperationType;
   public readonly id: string = uuid();
   private attachedTransactionId: string | null = null;
