@@ -7,7 +7,6 @@ import { credit, debit } from "../records/Entry";
 import { InMemoryLedgerStorage } from "./InMemoryStorage";
 import { createAccountFactory } from "../../index";
 import { v4 as uuid } from "uuid";
-import exp from "constants";
 
 const ledgerId = uuid();
 const account = createAccountFactory(ledgerId);
@@ -92,7 +91,7 @@ describe("InMemoryLedgerStorage", () => {
       "test transaction",
     );
 
-    await storage.saveTransaction(transaction);
+    await storage.insertTransaction(transaction);
 
     const savedAccounts = await storage.findAccounts();
 

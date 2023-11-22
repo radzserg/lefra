@@ -1,9 +1,16 @@
 import { Transaction } from "../records/Transaction";
 
-type LedgerOperation = {};
+type LedgerOperation = {
+  // @todo describe operation
+};
 
 export interface LedgerStorage {
-  saveTransaction(transaction: Transaction): Promise<void>;
+  insertTransaction(transaction: Transaction): Promise<void>;
+}
+
+export interface Ledger {
+  // @todo describe ledger
+  record(operation: LedgerOperation): Promise<void>;
 }
 
 /*

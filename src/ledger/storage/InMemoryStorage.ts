@@ -22,7 +22,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
 
   public constructor() {}
 
-  public async saveTransaction(transaction: Transaction) {
+  public async insertTransaction(transaction: Transaction) {
     await this.saveTransactionLedgerAccounts(transaction);
     await this.saveTransactionEntries(transaction);
     this.transactions.push({
