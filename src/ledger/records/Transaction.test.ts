@@ -2,8 +2,13 @@ import { describe, expect, test } from "vitest";
 import { Transaction } from "./Transaction";
 import { Entry } from "./Entry";
 import { credit, debit } from "./Operations";
-import { account } from "../accounts/LedgerAccount";
+
 import { Money } from "../../money/Money";
+import { createAccountFactory } from "../../index";
+import { v4 as uuid } from "uuid";
+
+const ledgerAccountId = uuid();
+const account = createAccountFactory(ledgerAccountId);
 
 describe("Transaction", () => {
   test("create a transaction", () => {

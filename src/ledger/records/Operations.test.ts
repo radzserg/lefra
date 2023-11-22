@@ -1,9 +1,12 @@
 import { describe, expect, test } from "vitest";
 import { credit, debit, UniformOperationsSet } from "./Operations";
-import { account } from "../accounts/LedgerAccount";
 import { Money } from "../../money/Money";
 import { LedgerError } from "../../errors";
 import { v4 as uuid } from "uuid";
+import { createAccountFactory } from "../../index";
+
+const ledgerAccountId = uuid();
+const account = createAccountFactory(ledgerAccountId);
 
 describe("UniformOperations", () => {
   test("cannot create UniformOperations with different operation types", () => {

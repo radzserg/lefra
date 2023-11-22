@@ -1,6 +1,5 @@
 import { Entry } from "./Entry";
 import { v4 as uuid } from "uuid";
-import { OperationType } from "../../types";
 import { Operation } from "./Operations";
 
 /**

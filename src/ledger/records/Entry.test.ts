@@ -1,9 +1,13 @@
 import { describe, expect, test } from "vitest";
 import { Entry } from "./Entry";
 import { credit, debit } from "./Operations";
-import { account } from "../accounts/LedgerAccount";
 import { Money } from "../../money/Money";
 import { LedgerError } from "../../errors";
+import { createAccountFactory } from "../../index";
+import { v4 as uuid } from "uuid";
+
+const ledgerAccountId = uuid();
+const account = createAccountFactory(ledgerAccountId);
 
 describe("Ledger entry", () => {
   test("debit and credit operations must have the same money amount", () => {

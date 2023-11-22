@@ -1,7 +1,15 @@
-export interface LedgerAccount {
-  uniqueNameIdentifier: string;
-}
+import { v4 as uuid } from "uuid";
 
-export const account = (name: string, id?: number): LedgerAccount => {
-  return {} as unknown as LedgerAccount;
-};
+export abstract class LedgerAccount {
+  public readonly id: string = uuid();
+
+  /**
+   * Unique named identifier of this account.
+   */
+  public abstract get uniqueNamedIdentifier(): string;
+
+  /**
+   * Indicates whether this account can be inserted into the database.
+   */
+  public abstract canBeInserted: boolean;
+}
