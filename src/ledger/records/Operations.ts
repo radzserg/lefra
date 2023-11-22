@@ -10,6 +10,8 @@ export abstract class Operation {
   public readonly id: string = uuid();
   private _transactionId: string | null = null;
 
+  private _accountId: string | null = null;
+
   public constructor(
     public readonly account: LedgerAccount,
     public readonly amount: Money,
@@ -19,12 +21,24 @@ export abstract class Operation {
     return this._transactionId;
   }
 
-  public setTransactionId(transactionId: string) {
+  public set transactionId(transactionId: string) {
     if (this._transactionId !== null) {
       throw new LedgerError("Operation is already attached to a transaction");
     }
 
     this._transactionId = transactionId;
+  }
+
+  public set accountId(accountId: string) {
+    if (this._accountId !== null) {
+      throw new LedgerError("Account is already attached to an operation");
+    }
+
+    this._accountId = accountId;
+  }
+
+  public get accountId(): string | null {
+    return this._accountId;
   }
 }
 

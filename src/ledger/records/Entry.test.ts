@@ -42,8 +42,8 @@ describe("Ledger entry", () => {
       creditOperation,
       "User owes money for goods",
     );
-    expect(entry.debitOperations()).toEqual([debitOperation]);
-    expect(entry.creditOperations()).toEqual([creditOperation]);
+    expect(entry.debitOperations).toEqual([debitOperation]);
+    expect(entry.creditOperations).toEqual([creditOperation]);
     expect(entry.comment).toEqual("User owes money for goods");
   });
 
@@ -66,8 +66,8 @@ describe("Ledger entry", () => {
       "Platform owes $30.00 to the contractor and and owes $70.00 but it is locked",
     );
 
-    expect(entry.debitOperations()).toEqual([debitOperation]);
-    expect(entry.creditOperations()).toEqual([
+    expect(entry.debitOperations).toEqual([debitOperation]);
+    expect(entry.creditOperations).toEqual([
       creditPayablesLocked,
       creditPayables,
     ]);

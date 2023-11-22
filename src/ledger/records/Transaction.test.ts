@@ -34,7 +34,7 @@ describe("Transaction", () => {
     ]);
 
     for (const operation of operations) {
-      expect(operation.transactionId()).toEqual(transaction.id);
+      expect(operation.transactionId).toEqual(transaction.id);
     }
 
     expect(transaction.operations).toEqual(operations);

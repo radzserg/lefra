@@ -17,11 +17,11 @@ export class Transaction {
   ) {
     const operations: Operation[] = [];
     for (const entry of entries) {
-      operations.push(...entry.debitOperations(), ...entry.creditOperations());
+      operations.push(...entry.debitOperations, ...entry.creditOperations);
     }
 
     operations.map((operation) => {
-      operation.setTransactionId(this.id);
+      operation.transactionId = this.id;
     });
 
     this._operations = operations;

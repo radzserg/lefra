@@ -66,9 +66,9 @@ describe("UniformOperations", () => {
   test("cannot override operation transaction id", () => {
     const operation = debit(account("Receivables", 1), new Money(0, "USD"));
     const originalTransactionId = uuid();
-    operation.setTransactionId(originalTransactionId);
+    operation.transactionId = originalTransactionId;
     expect(() => {
-      operation.setTransactionId(uuid());
+      operation.transactionId = uuid();
     }).toThrow(
       new LedgerError("Operation is already attached to a transaction"),
     );
