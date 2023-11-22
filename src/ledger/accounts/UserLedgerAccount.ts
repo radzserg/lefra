@@ -9,12 +9,12 @@ export class UserLedgerAccount extends LedgerAccount {
   public constructor(
     private readonly ledgerId: string,
     private readonly name: string,
-    private readonly ledgerAccountId: number,
+    private readonly userAccountId: number,
   ) {
     super();
   }
 
   public get uniqueNamedIdentifier(): string {
-    return `${this.ledgerId}:${this.name}:${this.ledgerAccountId}`;
+    return `${this.ledgerId}:${this.name}:${this.userAccountId}`;
   }
 }

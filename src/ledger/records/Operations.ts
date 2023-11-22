@@ -40,6 +40,16 @@ export abstract class Operation {
   public get accountId(): string | null {
     return this._accountId;
   }
+
+  public toJSON() {
+    return {
+      id: this.id,
+      transactionId: this.transactionId,
+      accountId: this.accountId,
+      account: this.account,
+      amount: this.amount,
+    };
+  }
 }
 
 export class CreditOperation extends Operation {

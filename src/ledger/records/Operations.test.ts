@@ -5,8 +5,8 @@ import { LedgerError } from "../../errors";
 import { v4 as uuid } from "uuid";
 import { createAccountFactory } from "../../index";
 
-const ledgerAccountId = uuid();
-const account = createAccountFactory(ledgerAccountId);
+const ledgerId = uuid();
+const account = createAccountFactory(ledgerId);
 
 describe("UniformOperations", () => {
   test("cannot create UniformOperations with different operation types", () => {

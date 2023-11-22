@@ -7,6 +7,7 @@ import { credit, debit } from "../records/Operations";
 import { InMemoryLedgerStorage } from "./InMemoryStorage";
 import { createAccountFactory } from "../../index";
 import { v4 as uuid } from "uuid";
+import exp from "constants";
 
 const ledgerId = uuid();
 const account = createAccountFactory(ledgerId);
@@ -23,28 +24,26 @@ describe("InMemoryLedgerStorage", () => {
 
       const savedAccounts = await storage.findAccounts();
 
-      expect(savedAccounts).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: expect.any(String),
-            canBeInserted: false,
-            ledgerId,
-            name: "INCOME_PAID_PROJECTS",
-          }),
-          expect.objectContaining({
-            id: expect.any(String),
-            canBeInserted: false,
-            ledgerId,
-            name: "INCOME_PAYMENT_FEE",
-          }),
-          expect.objectContaining({
-            id: expect.any(String),
-            canBeInserted: false,
-            ledgerId,
-            name: "INCOME_PAYMENT_FEE",
-          }),
-        ]),
-      );
+      expect(savedAccounts).toEqual([
+        expect.objectContaining({
+          id: expect.any(String),
+          canBeInserted: false,
+          ledgerId,
+          name: "INCOME_PAID_PROJECTS",
+        }),
+        expect.objectContaining({
+          id: expect.any(String),
+          canBeInserted: false,
+          ledgerId,
+          name: "INCOME_PAYMENT_FEE",
+        }),
+        expect.objectContaining({
+          id: expect.any(String),
+          canBeInserted: true,
+          ledgerId,
+          name: "PAYABLES_LOCKED",
+        }),
+      ]);
     });
 
     test("cannot override existing system", async () => {
@@ -71,19 +70,110 @@ describe("InMemoryLedgerStorage", () => {
   });
 
   test("save transactions", async () => {
-    const transaction = new Transaction([
-      new Entry(
-        debit(account("RECEIVABLES", 1), new Money(100, "USD")),
-        credit(account("INCOME_PAID_PROJECTS"), new Money(100, "USD")),
-        "User owes money for goods",
-      ),
-      new Entry(
-        debit(account("RECEIVABLES", 1), new Money(3, "USD")),
-        credit(account("INCOME_PAYMENT_FEE"), new Money(3, "USD")),
-        "User owes payment processing fee",
-      ),
+    const storage = new InMemoryLedgerStorage();
+    await storage.saveAccounts([
+      account("INCOME_PAID_PROJECTS"),
+      account("INCOME_PAYMENT_FEE"),
     ]);
 
-    // await storage.saveTransaction(transaction);
+    const transaction = new Transaction(
+      [
+        new Entry(
+          debit(account("RECEIVABLES", 1), new Money(100, "USD")),
+          credit(account("INCOME_PAID_PROJECTS"), new Money(100, "USD")),
+          "User owes money for goods",
+        ),
+        new Entry(
+          debit(account("RECEIVABLES", 1), new Money(3, "USD")),
+          credit(account("INCOME_PAYMENT_FEE"), new Money(3, "USD")),
+          "User owes payment processing fee",
+        ),
+      ],
+      "test transaction",
+    );
+
+    await storage.saveTransaction(transaction);
+
+    const savedAccounts = await storage.findAccounts();
+
+    // expect that we dynamically created the account
+    expect(savedAccounts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: expect.any(String),
+          canBeInserted: true,
+          ledgerId: ledgerId,
+          name: "RECEIVABLES",
+          userAccountId: 1,
+        }),
+      ]),
+    );
+
+    const entries = await storage.findEntries();
+
+    expect(entries).toEqual([
+      expect.objectContaining({
+        id: expect.any(String),
+        transactionId: transaction.id,
+        accountId: expect.any(String),
+        account: {
+          id: expect.any(String),
+          canBeInserted: true,
+          ledgerId: ledgerId,
+          name: "RECEIVABLES",
+          userAccountId: 1,
+        },
+        amount: new Money(100, "USD"),
+        type: "DEBIT",
+      }),
+      expect.objectContaining({
+        id: expect.any(String),
+        transactionId: transaction.id,
+        accountId: expect.any(String),
+        account: {
+          id: expect.any(String),
+          canBeInserted: false,
+          ledgerId,
+          name: "INCOME_PAID_PROJECTS",
+        },
+        amount: new Money(100, "USD"),
+        type: "CREDIT",
+      }),
+      expect.objectContaining({
+        id: expect.any(String),
+        transactionId: transaction.id,
+        accountId: expect.any(String),
+        account: {
+          id: expect.any(String),
+          canBeInserted: true,
+          ledgerId,
+          name: "RECEIVABLES",
+          userAccountId: 1,
+        },
+        amount: new Money(3, "USD"),
+        type: "DEBIT",
+      }),
+      expect.objectContaining({
+        id: expect.any(String),
+        transactionId: transaction.id,
+        accountId: expect.any(String),
+        account: {
+          id: expect.any(String),
+          canBeInserted: false,
+          ledgerId,
+          name: "INCOME_PAYMENT_FEE",
+        },
+        amount: new Money(3, "USD"),
+        type: "CREDIT",
+      }),
+    ]);
+
+    const transactions = await storage.findTransactions();
+    expect(transactions).toEqual([
+      {
+        id: transaction.id,
+        description: "test transaction",
+      },
+    ]);
   });
 });

@@ -7,8 +7,8 @@ import { Money } from "../../money/Money";
 import { createAccountFactory } from "../../index";
 import { v4 as uuid } from "uuid";
 
-const ledgerAccountId = uuid();
-const account = createAccountFactory(ledgerAccountId);
+const ledgerId = uuid();
+const account = createAccountFactory(ledgerId);
 
 describe("Transaction", () => {
   test("create a transaction", () => {
