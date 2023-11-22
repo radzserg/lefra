@@ -5,4 +5,8 @@ export class SystemLedgerAccount implements LedgerAccount {
     private readonly ledgerId: string,
     private readonly name: string,
   ) {}
+
+  public get uniqueNameIdentifier(): string {
+    return `${this.ledgerId}:${this.name}`;
+  }
 }

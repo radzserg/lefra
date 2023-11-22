@@ -27,7 +27,7 @@ export class Transaction {
     this._operations = operations;
   }
 
-  public operations(): Operation[] {
+  public get operations(): Operation[] {
     return this._operations;
   }
 }

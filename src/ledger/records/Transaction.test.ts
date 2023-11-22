@@ -37,6 +37,6 @@ describe("Transaction", () => {
       expect(operation.transactionId()).toEqual(transaction.id);
     }
 
-    expect(transaction.operations()).toEqual(operations);
+    expect(transaction.operations).toEqual(operations);
   });
 });

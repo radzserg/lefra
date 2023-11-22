@@ -8,23 +8,23 @@ import { v4 as uuid } from "uuid";
 export abstract class Operation {
   public abstract readonly type: OperationType;
   public readonly id: string = uuid();
-  private attachedTransactionId: string | null = null;
+  private _transactionId: string | null = null;
 
   public constructor(
     public readonly account: LedgerAccount,
     public readonly amount: Money,
   ) {}
 
-  public transactionId(): string | null {
-    return this.attachedTransactionId;
+  public get transactionId(): string | null {
+    return this._transactionId;
   }
 
   public setTransactionId(transactionId: string) {
-    if (this.attachedTransactionId !== null) {
+    if (this._transactionId !== null) {
       throw new LedgerError("Operation is already attached to a transaction");
     }
 
-    this.attachedTransactionId = transactionId;
+    this._transactionId = transactionId;
   }
 }
 
