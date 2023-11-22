@@ -3,27 +3,37 @@ import { Money } from "../../money/Money";
 import { LedgerError } from "../../errors";
 import { CurrencyCode } from "../../money/currencies";
 import { NonEmptyArray, OperationType } from "../../types";
+import { v4 as uuid } from "uuid";
 
-export interface Operation {
-  type: OperationType;
-  account: LedgerAccount;
-  amount: Money;
+abstract class Operation {
+  public abstract readonly type: OperationType;
+  public readonly id: string = uuid();
+  private attachedTransactionId: string | null = null;
+
+  public constructor(
+    public readonly account: LedgerAccount,
+    public readonly amount: Money,
+  ) {}
+
+  public transactionId(): string | null {
+    return this.attachedTransactionId;
+  }
+
+  public setTransactionId(transactionId: string) {
+    if (this.attachedTransactionId !== null) {
+      throw new LedgerError("Operation is already attached to a transaction");
+    }
+
+    this.attachedTransactionId = transactionId;
+  }
 }
 
-export class CreditOperation implements Operation {
+export class CreditOperation extends Operation {
   public readonly type: OperationType = "CREDIT";
-  public constructor(
-    public readonly account: LedgerAccount,
-    public readonly amount: Money,
-  ) {}
 }
 
-export class DebitOperation implements Operation {
+export class DebitOperation extends Operation {
   public readonly type: OperationType = "DEBIT";
-  public constructor(
-    public readonly account: LedgerAccount,
-    public readonly amount: Money,
-  ) {}
 }
 
 export const credit = (
