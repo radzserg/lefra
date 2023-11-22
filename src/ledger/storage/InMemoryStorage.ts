@@ -1,13 +1,12 @@
 import { Transaction } from "../records/Transaction";
 import { LedgerStorage } from "./LedgerStorage";
 import { LedgerAccount } from "../accounts/LedgerAccount";
-import { v4 as uuid } from "uuid";
 import { LedgerError } from "../../errors";
-import { Operation } from "../records/Operations";
+import { Entry } from "../records/Entry";
 
 type LedgerAccounts = Record<string, LedgerAccount>;
 
-type SavedTransaction = Omit<Transaction, "operations">;
+type SavedTransaction = Omit<Transaction, "entries">;
 
 /**
  * In memory implementation of the ledger storage.
@@ -15,7 +14,7 @@ type SavedTransaction = Omit<Transaction, "operations">;
  */
 export class InMemoryLedgerStorage implements LedgerStorage {
   private transactions: SavedTransaction[] = [];
-  private entries: Operation[] = [];
+  private entries: Entry[] = [];
 
   private accounts: LedgerAccounts = {};
 
@@ -48,7 +47,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   }
 
   private async saveTransactionEntries(transaction: Transaction) {
-    for (const operation of transaction.operations) {
+    for (const operation of transaction.entries) {
       const existingAccount = await this.findSavedAccount(operation.account);
       if (!existingAccount) {
         throw new LedgerError(
@@ -57,12 +56,12 @@ export class InMemoryLedgerStorage implements LedgerStorage {
       }
       operation.accountId = existingAccount.id;
     }
-    this.entries.push(...transaction.operations);
+    this.entries.push(...transaction.entries);
   }
 
   private async saveTransactionLedgerAccounts(transaction: Transaction) {
     const ledgerAccounts: LedgerAccounts = {};
-    for (const operation of transaction.operations) {
+    for (const operation of transaction.entries) {
       ledgerAccounts[operation.account.uniqueNamedIdentifier] =
         operation.account;
     }

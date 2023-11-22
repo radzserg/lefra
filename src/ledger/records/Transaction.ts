@@ -1,6 +1,6 @@
-import { Entry } from "./Entry";
+import { DoubleEntry } from "./DoubleEntry";
 import { v4 as uuid } from "uuid";
-import { Operation } from "./Operations";
+import { Entry } from "./Entry";
 
 /**
  * Represents a transaction in the ledger.
@@ -8,25 +8,23 @@ import { Operation } from "./Operations";
  */
 export class Transaction {
   public readonly id: string = uuid();
-  private readonly _operations: Operation[];
+  private readonly _entries: Entry[];
 
   public constructor(
-    entries: Entry[],
+    entries: DoubleEntry[],
     public readonly description: string | null = null,
   ) {
-    const operations: Operation[] = [];
+    this._entries = [];
     for (const entry of entries) {
-      operations.push(...entry.debitOperations, ...entry.creditOperations);
+      this._entries.push(...entry.debitEntries, ...entry.creditEntries);
     }
 
-    operations.map((operation) => {
-      operation.transactionId = this.id;
+    this._entries.map((entry) => {
+      entry.transactionId = this.id;
     });
-
-    this._operations = operations;
   }
 
-  public get operations(): Operation[] {
-    return this._operations;
+  public get entries(): Entry[] {
+    return this._entries;
   }
 }
