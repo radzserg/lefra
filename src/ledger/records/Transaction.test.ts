@@ -4,12 +4,7 @@ import { DoubleEntry } from "./DoubleEntry";
 import { credit, debit } from "./Entry";
 
 import { Money } from "../../money/Money";
-import { v4 as uuid } from "uuid";
-
-import { createAccountFactory } from "../accounts/LedgerAccount";
-
-const ledgerId = uuid();
-const account = createAccountFactory(ledgerId);
+import { account } from "../../index";
 
 describe("Transaction", () => {
   test("create a transaction", () => {

@@ -7,7 +7,6 @@ export class UserLedgerAccount extends LedgerAccount {
   public canBeInserted = true;
 
   public constructor(
-    private readonly ledgerId: string,
     private readonly name: string,
     private readonly userAccountId: number,
   ) {
@@ -15,6 +14,6 @@ export class UserLedgerAccount extends LedgerAccount {
   }
 
   public get uniqueNamedIdentifier(): string {
-    return `${this.ledgerId}:${this.name}:${this.userAccountId}`;
+    return `${this.name}:${this.userAccountId}`;
   }
 }

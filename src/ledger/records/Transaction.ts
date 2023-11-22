@@ -11,6 +11,7 @@ export class Transaction {
   private readonly _entries: Entry[];
 
   public constructor(
+    public readonly ledgerId: string,
     entries: DoubleEntry[],
     public readonly description: string | null = null,
   ) {
@@ -26,5 +27,14 @@ export class Transaction {
 
   public get entries(): Entry[] {
     return this._entries;
+  }
+
+  public toJSON() {
+    return {
+      id: this.id,
+      ledgerId: this.ledgerId,
+      description: this.description,
+      entries: this.entries,
+    };
   }
 }
