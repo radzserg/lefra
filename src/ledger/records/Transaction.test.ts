@@ -2,13 +2,14 @@ import { describe, expect, test } from "vitest";
 import { Transaction } from "./Transaction";
 import { DoubleEntry } from "./DoubleEntry";
 import { credit, debit } from "./Entry";
+import { v4 as uuid } from "uuid";
 
 import { Money } from "../../money/Money";
 import { account } from "../../index";
 
 describe("Transaction", () => {
   test("create a transaction", () => {
-    new Transaction([
+    new Transaction(uuid(), [
       new DoubleEntry(
         debit(account("RECEIVABLES", 1), new Money(100, "USD")),
         credit(account("INCOME_PAID_PROJECTS"), new Money(100, "USD")),
@@ -29,7 +30,7 @@ describe("Transaction", () => {
       debit(account("RECEIVABLES", 1), new Money(3, "USD")),
       credit(account("INCOME_PAYMENT_FEE"), new Money(3, "USD")),
     ];
-    const transaction = new Transaction([
+    const transaction = new Transaction(uuid(), [
       new DoubleEntry(entries[0], entries[1]),
       new DoubleEntry(entries[2], entries[3]),
     ]);

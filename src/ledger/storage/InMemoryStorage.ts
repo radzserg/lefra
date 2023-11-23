@@ -3,10 +3,31 @@ import { LedgerStorage } from "./LedgerStorage";
 import { LedgerAccount } from "../accounts/LedgerAccount";
 import { LedgerError } from "../../errors";
 import { Entry } from "../records/Entry";
+import { SystemLedgerAccount } from "../accounts/SystemLedgerAccount";
+import { UserLedgerAccount } from "../accounts/UserLedgerAccount";
 
-type LedgerAccounts = Record<string, LedgerAccount>;
+type SavedTransaction = {
+  id: string;
+  ledgerId: string;
+  description: string | null;
+};
 
-type SavedTransaction = Omit<Transaction, "entries">;
+type SavedSystemAccount = {
+  type: "SYSTEM";
+  id: string;
+  ledgerId: string;
+  name: string;
+};
+
+type SavedUserAccount = {
+  type: "USER";
+  id: string;
+  ledgerId: string;
+  name: string;
+  userAccountId: number;
+};
+
+type SavedAccount = SavedSystemAccount | SavedUserAccount;
 
 /**
  * In memory implementation of the ledger storage.
@@ -15,8 +36,7 @@ type SavedTransaction = Omit<Transaction, "entries">;
 export class InMemoryLedgerStorage implements LedgerStorage {
   private transactions: SavedTransaction[] = [];
   private entries: Entry[] = [];
-
-  private accounts: LedgerAccounts = {};
+  private accounts: SavedAccount[] = [];
 
   // @todo add entries
 
@@ -25,15 +45,17 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   public async insertTransaction(transaction: Transaction) {
     await this.saveTransactionLedgerAccounts(transaction);
     await this.saveTransactionEntries(transaction);
+
     this.transactions.push({
       id: transaction.id,
+      ledgerId: transaction.ledgerId,
       description: transaction.description,
     });
   }
 
-  public async saveAccounts(accounts: LedgerAccount[]) {
+  public async saveAccounts(ledgerId: string, accounts: LedgerAccount[]) {
     for (const account of accounts) {
-      const existingAccount = await this.findSavedAccount(account);
+      const existingAccount = await this.findSavedAccount(ledgerId, account);
       if (existingAccount) {
         if (!account.canBeInserted) {
           throw new LedgerError(
@@ -42,13 +64,40 @@ export class InMemoryLedgerStorage implements LedgerStorage {
         }
         return existingAccount;
       }
-      this.accounts[account.uniqueNamedIdentifier] = account;
+      this.accounts.push(this.accountToSavedAccount(ledgerId, account));
+    }
+  }
+
+  private accountToSavedAccount(
+    ledgerId: string,
+    account: LedgerAccount,
+  ): SavedAccount {
+    if (account instanceof SystemLedgerAccount) {
+      return {
+        type: "SYSTEM",
+        id: account.id,
+        ledgerId,
+        name: account.name,
+      };
+    } else if (account instanceof UserLedgerAccount) {
+      return {
+        type: "USER",
+        id: account.id,
+        ledgerId,
+        name: account.name,
+        userAccountId: account.userAccountId,
+      };
+    } else {
+      throw new LedgerError(`Unknown account type ${account}`);
     }
   }
 
   private async saveTransactionEntries(transaction: Transaction) {
     for (const operation of transaction.entries) {
-      const existingAccount = await this.findSavedAccount(operation.account);
+      const existingAccount = await this.findSavedAccount(
+        transaction.ledgerId,
+        operation.account,
+      );
       if (!existingAccount) {
         throw new LedgerError(
           `Account ${operation.account.uniqueNamedIdentifier} not found`,
@@ -60,28 +109,49 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   }
 
   private async saveTransactionLedgerAccounts(transaction: Transaction) {
-    const ledgerAccounts: LedgerAccounts = {};
-    for (const operation of transaction.entries) {
-      ledgerAccounts[operation.account.uniqueNamedIdentifier] =
-        operation.account;
+    const ledgerAccounts: LedgerAccount[] = [];
+    for (const entry of transaction.entries) {
+      ledgerAccounts.push(entry.account);
     }
-    await this.findOrInsertLedgerAccounts(ledgerAccounts);
+    await this.findOrInsertLedgerAccounts(transaction.ledgerId, ledgerAccounts);
   }
 
-  private async findSavedAccount(account: LedgerAccount) {
-    return this.accounts[account.uniqueNamedIdentifier];
+  private async findSavedAccount(ledgerId: string, account: LedgerAccount) {
+    const foundAccount = this.accounts.find((savedAccount) => {
+      if (account instanceof SystemLedgerAccount) {
+        return (
+          savedAccount.name === account.name &&
+          savedAccount.ledgerId === ledgerId
+        );
+      } else if (account instanceof UserLedgerAccount) {
+        if (savedAccount.type !== "USER") {
+          return false;
+        }
+        return (
+          savedAccount.name === account.name &&
+          savedAccount.ledgerId === ledgerId &&
+          savedAccount.userAccountId === account.userAccountId
+        );
+      }
+      return false;
+    });
+
+    return foundAccount ?? null;
   }
 
-  private async findOrInsertLedgerAccounts(accounts: LedgerAccounts) {
-    for (const account of Object.values(accounts)) {
-      const existingAccount = await this.findSavedAccount(account);
+  private async findOrInsertLedgerAccounts(
+    ledgerId: string,
+    accounts: LedgerAccount[],
+  ) {
+    for (const account of accounts) {
+      const existingAccount = await this.findSavedAccount(ledgerId, account);
       if (!existingAccount) {
         if (!account.canBeInserted) {
           throw new LedgerError(
             `Account ${account.uniqueNamedIdentifier} cannot be inserted`,
           );
         }
-        this.accounts[account.uniqueNamedIdentifier] = account;
+        this.accounts.push(this.accountToSavedAccount(ledgerId, account));
       }
     }
   }

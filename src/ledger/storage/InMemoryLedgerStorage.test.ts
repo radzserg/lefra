@@ -6,17 +6,15 @@ import { DoubleEntry } from "../records/DoubleEntry";
 import { credit, debit } from "../records/Entry";
 import { InMemoryLedgerStorage } from "./InMemoryStorage";
 import { v4 as uuid } from "uuid";
-
-import { createAccountFactory } from "../accounts/LedgerAccount";
+import { account } from "../../index";
 
 const ledgerId = uuid();
-const account = createAccountFactory(ledgerId);
 
 describe("InMemoryLedgerStorage", () => {
   describe("save accounts", () => {
     test("save accounts", async () => {
       const storage = new InMemoryLedgerStorage();
-      await storage.saveAccounts([
+      await storage.saveAccounts(ledgerId, [
         account("INCOME_PAID_PROJECTS"),
         account("INCOME_PAYMENT_FEE"),
         account("PAYABLES_LOCKED", 1),
@@ -27,19 +25,16 @@ describe("InMemoryLedgerStorage", () => {
       expect(savedAccounts).toEqual([
         expect.objectContaining({
           id: expect.any(String),
-          canBeInserted: false,
           ledgerId,
           name: "INCOME_PAID_PROJECTS",
         }),
         expect.objectContaining({
           id: expect.any(String),
-          canBeInserted: false,
           ledgerId,
           name: "INCOME_PAYMENT_FEE",
         }),
         expect.objectContaining({
           id: expect.any(String),
-          canBeInserted: true,
           ledgerId,
           name: "PAYABLES_LOCKED",
         }),
@@ -49,34 +44,42 @@ describe("InMemoryLedgerStorage", () => {
     test("cannot override existing system", async () => {
       const storage = new InMemoryLedgerStorage();
       const originalAccount = account("INCOME_PAID_PROJECTS");
-      await storage.saveAccounts([originalAccount]);
+      await storage.saveAccounts(ledgerId, [originalAccount]);
 
       await expect(async () => {
-        await storage.saveAccounts([account("INCOME_PAID_PROJECTS")]);
+        await storage.saveAccounts(ledgerId, [account("INCOME_PAID_PROJECTS")]);
       }).rejects.toThrow(
-        `Account ${ledgerId}:INCOME_PAID_PROJECTS cannot be inserted`,
+        `Account SYSTEM_INCOME_PAID_PROJECTS cannot be inserted`,
       );
     });
 
     test("cannot override existing user account", async () => {
       const storage = new InMemoryLedgerStorage();
       const originalAccount = account("RECEIVABLES", 1);
-      await storage.saveAccounts([originalAccount]);
-      await storage.saveAccounts([account("RECEIVABLES", 1)]);
+      await storage.saveAccounts(ledgerId, [originalAccount]);
+      await storage.saveAccounts(ledgerId, [account("RECEIVABLES", 1)]);
 
       const savedAccounts = await storage.findAccounts();
-      expect(savedAccounts).toEqual([originalAccount]);
+      expect(savedAccounts).toEqual([
+        {
+          ...originalAccount,
+          canBeInserted: undefined,
+          ledgerId,
+          type: "USER",
+        },
+      ]);
     });
   });
 
   test("save transactions", async () => {
     const storage = new InMemoryLedgerStorage();
-    await storage.saveAccounts([
+    await storage.saveAccounts(ledgerId, [
       account("INCOME_PAID_PROJECTS"),
       account("INCOME_PAYMENT_FEE"),
     ]);
 
     const transaction = new Transaction(
+      ledgerId,
       [
         new DoubleEntry(
           debit(account("RECEIVABLES", 1), new Money(100, "USD")),
@@ -101,10 +104,10 @@ describe("InMemoryLedgerStorage", () => {
       expect.arrayContaining([
         expect.objectContaining({
           id: expect.any(String),
-          canBeInserted: true,
           ledgerId: ledgerId,
           name: "RECEIVABLES",
           userAccountId: 1,
+          type: "USER",
         }),
       ]),
     );
@@ -116,13 +119,6 @@ describe("InMemoryLedgerStorage", () => {
         id: expect.any(String),
         transactionId: transaction.id,
         accountId: expect.any(String),
-        account: {
-          id: expect.any(String),
-          canBeInserted: true,
-          ledgerId: ledgerId,
-          name: "RECEIVABLES",
-          userAccountId: 1,
-        },
         amount: new Money(100, "USD"),
         type: "DEBIT",
       }),
@@ -130,12 +126,6 @@ describe("InMemoryLedgerStorage", () => {
         id: expect.any(String),
         transactionId: transaction.id,
         accountId: expect.any(String),
-        account: {
-          id: expect.any(String),
-          canBeInserted: false,
-          ledgerId,
-          name: "INCOME_PAID_PROJECTS",
-        },
         amount: new Money(100, "USD"),
         type: "CREDIT",
       }),
@@ -143,13 +133,6 @@ describe("InMemoryLedgerStorage", () => {
         id: expect.any(String),
         transactionId: transaction.id,
         accountId: expect.any(String),
-        account: {
-          id: expect.any(String),
-          canBeInserted: true,
-          ledgerId,
-          name: "RECEIVABLES",
-          userAccountId: 1,
-        },
         amount: new Money(3, "USD"),
         type: "DEBIT",
       }),
@@ -157,12 +140,6 @@ describe("InMemoryLedgerStorage", () => {
         id: expect.any(String),
         transactionId: transaction.id,
         accountId: expect.any(String),
-        account: {
-          id: expect.any(String),
-          canBeInserted: false,
-          ledgerId,
-          name: "INCOME_PAYMENT_FEE",
-        },
         amount: new Money(3, "USD"),
         type: "CREDIT",
       }),
@@ -172,6 +149,7 @@ describe("InMemoryLedgerStorage", () => {
     expect(transactions).toEqual([
       {
         id: transaction.id,
+        ledgerId: ledgerId,
         description: "test transaction",
       },
     ]);
