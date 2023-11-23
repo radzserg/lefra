@@ -2,9 +2,7 @@ import { Transaction } from "../records/Transaction";
 import { DoubleEntry } from "../records/DoubleEntry";
 import { credit, debit } from "../records/Entry";
 import { usd } from "../../money/Money";
-import { v4 as uuid } from "uuid";
-
-import { createAccountFactory } from "../accounts/LedgerAccount";
+import { account } from "../../index";
 
 /**
  * LedgerOperation describes how ledger transaction should be created.
@@ -14,11 +12,8 @@ export interface LedgerOperation {
   createTransaction(): Promise<Transaction>;
 }
 
-const ledgerId = uuid();
-const account = createAccountFactory(ledgerId);
-
 class ProjectStartedOperation implements LedgerOperation {
-  public constructor() {}
+  public constructor(private readonly ledgerId: string) {}
 
   public async createTransaction(): Promise<Transaction> {
     const entries: DoubleEntry[] = [];
@@ -37,7 +32,7 @@ class ProjectStartedOperation implements LedgerOperation {
       ),
     );
 
-    return new Transaction(entries, "test transaction");
+    return new Transaction(this.ledgerId, entries, "test transaction");
   }
 }
 
