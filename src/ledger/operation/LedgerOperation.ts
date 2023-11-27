@@ -2,11 +2,17 @@ import { Transaction } from '../records/Transaction.js';
 import { LedgerOperationError } from '@/errors.js';
 import { z } from 'zod';
 
+export type ILedgerOperation = {
+  createTransaction: () => Promise<Transaction>;
+};
+
 /**
  * LedgerOperation describes how ledger transaction should be created.
  * It defines logic based on the business rules.
  */
-export abstract class LedgerOperation<TSchema extends z.ZodType> {
+export abstract class LedgerOperation<TSchema extends z.ZodType>
+  implements ILedgerOperation
+{
   protected constructor(
     protected readonly ledgerId: string,
     schema: TSchema,

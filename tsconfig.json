@@ -22,7 +22,7 @@
     "noUnusedParameters": false,
     "paths": {
       "#/*": [
-        "./test/*"
+        "./tests/*"
       ],
       "@/*": [
         "./src/*"
@@ -38,6 +38,7 @@
     "useUnknownInCatchVariables": false
   },
   "include": [
-    "src"
+    "src",
+    "tests"
   ]
 }

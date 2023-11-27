@@ -1,6 +1,6 @@
-import { InMemoryLedgerStorage } from '../../src/ledger/storage/InMemoryStorage.js';
-import { Money } from '../../src/money/Money.js';
 import { CustomLedger } from '../customLedger/CustomLedger.js';
+import { InMemoryLedgerStorage } from '@/ledger/storage/InMemoryStorage.js';
+import { Money } from '@/money/Money.js';
 import { v4 as uuid } from 'uuid';
 import { describe, expect, test } from 'vitest';
 
@@ -17,6 +17,7 @@ describe('ProjectStartedOperation', () => {
       paymentProcessingFee: new Money(5, 'USD'),
       platformFee: new Money(10, 'USD'),
       targetNetAmount: new Money(100, 'USD'),
+      type: 'PROJECT_STARTED',
     });
 
     // await ledger.record(operation);

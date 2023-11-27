@@ -1,9 +1,9 @@
-import { account } from '../../../src/index.js';
-import { LedgerOperation } from '../../../src/ledger/operation/LedgerOperation.js';
-import { DoubleEntry } from '../../../src/ledger/records/DoubleEntry.js';
-import { credit, debit } from '../../../src/ledger/records/Entry.js';
-import { Transaction } from '../../../src/ledger/records/Transaction.js';
-import { moneySchema } from '../../../src/money/validation.js';
+import { account } from '@/index.js';
+import { LedgerOperation } from '@/ledger/operation/LedgerOperation.js';
+import { DoubleEntry } from '@/ledger/records/DoubleEntry.js';
+import { credit, debit } from '@/ledger/records/Entry.js';
+import { Transaction } from '@/ledger/records/Transaction.js';
+import { moneySchema } from '@/money/validation.js';
 import { z } from 'zod';
 
 const schema = z
@@ -14,6 +14,7 @@ const schema = z
     paymentProcessingFee: moneySchema,
     platformFee: moneySchema.nullable(),
     targetNetAmount: moneySchema,
+    type: z.literal('PROJECT_STARTED'),
   })
   .strict();
 
