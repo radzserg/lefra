@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { v4 as uuid } from "uuid";
 import { Money } from "../../src/money/Money.js";
 import { InMemoryLedgerStorage } from "../../src/ledger/storage/InMemoryStorage.js";
-import { CustomLedger } from "../../src/customLedger/CustomLedger.js";
+import { CustomLedger } from "../customLedger/CustomLedger.js";
 
 describe("ProjectStartedOperation", () => {
   const ledgerId = uuid();

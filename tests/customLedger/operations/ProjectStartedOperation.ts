@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { moneySchema } from "../../money/validation.js";
-import { LedgerOperation } from "../../ledger/operation/LedgerOperation.js";
-import { Transaction } from "../../ledger/records/Transaction.js";
-import { DoubleEntry } from "../../ledger/records/DoubleEntry.js";
-import { account } from "../../index.js";
-import { credit, debit } from "../../ledger/records/Entry.js";
+import { moneySchema } from "../../../src/money/validation.js";
+import { LedgerOperation } from "../../../src/ledger/operation/LedgerOperation.js";
+import { Transaction } from "../../../src/ledger/records/Transaction.js";
+import { DoubleEntry } from "../../../src/ledger/records/DoubleEntry.js";
+import { credit, debit } from "../../../src/ledger/records/Entry.js";
+import { account } from "../../../src/index.js";
 
 const schema = z
   .object({
