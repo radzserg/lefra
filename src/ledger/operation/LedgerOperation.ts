@@ -1,6 +1,6 @@
 import { Transaction } from "../records/Transaction.js";
 import { z } from "zod";
-import { LedgerOperationError } from "../../errors.js";
+import { LedgerOperationError } from "@/errors.js";
 
 /**
  * LedgerOperation describes how ledger transaction should be created.

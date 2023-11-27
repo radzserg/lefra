@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
 import { DoubleEntry } from "./DoubleEntry.js";
 import { credit, debit } from "./Entry.js";
-import { Money } from "../../money/Money.js";
-import { LedgerError } from "../../errors.js";
-import { account } from "../../index.js";
+import { Money } from "@/money/Money.js";
+import { LedgerError } from "@/errors.js";
+import { account } from "@/index.js";
 
 describe("Ledger entry", () => {
   test("debit and credit operations must have the same money amount", () => {

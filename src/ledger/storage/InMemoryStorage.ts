@@ -1,7 +1,7 @@
 import { Transaction } from "../records/Transaction.js";
 import { LedgerStorage } from "./LedgerStorage.js";
 import { LedgerAccount } from "../accounts/LedgerAccount.js";
-import { LedgerError } from "../../errors.js";
+import { LedgerError } from "@/errors.js";
 import { Entry } from "../records/Entry.js";
 import { SystemLedgerAccount } from "../accounts/SystemLedgerAccount.js";
 import { UserLedgerAccount } from "../accounts/UserLedgerAccount.js";

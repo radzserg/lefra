@@ -27,7 +27,15 @@
     "strict": true,
     "target": "es2022",
     "useDefineForClassFields": true,
-    "useUnknownInCatchVariables": false
+    "useUnknownInCatchVariables": false,
+    "paths": {
+      "#/*": [
+        "./test/*"
+      ],
+      "@/*": [
+        "./src/*"
+      ]
+    }
   },
   "include": [
     "src"

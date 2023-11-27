@@ -3,8 +3,8 @@ import { Transaction } from "./Transaction.js";
 import { DoubleEntry } from "./DoubleEntry.js";
 import { credit, debit } from "./Entry.js";
 import { v4 as uuid } from "uuid";
-import { Money } from "../../money/Money.js";
-import { account } from "../../index.js";
+import { Money } from "@/money/Money.js";
+import { account } from "@/index.js";
 
 describe("Transaction", () => {
   test("create a transaction", () => {

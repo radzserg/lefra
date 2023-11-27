@@ -1,8 +1,8 @@
 import { LedgerAccount } from "../accounts/LedgerAccount.js";
 import { Money } from "../../money/Money.js";
 import { LedgerError } from "../../errors.js";
-import { CurrencyCode } from "../../money/currencies.js";
-import { NonEmptyArray, OperationType } from "../../types.js";
+import { CurrencyCode } from "@/money/currencies.js";
+import { NonEmptyArray, OperationType } from "@/types.js";
 import { v4 as uuid } from "uuid";
 
 export abstract class Entry {

@@ -1,11 +1,11 @@
 import { describe, expect, test } from "vitest";
-import { Money } from "../../money/Money.js";
+import { Money } from "@/money/Money.js";
 import { Transaction } from "../records/Transaction.js";
 import { DoubleEntry } from "../records/DoubleEntry.js";
 import { credit, debit } from "../records/Entry.js";
 import { InMemoryLedgerStorage } from "./InMemoryStorage.js";
 import { v4 as uuid } from "uuid";
-import { account } from "../../index.js";
+import { account } from "@/index.js";
 
 const ledgerId = uuid();
 
