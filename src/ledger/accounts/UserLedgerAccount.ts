@@ -1,4 +1,4 @@
-import { LedgerAccount } from "./LedgerAccount";
+import { LedgerAccount } from "./LedgerAccount.js";
 
 /**
  * Represents user-defined ledger account. Defined by name and id.
@@ -8,7 +8,7 @@ export class UserLedgerAccount extends LedgerAccount {
 
   public constructor(
     public readonly name: string,
-    public readonly userAccountId: number,
+    public readonly userAccountId: number | string,
   ) {
     super();
   }

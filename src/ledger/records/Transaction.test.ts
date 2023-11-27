@@ -1,11 +1,10 @@
 import { describe, expect, test } from "vitest";
-import { Transaction } from "./Transaction";
-import { DoubleEntry } from "./DoubleEntry";
-import { credit, debit } from "./Entry";
+import { Transaction } from "./Transaction.js";
+import { DoubleEntry } from "./DoubleEntry.js";
+import { credit, debit } from "./Entry.js";
 import { v4 as uuid } from "uuid";
-
-import { Money } from "../../money/Money";
-import { account } from "../../index";
+import { Money } from "../../money/Money.js";
+import { account } from "../../index.js";
 
 describe("Transaction", () => {
   test("create a transaction", () => {

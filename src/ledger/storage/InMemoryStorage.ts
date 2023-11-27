@@ -1,10 +1,10 @@
-import { Transaction } from "../records/Transaction";
-import { LedgerStorage } from "./LedgerStorage";
-import { LedgerAccount } from "../accounts/LedgerAccount";
-import { LedgerError } from "../../errors";
-import { Entry } from "../records/Entry";
-import { SystemLedgerAccount } from "../accounts/SystemLedgerAccount";
-import { UserLedgerAccount } from "../accounts/UserLedgerAccount";
+import { Transaction } from "../records/Transaction.js";
+import { LedgerStorage } from "./LedgerStorage.js";
+import { LedgerAccount } from "../accounts/LedgerAccount.js";
+import { LedgerError } from "../../errors.js";
+import { Entry } from "../records/Entry.js";
+import { SystemLedgerAccount } from "../accounts/SystemLedgerAccount.js";
+import { UserLedgerAccount } from "../accounts/UserLedgerAccount.js";
 
 type SavedTransaction = {
   id: string;
@@ -24,7 +24,7 @@ type SavedUserAccount = {
   id: string;
   ledgerId: string;
   name: string;
-  userAccountId: number;
+  userAccountId: number | string;
 };
 
 type SavedAccount = SavedSystemAccount | SavedUserAccount;
@@ -62,7 +62,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
             `Account ${account.uniqueNamedIdentifier} cannot be inserted`,
           );
         }
-        return existingAccount;
+        continue;
       }
       this.accounts.push(this.accountToSavedAccount(ledgerId, account));
     }

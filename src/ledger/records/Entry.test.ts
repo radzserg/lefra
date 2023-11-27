@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
-import { credit, debit, UniformEntrySet } from "./Entry";
-import { Money } from "../../money/Money";
-import { LedgerError } from "../../errors";
+import { credit, debit, UniformEntrySet } from "./Entry.js";
+import { Money } from "../../money/Money.js";
+import { LedgerError } from "../../errors.js";
 import { v4 as uuid } from "uuid";
-import { account } from "../../index";
+import { account } from "../../index.js";
 
 describe("UniformEntrySet", () => {
   test("cannot create UniformEntrySet with different operation types", () => {

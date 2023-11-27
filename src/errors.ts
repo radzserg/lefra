@@ -3,3 +3,9 @@ export class LedgerError extends Error {
     super(message);
   }
 }
+
+export class LedgerOperationError extends LedgerError {
+  constructor(message: string) {
+    super(message);
+  }
+}

@@ -1,6 +1,6 @@
-import { CreditEntry, DebitEntry, UniformEntrySet } from "./Entry";
-import { NonEmptyArray } from "../../types";
-import { LedgerError } from "../../errors";
+import { CreditEntry, DebitEntry, UniformEntrySet } from "./Entry.js";
+import { NonEmptyArray } from "../../types.js";
+import { LedgerError } from "../../errors.js";
 
 /**
  * Represents double-entry bookkeeping entry.

@@ -1,6 +1,6 @@
-import { DoubleEntry } from "./DoubleEntry";
+import { DoubleEntry } from "./DoubleEntry.js";
 import { v4 as uuid } from "uuid";
-import { Entry } from "./Entry";
+import { Entry } from "./Entry.js";
 
 /**
  * Represents a transaction in the ledger.
