@@ -1,26 +1,29 @@
 {
-  "name": "ledger",
-  "version": "1.0.0",
-  "description": "",
-  "type": "module",
-  "scripts": {
-    "test": "vitest"
-  },
-  "keywords": [],
   "author": "",
-  "license": "ISC",
+  "dependencies": {
+    "bignumber.js": "^9.1.2",
+    "eslint": "^8.54.0",
+    "uuid": "^9.0.1",
+    "zod": "^3.22.4"
+  },
+  "description": "",
   "devDependencies": {
     "@types/node": "^20.9.2",
     "@types/uuid": "^9.0.7",
+    "eslint-config-canonical": "^42.8.0",
     "install": "^0.13.0",
-    "prettier": "^3.1.0",
     "tsx": "^4.1.4",
     "typescript": "^5.2.2",
     "vitest": "^0.34.6"
   },
-  "dependencies": {
-    "bignumber.js": "^9.1.2",
-    "uuid": "^9.0.1",
-    "zod": "^3.22.4"
-  }
+  "keywords": [],
+  "license": "ISC",
+  "name": "ledger",
+  "scripts": {
+    "lint:eslint": "eslint .",
+    "lint:format": "eslint --fix $FILES",
+    "test": "vitest"
+  },
+  "type": "module",
+  "version": "1.0.0"
 }
