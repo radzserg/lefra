@@ -1,5 +1,5 @@
-import { Transaction } from "../records/Transaction.js";
+import { Transaction } from '../records/Transaction.js';
 
-export interface LedgerStorage {
-  insertTransaction(transaction: Transaction): Promise<void>;
-}
+export type LedgerStorage = {
+  insertTransaction: (transaction: Transaction) => Promise<void>;
+};

@@ -1,4 +1,4 @@
-import { LedgerAccount } from "./LedgerAccount.js";
+import { LedgerAccount } from './LedgerAccount.js';
 
 /**
  * Represents user-defined ledger account. Defined by name and id.

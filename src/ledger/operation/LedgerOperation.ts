@@ -1,6 +1,6 @@
-import { Transaction } from "../records/Transaction.js";
-import { z } from "zod";
-import { LedgerOperationError } from "@/errors.js";
+import { Transaction } from '../records/Transaction.js';
+import { LedgerOperationError } from '@/errors.js';
+import { z } from 'zod';
 
 /**
  * LedgerOperation describes how ledger transaction should be created.
@@ -17,7 +17,7 @@ export abstract class LedgerOperation<TSchema extends z.ZodType> {
     // If validation of the payload fails, we capture an error in Sentry and cancel this workflow
     if (!result.success) {
       const issues = result.error.issues;
-      const errorDetails = issues.map((issue) => issue.toString).join(", ");
+      const errorDetails = issues.map((issue) => issue.toString).join(', ');
       throw new LedgerOperationError(
         `Invalid operation data. Details: ${errorDetails}`,
       );

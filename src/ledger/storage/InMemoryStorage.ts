@@ -1,29 +1,29 @@
-import { Transaction } from "../records/Transaction.js";
-import { LedgerStorage } from "./LedgerStorage.js";
-import { LedgerAccount } from "../accounts/LedgerAccount.js";
-import { LedgerError } from "@/errors.js";
-import { Entry } from "../records/Entry.js";
-import { SystemLedgerAccount } from "../accounts/SystemLedgerAccount.js";
-import { UserLedgerAccount } from "../accounts/UserLedgerAccount.js";
+import { LedgerAccount } from '../accounts/LedgerAccount.js';
+import { SystemLedgerAccount } from '../accounts/SystemLedgerAccount.js';
+import { UserLedgerAccount } from '../accounts/UserLedgerAccount.js';
+import { Entry } from '../records/Entry.js';
+import { Transaction } from '../records/Transaction.js';
+import { LedgerStorage } from './LedgerStorage.js';
+import { LedgerError } from '@/errors.js';
 
 type SavedTransaction = {
+  description: string | null;
   id: string;
   ledgerId: string;
-  description: string | null;
 };
 
 type SavedSystemAccount = {
-  type: "SYSTEM";
   id: string;
   ledgerId: string;
   name: string;
+  type: 'SYSTEM';
 };
 
 type SavedUserAccount = {
-  type: "USER";
   id: string;
   ledgerId: string;
   name: string;
+  type: 'USER';
   userAccountId: number | string;
 };
 
@@ -35,21 +35,19 @@ type SavedAccount = SavedSystemAccount | SavedUserAccount;
  */
 export class InMemoryLedgerStorage implements LedgerStorage {
   private transactions: SavedTransaction[] = [];
+
   private entries: Entry[] = [];
+
   private accounts: SavedAccount[] = [];
-
-  // @todo add entries
-
-  public constructor() {}
 
   public async insertTransaction(transaction: Transaction) {
     await this.saveTransactionLedgerAccounts(transaction);
     await this.saveTransactionEntries(transaction);
 
     this.transactions.push({
+      description: transaction.description,
       id: transaction.id,
       ledgerId: transaction.ledgerId,
-      description: transaction.description,
     });
   }
 
@@ -62,8 +60,10 @@ export class InMemoryLedgerStorage implements LedgerStorage {
             `Account ${account.uniqueNamedIdentifier} cannot be inserted`,
           );
         }
+
         continue;
       }
+
       this.accounts.push(this.accountToSavedAccount(ledgerId, account));
     }
   }
@@ -74,17 +74,17 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   ): SavedAccount {
     if (account instanceof SystemLedgerAccount) {
       return {
-        type: "SYSTEM",
         id: account.id,
         ledgerId,
         name: account.name,
+        type: 'SYSTEM',
       };
     } else if (account instanceof UserLedgerAccount) {
       return {
-        type: "USER",
         id: account.id,
         ledgerId,
         name: account.name,
+        type: 'USER',
         userAccountId: account.userAccountId,
       };
     } else {
@@ -103,8 +103,10 @@ export class InMemoryLedgerStorage implements LedgerStorage {
           `Account ${operation.account.uniqueNamedIdentifier} not found`,
         );
       }
+
       operation.accountId = existingAccount.id;
     }
+
     this.entries.push(...transaction.entries);
   }
 
@@ -113,6 +115,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     for (const entry of transaction.entries) {
       ledgerAccounts.push(entry.account);
     }
+
     await this.findOrInsertLedgerAccounts(transaction.ledgerId, ledgerAccounts);
   }
 
@@ -124,15 +127,17 @@ export class InMemoryLedgerStorage implements LedgerStorage {
           savedAccount.ledgerId === ledgerId
         );
       } else if (account instanceof UserLedgerAccount) {
-        if (savedAccount.type !== "USER") {
+        if (savedAccount.type !== 'USER') {
           return false;
         }
+
         return (
           savedAccount.name === account.name &&
           savedAccount.ledgerId === ledgerId &&
           savedAccount.userAccountId === account.userAccountId
         );
       }
+
       return false;
     });
 
@@ -151,6 +156,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
             `Account ${account.uniqueNamedIdentifier} cannot be inserted`,
           );
         }
+
         this.accounts.push(this.accountToSavedAccount(ledgerId, account));
       }
     }

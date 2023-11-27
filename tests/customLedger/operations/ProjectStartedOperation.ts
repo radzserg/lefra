@@ -1,19 +1,19 @@
-import { z } from "zod";
-import { moneySchema } from "../../../src/money/validation.js";
-import { LedgerOperation } from "../../../src/ledger/operation/LedgerOperation.js";
-import { Transaction } from "../../../src/ledger/records/Transaction.js";
-import { DoubleEntry } from "../../../src/ledger/records/DoubleEntry.js";
-import { credit, debit } from "../../../src/ledger/records/Entry.js";
-import { account } from "../../../src/index.js";
+import { account } from '../../../src/index.js';
+import { LedgerOperation } from '../../../src/ledger/operation/LedgerOperation.js';
+import { DoubleEntry } from '../../../src/ledger/records/DoubleEntry.js';
+import { credit, debit } from '../../../src/ledger/records/Entry.js';
+import { Transaction } from '../../../src/ledger/records/Transaction.js';
+import { moneySchema } from '../../../src/money/validation.js';
+import { z } from 'zod';
 
 const schema = z
   .object({
-    targetNetAmount: moneySchema,
-    platformFee: moneySchema.nullable(),
     amountLockedForCustomer: moneySchema,
-    paymentProcessingFee: moneySchema,
     clientUserId: z.number(),
     customerUserId: z.number(),
+    paymentProcessingFee: moneySchema,
+    platformFee: moneySchema.nullable(),
+    targetNetAmount: moneySchema,
   })
   .strict();
 
@@ -35,33 +35,33 @@ export class ProjectStartedOperation extends LedgerOperation<OperationSchema> {
 
   public async createTransaction(): Promise<Transaction> {
     const {
-      clientUserId,
-      platformFee,
       amountLockedForCustomer,
-      paymentProcessingFee,
+      clientUserId,
       customerUserId,
+      paymentProcessingFee,
+      platformFee,
       targetNetAmount,
     } = this.payload;
     const entries: DoubleEntry[] = [];
     entries.push(
       new DoubleEntry(
-        debit(account("RECEIVABLES", clientUserId), targetNetAmount),
-        credit(account("INCOME_PAID_PROJECTS"), targetNetAmount),
-        "User owes money for the project",
+        debit(account('RECEIVABLES', clientUserId), targetNetAmount),
+        credit(account('INCOME_PAID_PROJECTS'), targetNetAmount),
+        'User owes money for the project',
       ),
       new DoubleEntry(
-        debit(account("RECEIVABLES", clientUserId), paymentProcessingFee),
-        credit(account("INCOME_PAYMENT_FEE"), paymentProcessingFee),
-        "User owes payment processing fee",
+        debit(account('RECEIVABLES', clientUserId), paymentProcessingFee),
+        credit(account('INCOME_PAYMENT_FEE'), paymentProcessingFee),
+        'User owes payment processing fee',
       ),
     );
 
     if (platformFee) {
       entries.push(
         new DoubleEntry(
-          debit(account("RECEIVABLES", clientUserId), platformFee),
-          credit(account("INCOME_CONTRACT_FEES"), platformFee),
-          "User owes platform fee",
+          debit(account('RECEIVABLES', clientUserId), platformFee),
+          credit(account('INCOME_CONTRACT_FEES'), platformFee),
+          'User owes platform fee',
         ),
       );
     }
@@ -69,16 +69,16 @@ export class ProjectStartedOperation extends LedgerOperation<OperationSchema> {
     const amountAvailable = targetNetAmount.minus(amountLockedForCustomer);
     entries.push(
       new DoubleEntry(
-        debit(account("EXPENSES_PAYOUTS"), targetNetAmount),
+        debit(account('EXPENSES_PAYOUTS'), targetNetAmount),
         // prettier-ignore
         [
           credit(account("PAYABLES_LOCKED", customerUserId), amountLockedForCustomer,),
           credit(account("PAYABLES", customerUserId), amountAvailable),
         ],
-        "Part of funds are locked for the customer and part of funds are available for the customer",
+        'Part of funds are locked for the customer and part of funds are available for the customer',
       ),
     );
 
-    return new Transaction(this.ledgerId, entries, "test transaction");
+    return new Transaction(this.ledgerId, entries, 'test transaction');
   }
 }

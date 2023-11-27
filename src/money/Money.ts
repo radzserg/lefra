@@ -2,8 +2,8 @@ import {
   type Currency,
   currencyByCode,
   type CurrencyCode,
-} from "./currencies.js";
-import { BigNumber } from "bignumber.js";
+} from './currencies.js';
+import { BigNumber } from 'bignumber.js';
 
 const NUM_DECIMAL_PLACES = 8;
 
@@ -39,6 +39,7 @@ export class Money<C extends CurrencyCode = CurrencyCode> {
   public readonly currencyCode: C;
 
   protected readonly amount: BigNumber;
+
   protected readonly amountString: string;
 
   public constructor(amount: BigNumber | number | string, currencyCode: C) {
@@ -66,7 +67,7 @@ export class Money<C extends CurrencyCode = CurrencyCode> {
   public static deserialize<C extends CurrencyCode>(
     value: SerializedMoney<C>,
   ): Money<C> {
-    const [currencyCode, amount] = value.split(":");
+    const [currencyCode, amount] = value.split(':');
     if (!amount) {
       throw new Error(`Invalid serialized money value: ${value}`);
     }
@@ -76,7 +77,7 @@ export class Money<C extends CurrencyCode = CurrencyCode> {
   }
 
   public dividedBy(divisor: Money<C> | number | BigNumber): Money<C> {
-    if (typeof divisor === "number" || divisor instanceof BigNumber) {
+    if (typeof divisor === 'number' || divisor instanceof BigNumber) {
       return new Money(this.amount.dividedBy(divisor), this.currency.code);
     }
 
@@ -115,10 +116,10 @@ export class Money<C extends CurrencyCode = CurrencyCode> {
    *
    */
   public format(): string {
-    const currencyFormatter = new Intl.NumberFormat("en", {
+    const currencyFormatter = new Intl.NumberFormat('en', {
       currency: this.currency.code,
-      notation: "standard",
-      style: "currency",
+      notation: 'standard',
+      style: 'currency',
     });
 
     return currencyFormatter.format(
@@ -147,10 +148,10 @@ export class Money<C extends CurrencyCode = CurrencyCode> {
    *  KWD 1,234.567 outputs KWD 1.23K (3 decimal currency)
    */
   public formatCompact(): string {
-    const currencyFormatter = new Intl.NumberFormat("en", {
+    const currencyFormatter = new Intl.NumberFormat('en', {
       currency: this.currency.code,
-      notation: "compact",
-      style: "currency",
+      notation: 'compact',
+      style: 'currency',
     });
 
     return currencyFormatter.format(
@@ -176,11 +177,11 @@ export class Money<C extends CurrencyCode = CurrencyCode> {
    *
    */
   public formatRounded(): string {
-    const currencyFormatter = new Intl.NumberFormat("en", {
+    const currencyFormatter = new Intl.NumberFormat('en', {
       currency: this.currency.code,
       maximumFractionDigits: 0,
-      notation: "standard",
-      style: "currency",
+      notation: 'standard',
+      style: 'currency',
     });
 
     return currencyFormatter.format(
@@ -352,13 +353,10 @@ export class Money<C extends CurrencyCode = CurrencyCode> {
    * Improves the output of `console.log` and `util.inspect` for Money objects
    * for debugging purposes.
    */
-  private [Symbol.for("nodejs.util.inspect.custom")](
-    _depth: any,
-    options: any,
-  ) {
+  private [Symbol.for('nodejs.util.inspect.custom')](_depth, options) {
     return `Money {
-  amount: ${options.stylize("'" + this.toFullPrecision() + "'", "string")},
-  currencyCode: ${options.stylize("'" + this.currencyCode + "'", "string")},
+  amount: ${options.stylize("'" + this.toFullPrecision() + "'", 'string')},
+  currencyCode: ${options.stylize("'" + this.currencyCode + "'", 'string')},
 }`;
   }
 }
@@ -376,5 +374,5 @@ export const money = (
 };
 
 export const usd = (amount: BigNumber | number | string) => {
-  return new Money(amount, "USD");
+  return new Money(amount, 'USD');
 };

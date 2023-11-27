@@ -1,6 +1,6 @@
-import { DoubleEntry } from "./DoubleEntry.js";
-import { v4 as uuid } from "uuid";
-import { Entry } from "./Entry.js";
+import { DoubleEntry } from './DoubleEntry.js';
+import { Entry } from './Entry.js';
+import { v4 as uuid } from 'uuid';
 
 /**
  * Represents a transaction in the ledger.
@@ -8,33 +8,34 @@ import { Entry } from "./Entry.js";
  */
 export class Transaction {
   public readonly id: string = uuid();
-  private readonly _entries: Entry[];
+
+  public readonly entries: Entry[];
 
   public constructor(
     public readonly ledgerId: string,
     entries: DoubleEntry[],
     public readonly description: string | null = null,
   ) {
-    this._entries = [];
+    const transactionEntries: Entry[] = [];
     for (const entry of entries) {
-      this._entries.push(...entry.debitEntries, ...entry.creditEntries);
+      transactionEntries.push(
+        ...entry.debitEntries.entries(),
+        ...entry.creditEntries.entries(),
+      );
     }
 
-    this._entries.map((entry) => {
+    this.entries = transactionEntries.map((entry) => {
       entry.transactionId = this.id;
+      return entry;
     });
-  }
-
-  public get entries(): Entry[] {
-    return this._entries;
   }
 
   public toJSON() {
     return {
-      id: this.id,
-      ledgerId: this.ledgerId,
       description: this.description,
       entries: this.entries,
+      id: this.id,
+      ledgerId: this.ledgerId,
     };
   }
 }

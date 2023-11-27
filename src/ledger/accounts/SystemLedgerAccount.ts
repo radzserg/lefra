@@ -1,4 +1,4 @@
-import { LedgerAccount } from "./LedgerAccount.js";
+import { LedgerAccount } from './LedgerAccount.js';
 
 export class SystemLedgerAccount extends LedgerAccount {
   public canBeInserted = false;

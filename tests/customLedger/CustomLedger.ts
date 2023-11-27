@@ -1,9 +1,9 @@
+import { Transaction } from '../../src/ledger/records/Transaction.js';
+import { LedgerStorage } from '../../src/ledger/storage/LedgerStorage.js';
 import {
   ProjectStartedOperation,
   ProjectStartedOperationData,
-} from "./operations/ProjectStartedOperation.js";
-import { Transaction } from "../../src/ledger/records/Transaction.js";
-import { LedgerStorage } from "../../src/ledger/storage/LedgerStorage.js";
+} from './operations/ProjectStartedOperation.js';
 
 export class CustomLedger {
   public constructor(

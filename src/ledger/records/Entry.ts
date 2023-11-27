@@ -1,13 +1,15 @@
-import { LedgerAccount } from "../accounts/LedgerAccount.js";
-import { Money } from "../../money/Money.js";
-import { LedgerError } from "../../errors.js";
-import { CurrencyCode } from "@/money/currencies.js";
-import { NonEmptyArray, OperationType } from "@/types.js";
-import { v4 as uuid } from "uuid";
+import { LedgerAccount } from '../accounts/LedgerAccount.js';
+import { LedgerError } from '@/errors.js';
+import { CurrencyCode } from '@/money/currencies.js';
+import { Money } from '@/money/Money.js';
+import { NonEmptyArray, OperationType } from '@/types.js';
+import { v4 as uuid } from 'uuid';
 
 export abstract class Entry {
   public abstract readonly type: OperationType;
+
   public readonly id: string = uuid();
+
   private _transactionId: string | null = null;
 
   private _accountId: string | null = null;
@@ -23,41 +25,43 @@ export abstract class Entry {
 
   public set transactionId(transactionId: string) {
     if (this._transactionId !== null) {
-      throw new LedgerError("Operation is already attached to a transaction");
+      throw new LedgerError('Operation is already attached to a transaction');
     }
 
+    // eslint-disable-next-line canonical/id-match
     this._transactionId = transactionId;
-  }
-
-  public set accountId(accountId: string) {
-    if (this._accountId !== null) {
-      throw new LedgerError("Account is already attached to an operation");
-    }
-
-    this._accountId = accountId;
   }
 
   public get accountId(): string | null {
     return this._accountId;
   }
 
+  public set accountId(accountId: string) {
+    if (this._accountId !== null) {
+      throw new LedgerError('Account is already attached to an operation');
+    }
+
+    // eslint-disable-next-line canonical/id-match
+    this._accountId = accountId;
+  }
+
   public toJSON() {
     return {
+      account: this.account,
+      accountId: this.accountId,
+      amount: this.amount,
       id: this.id,
       transactionId: this.transactionId,
-      accountId: this.accountId,
-      account: this.account,
-      amount: this.amount,
     };
   }
 }
 
 export class CreditEntry extends Entry {
-  public readonly type: OperationType = "CREDIT";
+  public readonly type: OperationType = 'CREDIT';
 }
 
 export class DebitEntry extends Entry {
-  public readonly type: OperationType = "DEBIT";
+  public readonly type: OperationType = 'DEBIT';
 }
 
 export const credit = (account: LedgerAccount, amount: Money): CreditEntry => {
@@ -74,33 +78,36 @@ export const debit = (account: LedgerAccount, amount: Money): DebitEntry => {
  */
 export class UniformEntrySet<O extends DebitEntry | CreditEntry> {
   private readonly type: OperationType;
+
   private readonly currencyCode: CurrencyCode;
+
   private readonly operationsSum: Money;
 
   private constructor(private readonly operationList: NonEmptyArray<O>) {
-    if (Array.isArray(this.operationList)) {
-      if (this.operationList.length === 0) {
-        throw new LedgerError("Operations array must not be empty");
-      }
+    if (Array.isArray(this.operationList) && this.operationList.length === 0) {
+      throw new LedgerError('Operations array must not be empty');
     }
 
     this.type = this.operationList[0].type;
     this.currencyCode = this.operationList[0].amount.currencyCode;
 
     let sum = new Money(0, this.currencyCode);
-    this.operationList.forEach((operation) => {
+    for (const operation of this.operationList) {
       if (operation.type !== this.type) {
-        throw new LedgerError("All operations must be of the same type");
+        throw new LedgerError('All operations must be of the same type');
       }
+
       if (operation.amount.currencyCode !== this.currencyCode) {
-        throw new LedgerError("All operations must be of the same currency");
+        throw new LedgerError('All operations must be of the same currency');
       }
+
       sum = sum.plus(operation.amount);
-    });
+    }
 
     if (sum.isZero()) {
-      throw new LedgerError("Operations must not sum to zero");
+      throw new LedgerError('Operations must not sum to zero');
     }
+
     this.operationsSum = sum;
   }
 
@@ -119,6 +126,7 @@ export class UniformEntrySet<O extends DebitEntry | CreditEntry> {
     } else {
       entriesList = entries;
     }
+
     return new UniformEntrySet(entriesList);
   }
 
