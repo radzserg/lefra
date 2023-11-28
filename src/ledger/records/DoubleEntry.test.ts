@@ -56,11 +56,11 @@ describe('Ledger entry', () => {
       new Money(100, 'USD'),
     );
     const creditPayablesLocked = credit(
-      account('PAYABLES_LOCKED'),
+      account('PAYABLE_LOCKED'),
       new Money(70, 'USD'),
     );
     const creditPayables = credit(
-      account('PAYABLES_LOCKED'),
+      account('PAYABLE_LOCKED'),
       new Money(30, 'USD'),
     );
     const entry = new DoubleEntry(

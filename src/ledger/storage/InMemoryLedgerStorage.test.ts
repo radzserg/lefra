@@ -19,7 +19,7 @@ describe('InMemoryLedgerStorage', () => {
       ]);
 
       await storage.saveUserAccountTypes(ledgerId, [
-        ['PAYABLES_LOCKED', 'CREDIT'],
+        ['PAYABLE_LOCKED', 'CREDIT'],
       ]);
 
       const savedAccounts = await storage.findAccounts();
@@ -42,7 +42,7 @@ describe('InMemoryLedgerStorage', () => {
       const storage = new InMemoryLedgerStorage();
 
       await storage.saveUserAccountTypes(ledgerId, [
-        ['PAYABLES_LOCKED', 'CREDIT'],
+        ['PAYABLE_LOCKED', 'CREDIT'],
         ['RECEIVABLES', 'DEBIT'],
       ]);
 
@@ -50,7 +50,7 @@ describe('InMemoryLedgerStorage', () => {
       expect(userAccountTypes).toEqual([
         {
           ledgerId,
-          name: 'PAYABLES_LOCKED',
+          name: 'PAYABLE_LOCKED',
           normalBalance: 'CREDIT',
         },
         {
@@ -101,6 +101,8 @@ describe('InMemoryLedgerStorage', () => {
       [account('INCOME_PAID_PROJECTS'), 'CREDIT'],
       [account('INCOME_PAYMENT_FEE'), 'CREDIT'],
     ]);
+
+    await storage.saveUserAccountTypes(ledgerId, [['RECEIVABLES', 'DEBIT']]);
 
     const transaction = new Transaction(
       ledgerId,

@@ -202,8 +202,21 @@ export class InMemoryLedgerStorage implements LedgerStorage {
           );
         }
 
+        const savedUserAccount = this.userAccountTypes.find((savedAccount) => {
+          return savedAccount.name === account.name;
+        });
+        if (!savedUserAccount) {
+          throw new LedgerError(
+            `User account type ${account.name} is not allowed`,
+          );
+        }
+
         this.accounts.push(
-          this.accountToSavedAccount(ledgerId, account, 'DEBIT'), // @todo fix me
+          this.accountToSavedAccount(
+            ledgerId,
+            account,
+            savedUserAccount.normalBalance,
+          ),
         );
       }
     }

@@ -21,6 +21,12 @@ describe('ProjectStartedOperation', () => {
       [account('INCOME_CONTRACT_FEES'), 'CREDIT'],
       [account('EXPENSES_PAYOUTS'), 'DEBIT'],
     ]);
+
+    await storage.saveUserAccountTypes(ledgerId, [
+      ['RECEIVABLES', 'DEBIT'],
+      ['PAYABLE_LOCKED', 'CREDIT'],
+      ['PAYABLE', 'CREDIT'],
+    ]);
   });
 
   test('records ProjectStartedOperation', async () => {
