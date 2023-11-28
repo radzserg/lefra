@@ -5,7 +5,7 @@ describe('EntityLedgerAccount', () => {
   test('create entity entity account', () => {
     const account = new EntityLedgerAccount('RECEIVABLES', 1);
 
-    expect(account.uniqueNamedIdentifier).toEqual('ENTITY_RECEIVABLES:1');
+    expect(account.namedIdentifier).toEqual('ENTITY_RECEIVABLES:1');
     expect(account.entityId).toEqual(1);
     expect(account.name).toEqual('ENTITY_RECEIVABLES');
   });
@@ -18,7 +18,7 @@ describe('EntityLedgerAccount', () => {
       'USER',
     );
 
-    expect(account.uniqueNamedIdentifier).toEqual(
+    expect(account.namedIdentifier).toEqual(
       'USER_RECEIVABLES_LOCKED:a934cae1-f809-4aac-8b82-f639977d9512',
     );
     expect(account.entityId).toEqual('a934cae1-f809-4aac-8b82-f639977d9512');

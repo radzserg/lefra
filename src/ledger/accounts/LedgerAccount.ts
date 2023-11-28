@@ -4,7 +4,7 @@ export abstract class LedgerAccount {
   /**
    * Unique named identifier of this account.
    */
-  public abstract get uniqueNamedIdentifier(): string;
+  public abstract get namedIdentifier(): string;
 
   protected validateName(name: string) {
     if (!name) {

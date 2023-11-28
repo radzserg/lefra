@@ -116,7 +116,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
       if (existingAccount) {
         if (!(account instanceof EntityLedgerAccount)) {
           throw new LedgerError(
-            `Account ${account.uniqueNamedIdentifier} cannot be inserted`,
+            `Account ${account.namedIdentifier} cannot be inserted`,
           );
         }
 
@@ -168,7 +168,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
       );
       if (!existingAccount) {
         throw new LedgerError(
-          `Account ${entry.account.uniqueNamedIdentifier} not found`,
+          `Account ${entry.account.namedIdentifier} not found`,
         );
       }
 
@@ -230,7 +230,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
       if (!existingAccount) {
         if (!(account instanceof EntityLedgerAccount)) {
           throw new LedgerError(
-            `Account ${account.uniqueNamedIdentifier} cannot be inserted`,
+            `Account ${account.namedIdentifier} cannot be inserted`,
           );
         }
 
@@ -277,7 +277,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     const savedAccount = await this.findSavedAccount(ledgerId, account);
     if (!savedAccount) {
       throw new LedgerNotFoundError(
-        `Account ${account.uniqueNamedIdentifier} not found`,
+        `Account ${account.namedIdentifier} not found`,
       );
     }
 

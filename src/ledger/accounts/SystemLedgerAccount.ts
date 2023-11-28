@@ -11,7 +11,7 @@ export class SystemLedgerAccount extends LedgerAccount {
     this.name = `${prefix}_${name}`;
   }
 
-  public get uniqueNamedIdentifier(): string {
+  public get namedIdentifier(): string {
     return this.name;
   }
 }

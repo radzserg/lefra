@@ -5,7 +5,7 @@ describe('SystemLedgerAccount', () => {
   test('create system account', () => {
     const account = new SystemLedgerAccount('CURRENT_ASSETS');
 
-    expect(account.uniqueNamedIdentifier).toEqual('SYSTEM_CURRENT_ASSETS');
+    expect(account.namedIdentifier).toEqual('SYSTEM_CURRENT_ASSETS');
     expect(account.name).toEqual('SYSTEM_CURRENT_ASSETS');
   });
 

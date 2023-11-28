@@ -40,7 +40,7 @@ export const assertTransaction = (
     const actualEntry = transaction.entries[index];
 
     expect(actualEntry.action).toEqual(expectedEntry[0]);
-    expect(actualEntry.account.uniqueNamedIdentifier).toEqual(expectedEntry[1]);
+    expect(actualEntry.account.namedIdentifier).toEqual(expectedEntry[1]);
     expect(actualEntry.amount).toEqual(expectedEntry[2]);
   }
 };
