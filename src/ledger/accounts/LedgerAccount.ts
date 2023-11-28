@@ -1,7 +1,8 @@
+import { INTERNAL_ID } from '@/types.js';
 import { v4 as uuid } from 'uuid';
 
 export abstract class LedgerAccount {
-  public readonly id: string = uuid();
+  public readonly id: INTERNAL_ID = uuid();
 
   /**
    * Unique named identifier of this account.

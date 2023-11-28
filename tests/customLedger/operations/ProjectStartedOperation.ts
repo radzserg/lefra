@@ -1,9 +1,10 @@
 import { account } from '@/index.js';
-import { LedgerOperation } from '@/ledger/operation/LedgerOperation.js';
+import { ILedgerOperation } from '@/ledger/operation/LedgerOperation.js';
 import { DoubleEntry } from '@/ledger/records/DoubleEntry.js';
 import { credit, debit } from '@/ledger/records/Entry.js';
 import { Transaction } from '@/ledger/records/Transaction.js';
 import { moneySchema } from '@/money/validation.js';
+import { INTERNAL_ID } from '@/types.js';
 import { z } from 'zod';
 
 const schema = z
@@ -26,15 +27,10 @@ export type ProjectStartedOperationData = z.infer<OperationSchema>;
  * Part of money is locked for the customer. Another part is immediately
  * available for the customer to payout.
  */
-export class ProjectStartedOperation extends LedgerOperation<OperationSchema> {
-  public constructor(
-    protected readonly ledgerId: string,
-    payload: ProjectStartedOperationData,
-  ) {
-    super(ledgerId, schema, payload);
-  }
+export class ProjectStartedOperation implements ILedgerOperation {
+  public constructor(private readonly payload: ProjectStartedOperationData) {}
 
-  public async createTransaction(): Promise<Transaction> {
+  public async createTransaction(ledgerId: INTERNAL_ID): Promise<Transaction> {
     const {
       amountLockedForCustomer,
       clientUserId,
@@ -80,6 +76,6 @@ export class ProjectStartedOperation extends LedgerOperation<OperationSchema> {
       ),
     );
 
-    return new Transaction(this.ledgerId, entries, 'test transaction');
+    return new Transaction(ledgerId, entries, 'test transaction');
   }
 }

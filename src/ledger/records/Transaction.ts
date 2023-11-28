@@ -1,5 +1,6 @@
 import { DoubleEntry } from './DoubleEntry.js';
 import { Entry } from './Entry.js';
+import { INTERNAL_ID } from '@/types.js';
 import { v4 as uuid } from 'uuid';
 
 /**
@@ -7,12 +8,12 @@ import { v4 as uuid } from 'uuid';
  * Transaction is a set of entries that are applied atomically.
  */
 export class Transaction {
-  public readonly id: string = uuid();
+  public readonly id: INTERNAL_ID = uuid();
 
   public readonly entries: Entry[];
 
   public constructor(
-    public readonly ledgerId: string,
+    public readonly ledgerId: INTERNAL_ID,
     entries: DoubleEntry[],
     public readonly description: string | null = null,
   ) {

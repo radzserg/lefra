@@ -1,20 +1,17 @@
 import { LedgerStorage } from './storage/LedgerStorage.js';
-
-// type LedgerOperationData = {
-//   type: string; // unique operation type for a given ledger ID
-// };
+import { ILedgerOperation } from '@/ledger/operation/LedgerOperation.js';
+import { Transaction } from '@/ledger/records/Transaction.js';
+import { INTERNAL_ID } from '@/types.js';
 
 export class Ledger {
   public constructor(
-    private readonly id: string,
+    private readonly id: INTERNAL_ID,
     private readonly storage: LedgerStorage,
   ) {}
 
-  // public async record(operation: LedgerOperation<any>): Promise<Transaction> {
-  //   // create operation from operation data
-  //   // const transaction = await operation.createTransaction(operation);
-  //   // await this.storage.insertTransaction(transaction);
-  //   // return transaction;
-  //   throw new Error('Not implemented');
-  // }
+  public async record(operation: ILedgerOperation): Promise<Transaction> {
+    const transaction = await operation.createTransaction(this.id);
+    await this.storage.insertTransaction(transaction);
+    return transaction;
+  }
 }

@@ -5,6 +5,7 @@ import { Entry } from '../records/Entry.js';
 import { Transaction } from '../records/Transaction.js';
 import { LedgerStorage } from './LedgerStorage.js';
 import { LedgerError } from '@/errors.js';
+import { EXTERNAL_ID, INTERNAL_ID } from '@/types.js';
 
 type SavedTransaction = {
   description: string | null;
@@ -24,7 +25,7 @@ type SavedUserAccount = {
   ledgerId: string;
   name: string;
   type: 'USER';
-  userAccountId: number | string;
+  userAccountId: EXTERNAL_ID;
 };
 
 type SavedAccount = SavedSystemAccount | SavedUserAccount;
@@ -51,7 +52,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     });
   }
 
-  public async saveAccounts(ledgerId: string, accounts: LedgerAccount[]) {
+  public async saveAccounts(ledgerId: INTERNAL_ID, accounts: LedgerAccount[]) {
     for (const account of accounts) {
       const existingAccount = await this.findSavedAccount(ledgerId, account);
       if (existingAccount) {
@@ -69,7 +70,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   }
 
   private accountToSavedAccount(
-    ledgerId: string,
+    ledgerId: INTERNAL_ID,
     account: LedgerAccount,
   ): SavedAccount {
     if (account instanceof SystemLedgerAccount) {
@@ -119,7 +120,10 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     await this.findOrInsertLedgerAccounts(transaction.ledgerId, ledgerAccounts);
   }
 
-  private async findSavedAccount(ledgerId: string, account: LedgerAccount) {
+  private async findSavedAccount(
+    ledgerId: INTERNAL_ID,
+    account: LedgerAccount,
+  ) {
     const foundAccount = this.accounts.find((savedAccount) => {
       if (account instanceof SystemLedgerAccount) {
         return (
@@ -145,7 +149,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   }
 
   private async findOrInsertLedgerAccounts(
-    ledgerId: string,
+    ledgerId: INTERNAL_ID,
     accounts: LedgerAccount[],
   ) {
     for (const account of accounts) {
