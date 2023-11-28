@@ -3,25 +3,22 @@ import { LedgerAccount } from './LedgerAccount.js';
 export const SYSTEM_PREFIX = 'SYSTEM';
 
 export class SystemLedgerAccount extends LedgerAccount {
-  private readonly prefix: string = SYSTEM_PREFIX;
+  public readonly name: string;
 
-  public constructor(public readonly name: string) {
+  public constructor(name: string, prefix: string = SYSTEM_PREFIX) {
     super();
     this.validateName(name);
+    this.name = `${prefix}_${name}`;
   }
 
   public get uniqueNamedIdentifier(): string {
-    return `${this.fullName()}`;
-  }
-
-  private fullName() {
-    return `${this.prefix}_${this.name.toUpperCase()}`;
+    return this.name;
   }
 
   public toJSON() {
     return {
       id: this.id,
-      name: this.fullName(),
+      name: this.name,
     };
   }
 }

@@ -17,9 +17,9 @@ describe('EntriesFormatter', () => {
 
     const formatterValue = formatter.format(entries);
     expect(formatterValue).toEqual(
-      `DEBIT  $100 USER_RECEIVABLES:1
+      `DEBIT  $100 ENTITY_RECEIVABLES:1
 CREDIT $100 SYSTEM_INCOME_PAID_PROJECTS
-DEBIT  $3 USER_RECEIVABLES:1
+DEBIT  $3 ENTITY_RECEIVABLES:1
 CREDIT $3 SYSTEM_INCOME_PAYMENT_FEE`,
     );
   });

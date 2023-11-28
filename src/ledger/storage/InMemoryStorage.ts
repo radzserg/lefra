@@ -27,9 +27,9 @@ type SavedSystemAccount = SavedAccountCore & {
   type: 'SYSTEM';
 };
 
-type SavedUserAccount = SavedAccountCore & {
+type SavedEntityAccount = SavedAccountCore & {
   entityId: EXTERNAL_ID;
-  type: 'USER';
+  type: 'ENTITY';
 };
 
 type SavedUserAccountType = {
@@ -38,7 +38,7 @@ type SavedUserAccountType = {
   normalBalance: NormalBalance;
 };
 
-type SavedAccount = SavedSystemAccount | SavedUserAccount;
+type SavedAccount = SavedSystemAccount | SavedEntityAccount;
 
 /**
  * In memory implementation of the ledger storage.
@@ -64,7 +64,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     });
   }
 
-  public async saveUserAccountTypes(
+  public async saveEntityAccountTypes(
     ledgerId: INTERNAL_ID,
     accounts: Array<[string, NormalBalance]>,
   ) {
@@ -127,7 +127,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
         ledgerId,
         name: account.name,
         normalBalance,
-        type: 'USER',
+        type: 'ENTITY',
       };
     } else {
       throw new LedgerError(`Unknown account type ${account}`);
@@ -172,7 +172,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
           savedAccount.ledgerId === ledgerId
         );
       } else if (account instanceof EntityLedgerAccount) {
-        if (savedAccount.type !== 'USER') {
+        if (savedAccount.type !== 'ENTITY') {
           return false;
         }
 
@@ -207,7 +207,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
         });
         if (!savedUserAccount) {
           throw new LedgerError(
-            `User account type ${account.name} is not allowed`,
+            `Entity account type ${account.name} is not allowed`,
           );
         }
 

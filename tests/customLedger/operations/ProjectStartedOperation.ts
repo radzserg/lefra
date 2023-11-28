@@ -8,6 +8,8 @@ import { credit, debit } from '@/ledger/records/Entry.js';
 import { Transaction } from '@/ledger/records/Transaction.js';
 import { moneySchema } from '@/money/validation.js';
 import { INTERNAL_ID } from '@/types.js';
+import { UserLedgerAccount } from '#/customLedger/accounts/UserLedgerAccount.js';
+import { userAccount } from '#/customLedger/CustomerLedger.js';
 import { z } from 'zod';
 
 const schema = z
@@ -48,12 +50,12 @@ export class ProjectStartedOperation extends LedgerOperation {
     const entries: DoubleEntry[] = [];
     entries.push(
       new DoubleEntry(
-        debit(account('RECEIVABLES', clientUserId), targetNetAmount),
+        debit(userAccount('RECEIVABLES', clientUserId), targetNetAmount),
         credit(account('INCOME_PAID_PROJECTS'), targetNetAmount),
         'User owes money for the project',
       ),
       new DoubleEntry(
-        debit(account('RECEIVABLES', clientUserId), paymentProcessingFee),
+        debit(userAccount('RECEIVABLES', clientUserId), paymentProcessingFee),
         credit(account('INCOME_PAYMENT_FEE'), paymentProcessingFee),
         'User owes payment processing fee',
       ),
@@ -62,7 +64,7 @@ export class ProjectStartedOperation extends LedgerOperation {
     if (platformFee) {
       entries.push(
         new DoubleEntry(
-          debit(account('RECEIVABLES', clientUserId), platformFee),
+          debit(userAccount('RECEIVABLES', clientUserId), platformFee),
           credit(account('INCOME_CONTRACT_FEES'), platformFee),
           'User owes platform fee',
         ),
@@ -75,8 +77,8 @@ export class ProjectStartedOperation extends LedgerOperation {
         debit(account('EXPENSES_PAYOUTS'), targetNetAmount),
         // prettier-ignore
         [
-          credit(account("PAYABLE_LOCKED", customerUserId), amountLockedForCustomer,),
-          credit(account("PAYABLE", customerUserId), amountAvailable),
+          credit(userAccount("PAYABLE_LOCKED", customerUserId), amountLockedForCustomer,),
+          credit(userAccount("PAYABLE", customerUserId), amountAvailable),
         ],
         'Part of funds are locked for the customer and part of funds are available for the customer',
       ),

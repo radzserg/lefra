@@ -29,4 +29,12 @@ describe('SystemLedgerAccount', () => {
       'Account name can only contain uppercase letters without special characters',
     );
   });
+
+  test('cannot override prefix', () => {
+    const account = new SystemLedgerAccount('CURRENT_ASSETS', 'CORE');
+    expect(account.toJSON()).toEqual({
+      id: expect.any(String),
+      name: 'CORE_CURRENT_ASSETS',
+    });
+  });
 });

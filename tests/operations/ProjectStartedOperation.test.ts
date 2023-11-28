@@ -22,10 +22,10 @@ describe('ProjectStartedOperation', () => {
       [account('EXPENSES_PAYOUTS'), 'DEBIT'],
     ]);
 
-    await storage.saveUserAccountTypes(ledgerId, [
-      ['RECEIVABLES', 'DEBIT'],
-      ['PAYABLE_LOCKED', 'CREDIT'],
-      ['PAYABLE', 'CREDIT'],
+    await storage.saveEntityAccountTypes(ledgerId, [
+      ['USER_RECEIVABLES', 'DEBIT'],
+      ['USER_PAYABLE_LOCKED', 'CREDIT'],
+      ['USER_PAYABLE', 'CREDIT'],
     ]);
   });
 

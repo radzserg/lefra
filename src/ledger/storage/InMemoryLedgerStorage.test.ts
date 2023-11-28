@@ -11,15 +11,11 @@ const ledgerId = uuid();
 
 describe('InMemoryLedgerStorage', () => {
   describe('save accounts', () => {
-    test('save accounts', async () => {
+    test('save system accounts', async () => {
       const storage = new InMemoryLedgerStorage();
       await storage.saveAccounts(ledgerId, [
         [account('INCOME_PAID_PROJECTS'), 'CREDIT'],
         [account('INCOME_PAYMENT_FEE'), 'CREDIT'],
-      ]);
-
-      await storage.saveUserAccountTypes(ledgerId, [
-        ['PAYABLE_LOCKED', 'CREDIT'],
       ]);
 
       const savedAccounts = await storage.findAccounts();
@@ -28,12 +24,16 @@ describe('InMemoryLedgerStorage', () => {
         expect.objectContaining({
           id: expect.any(String),
           ledgerId,
-          name: 'INCOME_PAID_PROJECTS',
+          name: 'SYSTEM_INCOME_PAID_PROJECTS',
+          normalBalance: 'CREDIT',
+          type: 'SYSTEM',
         }),
         expect.objectContaining({
           id: expect.any(String),
           ledgerId,
-          name: 'INCOME_PAYMENT_FEE',
+          name: 'SYSTEM_INCOME_PAYMENT_FEE',
+          normalBalance: 'CREDIT',
+          type: 'SYSTEM',
         }),
       ]);
     });
@@ -41,7 +41,7 @@ describe('InMemoryLedgerStorage', () => {
     test('save user account types', async () => {
       const storage = new InMemoryLedgerStorage();
 
-      await storage.saveUserAccountTypes(ledgerId, [
+      await storage.saveEntityAccountTypes(ledgerId, [
         ['PAYABLE_LOCKED', 'CREDIT'],
         ['RECEIVABLES', 'DEBIT'],
       ]);
@@ -76,9 +76,11 @@ describe('InMemoryLedgerStorage', () => {
     });
 
     test('cannot override existing user account', async () => {
+      const entityId = 1;
       const storage = new InMemoryLedgerStorage();
-      const originalAccount = account('RECEIVABLES', 1);
+      const originalAccount = account('RECEIVABLES', entityId);
       await storage.saveAccounts(ledgerId, [[originalAccount, 'DEBIT']]);
+
       await storage.saveAccounts(ledgerId, [
         [account('RECEIVABLES', 1), 'CREDIT'],
       ]);
@@ -86,10 +88,12 @@ describe('InMemoryLedgerStorage', () => {
       const savedAccounts = await storage.findAccounts();
       expect(savedAccounts).toEqual([
         {
-          ...originalAccount,
+          entityId,
+          id: originalAccount.id,
           ledgerId,
+          name: 'ENTITY_RECEIVABLES',
           normalBalance: 'DEBIT',
-          type: 'USER',
+          type: 'ENTITY',
         },
       ]);
     });
@@ -102,7 +106,9 @@ describe('InMemoryLedgerStorage', () => {
       [account('INCOME_PAYMENT_FEE'), 'CREDIT'],
     ]);
 
-    await storage.saveUserAccountTypes(ledgerId, [['RECEIVABLES', 'DEBIT']]);
+    await storage.saveEntityAccountTypes(ledgerId, [
+      ['ENTITY_RECEIVABLES', 'DEBIT'],
+    ]);
 
     const transaction = new Transaction(
       ledgerId,
@@ -129,11 +135,11 @@ describe('InMemoryLedgerStorage', () => {
     expect(savedAccounts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
+          entityId: 1,
           id: expect.any(String),
           ledgerId,
-          name: 'RECEIVABLES',
-          type: 'USER',
-          userAccountId: 1,
+          name: 'ENTITY_RECEIVABLES',
+          type: 'ENTITY',
         }),
       ]),
     );

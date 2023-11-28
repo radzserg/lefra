@@ -9,8 +9,8 @@ describe('UniformEntrySet', () => {
   test('cannot create UniformEntrySet with different operation types', () => {
     expect(() => {
       UniformEntrySet.build([
-        debit(account('Receivables', 1), new Money(100, 'USD')),
-        credit(account('Expenses'), new Money(100, 'USD')),
+        debit(account('RECEIVABLES', 1), new Money(100, 'USD')),
+        credit(account('EXPENSES'), new Money(100, 'USD')),
       ]);
     }).toThrow(new LedgerError('All operations must be of the same type'));
   });
@@ -18,8 +18,8 @@ describe('UniformEntrySet', () => {
   test('cannot create UniformEntrySet with different currency codes', () => {
     expect(() => {
       UniformEntrySet.build([
-        credit(account('Receivables', 1), new Money(100, 'CAD')),
-        credit(account('Expenses'), new Money(100, 'USD')),
+        credit(account('RECEIVABLES', 1), new Money(100, 'CAD')),
+        credit(account('EXPENSES'), new Money(100, 'USD')),
       ]);
     }).toThrow(new LedgerError('All operations must be of the same currency'));
   });
@@ -35,14 +35,14 @@ describe('UniformEntrySet', () => {
   });
 
   test('create UniformEntrySet from one debit operation', () => {
-    const entry = debit(account('Receivables', 1), new Money(100, 'USD'));
+    const entry = debit(account('RECEIVABLES', 1), new Money(100, 'USD'));
     const entries = UniformEntrySet.build(entry);
     expect(entries.entries()).toEqual([entry]);
     expect(entry.id).toBeTypeOf('string');
   });
 
   test('create UniformEntrySet from one credit operation', () => {
-    const entry = credit(account('Receivables', 1), new Money(100, 'USD'));
+    const entry = credit(account('RECEIVABLES', 1), new Money(100, 'USD'));
     const entries = UniformEntrySet.build(entry);
     expect(entries.entries()).toEqual([entry]);
     expect(entry.id).toBeTypeOf('string');
@@ -51,20 +51,20 @@ describe('UniformEntrySet', () => {
   test('cannot have zero sum of operations', () => {
     expect(() => {
       UniformEntrySet.build([
-        debit(account('Receivables', 1), new Money(0, 'USD')),
+        debit(account('RECEIVABLES', 1), new Money(0, 'USD')),
       ]);
     }).toThrow(new LedgerError('Operations must not sum to zero'));
 
     expect(() => {
       UniformEntrySet.build([
-        debit(account('Receivables', 1), new Money(0, 'USD')),
-        debit(account('Receivables', 1), new Money(0, 'USD')),
+        debit(account('RECEIVABLES', 1), new Money(0, 'USD')),
+        debit(account('RECEIVABLES', 1), new Money(0, 'USD')),
       ]);
     }).toThrow(new LedgerError('Operations must not sum to zero'));
   });
 
   test('cannot override operation transaction id', () => {
-    const operation = debit(account('Receivables', 1), new Money(0, 'USD'));
+    const operation = debit(account('RECEIVABLES', 1), new Money(0, 'USD'));
     const originalTransactionId = uuid();
     operation.transactionId = originalTransactionId;
     expect(() => {

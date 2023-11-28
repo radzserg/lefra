@@ -22,9 +22,9 @@ export class EntriesFormatter {
 
   private formatAccount(account: LedgerAccount): string {
     if (account instanceof SystemLedgerAccount) {
-      return `SYSTEM_${account.name}`;
+      return `${account.name}`;
     } else if (account instanceof EntityLedgerAccount) {
-      return `USER_${account.name}:${account.entityId}`;
+      return `${account.name}:${account.entityId}`;
     } else {
       throw new TypeError(`Unknown account type: ${account}`);
     }

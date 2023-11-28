@@ -12,8 +12,8 @@ describe('Ledger entry', () => {
   test('debit and credit operations must have the same money amount', () => {
     expect(() => {
       new DoubleEntry(
-        debit(account('Receivables', 1), new Money(100, 'USD')),
-        credit(account('Expenses'), new Money(100, 'USD')),
+        debit(account('RECEIVABLES', 1), new Money(100, 'USD')),
+        credit(account('EXPENSES'), new Money(100, 'USD')),
       );
     }).not.toThrow();
   });
@@ -21,8 +21,8 @@ describe('Ledger entry', () => {
   test('throw an error if debit and credit operations amount are not equal', () => {
     expect(() => {
       new DoubleEntry(
-        debit(account('Receivables', 1), new Money(100, 'USD')),
-        credit(account('Expenses'), new Money(70, 'USD')),
+        debit(account('RECEIVABLES', 1), new Money(100, 'USD')),
+        credit(account('EXPENSES'), new Money(70, 'USD')),
       );
     }).toThrow(
       new LedgerError(
