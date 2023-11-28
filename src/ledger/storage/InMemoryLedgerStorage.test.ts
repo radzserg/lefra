@@ -4,6 +4,7 @@ import { Transaction } from '../records/Transaction.js';
 import { InMemoryLedgerStorage } from './InMemoryStorage.js';
 import { EntityLedgerAccount } from '@/ledger/accounts/EntityLedgerAccount.js';
 import { SystemLedgerAccount } from '@/ledger/accounts/SystemLedgerAccount.js';
+import { EntriesFormatter } from '@/ledger/formatter/EntriesFormatter.js';
 import { Money } from '@/money/Money.js';
 import { UserLedgerAccount } from '#/customLedger/accounts/UserLedgerAccount.js';
 import { v4 as uuid } from 'uuid';
@@ -196,5 +197,50 @@ describe('InMemoryLedgerStorage', () => {
         ledgerId,
       },
     ]);
+  });
+
+  test('fetch account balance', async () => {
+    const storage = new InMemoryLedgerStorage();
+    await storage.saveAccounts(ledgerId, [
+      [new SystemLedgerAccount('INCOME_PAID_PROJECTS'), 'CREDIT'],
+      [new SystemLedgerAccount('INCOME_PAYMENT_FEE'), 'CREDIT'],
+    ]);
+
+    await storage.saveEntityAccountTypes(ledgerId, [
+      ['ENTITY_RECEIVABLES', 'DEBIT'],
+    ]);
+
+    const transaction = new Transaction(
+      ledgerId,
+      [
+        new DoubleEntry(
+          debit(
+            new EntityLedgerAccount('RECEIVABLES', 1),
+            new Money(100, 'USD'),
+          ),
+          credit(
+            new SystemLedgerAccount('INCOME_PAID_PROJECTS'),
+            new Money(100, 'USD'),
+          ),
+          'User owes money for goods',
+        ),
+        new DoubleEntry(
+          debit(new EntityLedgerAccount('RECEIVABLES', 1), new Money(3, 'USD')),
+          credit(
+            new SystemLedgerAccount('INCOME_PAYMENT_FEE'),
+            new Money(3, 'USD'),
+          ),
+          'User owes payment processing fee',
+        ),
+      ],
+      'test transaction',
+    );
+
+    await storage.insertTransaction(transaction);
+
+    const receivables = await storage.fetchAccountBalance(
+      new EntityLedgerAccount('RECEIVABLES', 1),
+    );
+    expect(receivables).toEqual(new Money(103, 'USD'));
   });
 });
