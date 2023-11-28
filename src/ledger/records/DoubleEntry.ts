@@ -1,5 +1,6 @@
-import { CreditEntry, DebitEntry, UniformEntrySet } from './Entry.js';
+import { CreditEntry, DebitEntry } from './Entry.js';
 import { LedgerError } from '@/errors.js';
+import { UniformEntrySet } from '@/ledger/records/UniformEntrySet.js';
 import { NonEmptyArray } from '@/types.js';
 
 /**
