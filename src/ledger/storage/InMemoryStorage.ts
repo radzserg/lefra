@@ -1,6 +1,4 @@
-import { EntityLedgerAccount } from '../accounts/EntityLedgerAccount.js';
 import { LedgerAccount } from '../accounts/LedgerAccount.js';
-import { SystemLedgerAccount } from '../accounts/SystemLedgerAccount.js';
 import { Transaction } from '../records/Transaction.js';
 import { LedgerStorage } from './LedgerStorage.js';
 import {
@@ -114,9 +112,9 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     for (const [account, normalBalance] of accounts) {
       const existingAccount = await this.findSavedAccount(ledgerId, account);
       if (existingAccount) {
-        if (!(account instanceof EntityLedgerAccount)) {
+        if (account.type === 'SYSTEM') {
           throw new LedgerError(
-            `Account ${account.namedIdentifier} cannot be inserted`,
+            `Account ${account.name} is system and already exists.`,
           );
         }
 
@@ -134,7 +132,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     account: LedgerAccount,
     normalBalance: NormalBalance,
   ): SavedAccount {
-    if (account instanceof SystemLedgerAccount) {
+    if (account.type === 'SYSTEM') {
       return {
         id: this.idGenerator.generateId(),
         ledgerId,
@@ -142,7 +140,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
         normalBalance,
         type: 'SYSTEM',
       };
-    } else if (account instanceof EntityLedgerAccount) {
+    } else if (account.type === 'ENTITY') {
       return {
         entityId: account.entityId,
         id: this.idGenerator.generateId(),
@@ -167,9 +165,13 @@ export class InMemoryLedgerStorage implements LedgerStorage {
         entry.account,
       );
       if (!existingAccount) {
-        throw new LedgerError(
-          `Account ${entry.account.namedIdentifier} not found`,
-        );
+        if (entry.account.type === 'SYSTEM') {
+          throw new LedgerNotFoundError(`Account ${entry.account} not found`);
+        } else {
+          throw new LedgerNotFoundError(
+            `Account ${entry.account}:${entry.account.entityId} not found`,
+          );
+        }
       }
 
       savedEntries.push({
@@ -198,17 +200,15 @@ export class InMemoryLedgerStorage implements LedgerStorage {
 
   private async findSavedAccount(ledgerId: DB_ID, account: LedgerAccount) {
     const foundAccount = this.accounts.find((savedAccount) => {
-      if (account instanceof SystemLedgerAccount) {
+      if (account.type === 'SYSTEM') {
         return (
+          savedAccount.type === account.type &&
           savedAccount.name === account.name &&
           savedAccount.ledgerId === ledgerId
         );
-      } else if (account instanceof EntityLedgerAccount) {
-        if (savedAccount.type !== 'ENTITY') {
-          return false;
-        }
-
+      } else if (account.type === 'ENTITY') {
         return (
+          savedAccount.type === account.type &&
           savedAccount.name === account.name &&
           savedAccount.ledgerId === ledgerId &&
           savedAccount.entityId === account.entityId
@@ -228,9 +228,9 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     for (const account of accounts) {
       const existingAccount = await this.findSavedAccount(ledgerId, account);
       if (!existingAccount) {
-        if (!(account instanceof EntityLedgerAccount)) {
+        if (account.type === 'SYSTEM') {
           throw new LedgerError(
-            `Account ${account.namedIdentifier} cannot be inserted`,
+            `Account ${account.name} is system and cannot be inserted`,
           );
         }
 
@@ -276,9 +276,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   ): Promise<Money | null> {
     const savedAccount = await this.findSavedAccount(ledgerId, account);
     if (!savedAccount) {
-      throw new LedgerNotFoundError(
-        `Account ${account.namedIdentifier} not found`,
-      );
+      throw new LedgerNotFoundError(`Account ${account.name} not found`);
     }
 
     const normalBalance = savedAccount.normalBalance;

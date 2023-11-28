@@ -1,5 +1,7 @@
-import { SystemLedgerAccount } from '@/ledger/accounts/SystemLedgerAccount.js';
-import { UserLedgerAccount } from '#/customLedger/accounts/UserLedgerAccount.js';
+import {
+  entityAccount,
+  systemAccount as defaultSystemAccount,
+} from '@/ledger/accounts/LedgerAccount.js';
 
 // this will be automatically generated
 type UserLedgerAccountType = 'RECEIVABLES' | 'PAYABLE_LOCKED' | 'PAYABLE';
@@ -13,9 +15,9 @@ export const userAccount = (
   name: UserLedgerAccountType,
   userAccountId: number,
 ) => {
-  return new UserLedgerAccount(name, userAccountId);
+  return entityAccount(name, userAccountId, 'USER');
 };
 
 export const systemAccount = (name: SystemAccountType) => {
-  return new SystemLedgerAccount(name);
+  return defaultSystemAccount(name);
 };

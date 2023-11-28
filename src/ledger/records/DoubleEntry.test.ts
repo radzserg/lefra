@@ -4,8 +4,10 @@
 import { DoubleEntry } from './DoubleEntry.js';
 import { credit, debit } from './Entry.js';
 import { LedgerError } from '@/errors.js';
-import { EntityLedgerAccount } from '@/ledger/accounts/EntityLedgerAccount.js';
-import { SystemLedgerAccount } from '@/ledger/accounts/SystemLedgerAccount.js';
+import {
+  entityAccount,
+  systemAccount,
+} from '@/ledger/accounts/LedgerAccount.js';
 import { Money } from '@/money/Money.js';
 import { describe, expect, test } from 'vitest';
 
@@ -13,8 +15,8 @@ describe('Ledger entry', () => {
   test('debit and credit operations must have the same money amount', () => {
     expect(() => {
       new DoubleEntry(
-        debit(new EntityLedgerAccount('RECEIVABLES', 1), new Money(100, 'USD')),
-        credit(new SystemLedgerAccount('EXPENSES'), new Money(100, 'USD')),
+        debit(entityAccount('RECEIVABLES', 1), new Money(100, 'USD')),
+        credit(systemAccount('EXPENSES'), new Money(100, 'USD')),
       );
     }).not.toThrow();
   });
@@ -22,8 +24,8 @@ describe('Ledger entry', () => {
   test('throw an error if debit and credit operations amount are not equal', () => {
     expect(() => {
       new DoubleEntry(
-        debit(new EntityLedgerAccount('RECEIVABLES', 1), new Money(100, 'USD')),
-        credit(new SystemLedgerAccount('EXPENSES'), new Money(70, 'USD')),
+        debit(entityAccount('RECEIVABLES', 1), new Money(100, 'USD')),
+        credit(systemAccount('EXPENSES'), new Money(70, 'USD')),
       );
     }).toThrow(
       new LedgerError(
@@ -34,11 +36,11 @@ describe('Ledger entry', () => {
 
   test('create an entry with a comment', () => {
     const debitOperation = debit(
-      new EntityLedgerAccount('USER_RECEIVABLES', 1),
+      entityAccount('USER_RECEIVABLES', 1),
       new Money(100, 'USD'),
     );
     const creditOperation = credit(
-      new SystemLedgerAccount('INCOME_GOODS'),
+      systemAccount('INCOME_GOODS'),
       new Money(100, 'USD'),
     );
     const entry = new DoubleEntry(
@@ -53,15 +55,15 @@ describe('Ledger entry', () => {
 
   test('create an entry with divided credit operation', () => {
     const debitOperation = debit(
-      new EntityLedgerAccount('EXPENSES_PAYOUTS', 1),
+      entityAccount('EXPENSES_PAYOUTS', 1),
       new Money(100, 'USD'),
     );
     const creditPayablesLocked = credit(
-      new SystemLedgerAccount('PAYABLE_LOCKED'),
+      systemAccount('PAYABLE_LOCKED'),
       new Money(70, 'USD'),
     );
     const creditPayables = credit(
-      new SystemLedgerAccount('PAYABLE_LOCKED'),
+      systemAccount('PAYABLE_LOCKED'),
       new Money(30, 'USD'),
     );
     const entry = new DoubleEntry(
