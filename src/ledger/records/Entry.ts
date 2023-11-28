@@ -48,10 +48,10 @@ export abstract class Entry {
   public toJSON() {
     return {
       account: this.account,
-      accountId: this.accountId,
       amount: this.amount,
       id: this.id,
       transactionId: this.transactionId,
+      type: this.type,
     };
   }
 }

@@ -40,7 +40,10 @@ export class Money<C extends CurrencyCode = CurrencyCode> {
 
   protected readonly amount: BigNumber;
 
-  protected readonly amountString: string;
+  /**
+   * Stringified version of the amount with 8 decimal places of precision.
+   */
+  // protected readonly internalValue: string;
 
   public constructor(amount: BigNumber | number | string, currencyCode: C) {
     const currency = currencyByCode[currencyCode];
@@ -51,11 +54,15 @@ export class Money<C extends CurrencyCode = CurrencyCode> {
     this.currency = currency;
     this.currencyCode = currencyCode;
     this.amount = new BigNumber(amount);
-    this.amountString = this.formatCompact();
+    // this.internalValue = this.formatCompact();
 
     if (this.amount.isNaN()) {
       throw new Error(`Invalid money amount: ${amount}`);
     }
+  }
+
+  public get internalValue(): string {
+    return this.formatCompact();
   }
 
   /**

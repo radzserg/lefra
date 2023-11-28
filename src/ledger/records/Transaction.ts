@@ -19,10 +19,7 @@ export class Transaction {
   ) {
     const transactionEntries: Entry[] = [];
     for (const entry of entries) {
-      transactionEntries.push(
-        ...entry.debitEntries.entries(),
-        ...entry.creditEntries.entries(),
-      );
+      transactionEntries.push(...entry.debitEntries, ...entry.creditEntries);
     }
 
     this.entries = transactionEntries.map((entry) => {

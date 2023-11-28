@@ -1,4 +1,5 @@
 import { account } from '@/index.js';
+import { EntriesFormatter } from '@/ledger/formatter/EntriesFormatter.js';
 import { Ledger } from '@/ledger/Ledger.js';
 import { InMemoryLedgerStorage } from '@/ledger/storage/InMemoryStorage.js';
 import { Money } from '@/money/Money.js';
@@ -35,5 +36,11 @@ describe('ProjectStartedOperation', () => {
 
     expect(true).toBe(true);
     expect(transaction).not.toBeNull();
+
+    const savedEntries = await storage.findEntries();
+
+    // const formatter = new EntriesFormatter();
+    // console.log(formatter.format(savedEntries));
+    // console.log(JSON.stringify(savedEntries, null, 2));
   });
 });
