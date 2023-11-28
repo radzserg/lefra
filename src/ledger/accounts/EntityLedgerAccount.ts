@@ -28,12 +28,4 @@ export class EntityLedgerAccount extends LedgerAccount {
   public get uniqueNamedIdentifier(): string {
     return `${this.name}:${this.entityId}`;
   }
-
-  public toJSON() {
-    return {
-      entityId: this.entityId,
-      id: this.id,
-      name: this.name,
-    };
-  }
 }

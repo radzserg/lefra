@@ -6,10 +6,8 @@ describe('EntityLedgerAccount', () => {
     const account = new EntityLedgerAccount('RECEIVABLES', 1);
 
     expect(account.uniqueNamedIdentifier).toEqual('ENTITY_RECEIVABLES:1');
-    expect(account.toJSON()).toEqual({
-      entityId: 1,
-      name: 'ENTITY_RECEIVABLES',
-    });
+    expect(account.entityId).toEqual(1);
+    expect(account.name).toEqual('ENTITY_RECEIVABLES');
   });
 
   test('create entity user account', () => {
@@ -23,10 +21,8 @@ describe('EntityLedgerAccount', () => {
     expect(account.uniqueNamedIdentifier).toEqual(
       'USER_RECEIVABLES_LOCKED:a934cae1-f809-4aac-8b82-f639977d9512',
     );
-    expect(account.toJSON()).toEqual({
-      entityId: 'a934cae1-f809-4aac-8b82-f639977d9512',
-      name: 'USER_RECEIVABLES_LOCKED',
-    });
+    expect(account.entityId).toEqual('a934cae1-f809-4aac-8b82-f639977d9512');
+    expect(account.name).toEqual('USER_RECEIVABLES_LOCKED');
   });
 
   test('cannot create entity account with empty name', () => {
