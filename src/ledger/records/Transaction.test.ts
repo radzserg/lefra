@@ -25,17 +25,22 @@ describe('Transaction', () => {
   });
 
   test('transaction is is assigned to all operations', () => {
-    const entries = [
+    const transaction = new Transaction([
+      new DoubleEntry(
+        debit(entityAccount('RECEIVABLES', 1), new Money(100, 'USD')),
+        credit(systemAccount('INCOME_PAID_PROJECTS'), new Money(100, 'USD')),
+      ),
+      new DoubleEntry(
+        debit(entityAccount('RECEIVABLES', 1), new Money(3, 'USD')),
+        credit(systemAccount('INCOME_PAYMENT_FEE'), new Money(3, 'USD')),
+      ),
+    ]);
+
+    expect(transaction.entries).toEqual([
       debit(entityAccount('RECEIVABLES', 1), new Money(100, 'USD')),
       credit(systemAccount('INCOME_PAID_PROJECTS'), new Money(100, 'USD')),
       debit(entityAccount('RECEIVABLES', 1), new Money(3, 'USD')),
       credit(systemAccount('INCOME_PAYMENT_FEE'), new Money(3, 'USD')),
-    ];
-    const transaction = new Transaction([
-      new DoubleEntry(entries[0], entries[1]),
-      new DoubleEntry(entries[2], entries[3]),
     ]);
-
-    expect(transaction.entries).toEqual(entries);
   });
 });
