@@ -1,14 +1,10 @@
-import { account } from '@/index.js';
-import {
-  ILedgerOperation,
-  LedgerOperation,
-} from '@/ledger/operation/LedgerOperation.js';
+import { SystemLedgerAccount } from '@/ledger/accounts/SystemLedgerAccount.js';
+import { LedgerOperation } from '@/ledger/operation/LedgerOperation.js';
 import { DoubleEntry } from '@/ledger/records/DoubleEntry.js';
 import { credit, debit } from '@/ledger/records/Entry.js';
 import { Transaction } from '@/ledger/records/Transaction.js';
 import { moneySchema } from '@/money/validation.js';
 import { INTERNAL_ID } from '@/types.js';
-import { UserLedgerAccount } from '#/customLedger/accounts/UserLedgerAccount.js';
 import { userAccount } from '#/customLedger/CustomerLedger.js';
 import { z } from 'zod';
 
@@ -51,12 +47,18 @@ export class ProjectStartedOperation extends LedgerOperation {
     entries.push(
       new DoubleEntry(
         debit(userAccount('RECEIVABLES', clientUserId), targetNetAmount),
-        credit(account('INCOME_PAID_PROJECTS'), targetNetAmount),
+        credit(
+          new SystemLedgerAccount('INCOME_PAID_PROJECTS'),
+          targetNetAmount,
+        ),
         'User owes money for the project',
       ),
       new DoubleEntry(
         debit(userAccount('RECEIVABLES', clientUserId), paymentProcessingFee),
-        credit(account('INCOME_PAYMENT_FEE'), paymentProcessingFee),
+        credit(
+          new SystemLedgerAccount('INCOME_PAYMENT_FEE'),
+          paymentProcessingFee,
+        ),
         'User owes payment processing fee',
       ),
     );
@@ -65,7 +67,7 @@ export class ProjectStartedOperation extends LedgerOperation {
       entries.push(
         new DoubleEntry(
           debit(userAccount('RECEIVABLES', clientUserId), platformFee),
-          credit(account('INCOME_CONTRACT_FEES'), platformFee),
+          credit(new SystemLedgerAccount('INCOME_CONTRACT_FEES'), platformFee),
           'User owes platform fee',
         ),
       );
@@ -74,7 +76,7 @@ export class ProjectStartedOperation extends LedgerOperation {
     const amountAvailable = targetNetAmount.minus(amountLockedForCustomer);
     entries.push(
       new DoubleEntry(
-        debit(account('EXPENSES_PAYOUTS'), targetNetAmount),
+        debit(new SystemLedgerAccount('EXPENSES_PAYOUTS'), targetNetAmount),
         // prettier-ignore
         [
           credit(userAccount("PAYABLE_LOCKED", customerUserId), amountLockedForCustomer,),

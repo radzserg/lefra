@@ -1,4 +1,4 @@
-import { account } from '@/index.js';
+import { SystemLedgerAccount } from '@/ledger/accounts/SystemLedgerAccount.js';
 import { Ledger } from '@/ledger/Ledger.js';
 import { InMemoryLedgerStorage } from '@/ledger/storage/InMemoryStorage.js';
 import { Money, usd } from '@/money/Money.js';
@@ -16,10 +16,10 @@ describe('ProjectStartedOperation', () => {
 
   beforeAll(async () => {
     await storage.saveAccounts(ledgerId, [
-      [account('INCOME_PAID_PROJECTS'), 'CREDIT'],
-      [account('INCOME_PAYMENT_FEE'), 'CREDIT'],
-      [account('INCOME_CONTRACT_FEES'), 'CREDIT'],
-      [account('EXPENSES_PAYOUTS'), 'DEBIT'],
+      [new SystemLedgerAccount('INCOME_PAID_PROJECTS'), 'CREDIT'],
+      [new SystemLedgerAccount('INCOME_PAYMENT_FEE'), 'CREDIT'],
+      [new SystemLedgerAccount('INCOME_CONTRACT_FEES'), 'CREDIT'],
+      [new SystemLedgerAccount('EXPENSES_PAYOUTS'), 'DEBIT'],
     ]);
 
     await storage.saveEntityAccountTypes(ledgerId, [

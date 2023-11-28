@@ -2,8 +2,10 @@ import { DoubleEntry } from '../records/DoubleEntry.js';
 import { credit, debit } from '../records/Entry.js';
 import { Transaction } from '../records/Transaction.js';
 import { InMemoryLedgerStorage } from './InMemoryStorage.js';
-import { account } from '@/index.js';
+import { EntityLedgerAccount } from '@/ledger/accounts/EntityLedgerAccount.js';
+import { SystemLedgerAccount } from '@/ledger/accounts/SystemLedgerAccount.js';
 import { Money } from '@/money/Money.js';
+import { UserLedgerAccount } from '#/customLedger/accounts/UserLedgerAccount.js';
 import { v4 as uuid } from 'uuid';
 import { describe, expect, test } from 'vitest';
 
@@ -14,8 +16,8 @@ describe('InMemoryLedgerStorage', () => {
     test('save system accounts', async () => {
       const storage = new InMemoryLedgerStorage();
       await storage.saveAccounts(ledgerId, [
-        [account('INCOME_PAID_PROJECTS'), 'CREDIT'],
-        [account('INCOME_PAYMENT_FEE'), 'CREDIT'],
+        [new SystemLedgerAccount('INCOME_PAID_PROJECTS'), 'CREDIT'],
+        [new SystemLedgerAccount('INCOME_PAYMENT_FEE'), 'CREDIT'],
       ]);
 
       const savedAccounts = await storage.findAccounts();
@@ -63,12 +65,12 @@ describe('InMemoryLedgerStorage', () => {
 
     test('cannot override existing system', async () => {
       const storage = new InMemoryLedgerStorage();
-      const originalAccount = account('INCOME_PAID_PROJECTS');
+      const originalAccount = new SystemLedgerAccount('INCOME_PAID_PROJECTS');
       await storage.saveAccounts(ledgerId, [[originalAccount, 'CREDIT']]);
 
       await expect(async () => {
         await storage.saveAccounts(ledgerId, [
-          [account('INCOME_PAID_PROJECTS'), 'DEBIT'],
+          [new SystemLedgerAccount('INCOME_PAID_PROJECTS'), 'DEBIT'],
         ]);
       }).rejects.toThrow(
         `Account SYSTEM_INCOME_PAID_PROJECTS cannot be inserted`,
@@ -78,11 +80,11 @@ describe('InMemoryLedgerStorage', () => {
     test('cannot override existing user account', async () => {
       const entityId = 1;
       const storage = new InMemoryLedgerStorage();
-      const originalAccount = account('RECEIVABLES', entityId);
+      const originalAccount = new UserLedgerAccount('RECEIVABLES', entityId);
       await storage.saveAccounts(ledgerId, [[originalAccount, 'DEBIT']]);
 
       await storage.saveAccounts(ledgerId, [
-        [account('RECEIVABLES', 1), 'CREDIT'],
+        [new UserLedgerAccount('RECEIVABLES', 1), 'CREDIT'],
       ]);
 
       const savedAccounts = await storage.findAccounts();
@@ -91,7 +93,7 @@ describe('InMemoryLedgerStorage', () => {
           entityId,
           id: originalAccount.id,
           ledgerId,
-          name: 'ENTITY_RECEIVABLES',
+          name: 'USER_RECEIVABLES',
           normalBalance: 'DEBIT',
           type: 'ENTITY',
         },
@@ -102,8 +104,8 @@ describe('InMemoryLedgerStorage', () => {
   test('save transactions', async () => {
     const storage = new InMemoryLedgerStorage();
     await storage.saveAccounts(ledgerId, [
-      [account('INCOME_PAID_PROJECTS'), 'CREDIT'],
-      [account('INCOME_PAYMENT_FEE'), 'CREDIT'],
+      [new SystemLedgerAccount('INCOME_PAID_PROJECTS'), 'CREDIT'],
+      [new SystemLedgerAccount('INCOME_PAYMENT_FEE'), 'CREDIT'],
     ]);
 
     await storage.saveEntityAccountTypes(ledgerId, [
@@ -114,13 +116,22 @@ describe('InMemoryLedgerStorage', () => {
       ledgerId,
       [
         new DoubleEntry(
-          debit(account('RECEIVABLES', 1), new Money(100, 'USD')),
-          credit(account('INCOME_PAID_PROJECTS'), new Money(100, 'USD')),
+          debit(
+            new EntityLedgerAccount('RECEIVABLES', 1),
+            new Money(100, 'USD'),
+          ),
+          credit(
+            new SystemLedgerAccount('INCOME_PAID_PROJECTS'),
+            new Money(100, 'USD'),
+          ),
           'User owes money for goods',
         ),
         new DoubleEntry(
-          debit(account('RECEIVABLES', 1), new Money(3, 'USD')),
-          credit(account('INCOME_PAYMENT_FEE'), new Money(3, 'USD')),
+          debit(new EntityLedgerAccount('RECEIVABLES', 1), new Money(3, 'USD')),
+          credit(
+            new SystemLedgerAccount('INCOME_PAYMENT_FEE'),
+            new Money(3, 'USD'),
+          ),
           'User owes payment processing fee',
         ),
       ],
