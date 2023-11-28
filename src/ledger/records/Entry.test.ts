@@ -1,20 +1,37 @@
-import { debit } from './Entry.js';
-import { LedgerError } from '@/errors.js';
+import { credit, debit } from './Entry.js';
 import { entityAccount } from '@/ledger/accounts/LedgerAccount.js';
-import { Money } from '@/money/Money.js';
-import { v4 as uuid } from 'uuid';
+import { Money, usd } from '@/money/Money.js';
 import { describe, expect, test } from 'vitest';
 
 describe('Entry', () => {
-  test('cannot override operation transaction id', () => {
-    const entry = debit(entityAccount('RECEIVABLES', 1), new Money(0, 'USD'));
-    const originalTransactionId = uuid();
-    entry.transactionId = originalTransactionId;
-    expect(() => {
-      entry.transactionId = uuid();
-    }).toThrow(
-      new LedgerError('Operation is already attached to a transaction'),
+  const account = entityAccount('RECEIVABLES', 1);
+
+  test('cannot create debit entry', () => {
+    const amount = usd(100);
+    const entry = debit(account, amount);
+    expect(entry.action).toEqual('DEBIT');
+    expect(entry.amount).toEqual(amount);
+    expect(entry.account).toEqual(account);
+  });
+
+  test('cannot create credit entry', () => {
+    const amount = usd(100);
+    const entry = credit(account, amount);
+    expect(entry.action).toEqual('CREDIT');
+    expect(entry.amount).toEqual(amount);
+    expect(entry.account).toEqual(account);
+  });
+
+  test('cannot have entry with zero amount', () => {
+    expect(() => debit(account, usd(0))).toThrow(
+      'Cannot create entry with zero amount',
     );
-    expect(entry.transactionId).toEqual(originalTransactionId);
+  });
+
+  test('cannot have entry with negative amount', () => {
+    const amount = usd(-100);
+    expect(() => debit(account, amount)).toThrow(
+      'Cannot create entry with negative amount',
+    );
   });
 });

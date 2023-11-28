@@ -51,12 +51,10 @@ export class UniformEntrySet<O extends DebitEntry | CreditEntry> {
       | NonEmptyArray<CreditEntry>,
   ) {
     let entriesList: NonEmptyArray<DebitEntry | CreditEntry>;
-    if (entries instanceof DebitEntry) {
-      entriesList = [entries];
-    } else if (entries instanceof CreditEntry) {
-      entriesList = [entries];
-    } else {
+    if (Array.isArray(entries)) {
       entriesList = entries;
+    } else {
+      entriesList = [entries];
     }
 
     return new UniformEntrySet(entriesList);
