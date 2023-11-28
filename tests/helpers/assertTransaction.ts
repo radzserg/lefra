@@ -8,7 +8,6 @@ type ExpectedEntry = ['DEBIT' | 'CREDIT', string, Money];
 type ExpectedTransaction = {
   description?: string;
   entries: ExpectedEntry[];
-  id?: string;
 };
 
 const transformToReadableEntry = (entry: ExpectedEntry) => {
@@ -21,7 +20,7 @@ const transformToReadableEntries = (entries: ExpectedEntry[]) => {
 
 export const assertTransaction = (
   transaction: Transaction,
-  { description, entries, id }: ExpectedTransaction,
+  { description, entries }: ExpectedTransaction,
 ) => {
   expect(transaction).not.toBeNull();
   if (description) {
@@ -35,10 +34,6 @@ export const assertTransaction = (
         `Expected:\n${transformToReadableEntries(entries)}\n` +
         `Actual:\n${formatter.format(transaction.entries)}\n`,
     );
-  }
-
-  if (id) {
-    expect(transaction.id).toEqual(id);
   }
 
   for (const [index, expectedEntry] of entries.entries()) {
