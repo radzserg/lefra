@@ -1,4 +1,3 @@
-import { EntityLedgerAccount } from '@/ledger/accounts/EntityLedgerAccount.js';
 import { SystemLedgerAccount } from '@/ledger/accounts/SystemLedgerAccount.js';
 import { describe, expect, test } from 'vitest';
 
@@ -23,7 +22,7 @@ describe('SystemLedgerAccount', () => {
     ['lowerCase'],
     ['specialChars!'],
     ['special_Chars'],
-    ['QWE_RTY'],
+    ['QWE_RTY_'],
     ['{}'],
   ])('cannot create entity account with invalid name %s', (name) => {
     expect(() => new SystemLedgerAccount(name)).toThrow(
