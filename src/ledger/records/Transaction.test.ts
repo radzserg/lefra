@@ -50,10 +50,6 @@ describe('Transaction', () => {
       new DoubleEntry(entries[2], entries[3]),
     ]);
 
-    for (const entry of entries) {
-      expect(entry.transactionId).toEqual(transaction.id);
-    }
-
     expect(transaction.entries).toEqual(entries);
   });
 });

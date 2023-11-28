@@ -8,7 +8,6 @@ describe('EntityLedgerAccount', () => {
     expect(account.uniqueNamedIdentifier).toEqual('ENTITY_RECEIVABLES:1');
     expect(account.toJSON()).toEqual({
       entityId: 1,
-      id: expect.any(String),
       name: 'ENTITY_RECEIVABLES',
     });
   });
@@ -26,7 +25,6 @@ describe('EntityLedgerAccount', () => {
     );
     expect(account.toJSON()).toEqual({
       entityId: 'a934cae1-f809-4aac-8b82-f639977d9512',
-      id: expect.any(String),
       name: 'USER_RECEIVABLES_LOCKED',
     });
   });

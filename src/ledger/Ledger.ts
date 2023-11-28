@@ -1,11 +1,11 @@
 import { LedgerStorage } from './storage/LedgerStorage.js';
 import { ILedgerOperation } from '@/ledger/operation/LedgerOperation.js';
 import { Transaction } from '@/ledger/records/Transaction.js';
-import { INTERNAL_ID } from '@/types.js';
+import { DB_ID } from '@/types.js';
 
 export class Ledger {
   public constructor(
-    private readonly id: INTERNAL_ID,
+    private readonly id: DB_ID,
     private readonly storage: LedgerStorage,
   ) {}
 

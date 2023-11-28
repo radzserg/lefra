@@ -45,7 +45,6 @@ describe('UniformEntrySet', () => {
     );
     const entries = UniformEntrySet.build(entry);
     expect(entries.entries()).toEqual([entry]);
-    expect(entry.id).toBeTypeOf('string');
   });
 
   test('create UniformEntrySet from one credit operation', () => {
@@ -55,7 +54,6 @@ describe('UniformEntrySet', () => {
     );
     const entries = UniformEntrySet.build(entry);
     expect(entries.entries()).toEqual([entry]);
-    expect(entry.id).toBeTypeOf('string');
   });
 
   test('cannot have zero sum of operations', () => {

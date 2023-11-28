@@ -1,8 +1,8 @@
 import { EntityLedgerAccount } from '@/ledger/accounts/EntityLedgerAccount.js';
-import { EXTERNAL_ID } from '@/types.js';
+import { DB_ID } from '@/types.js';
 
 export class UserLedgerAccount extends EntityLedgerAccount {
-  public constructor(name: string, entityId: EXTERNAL_ID) {
+  public constructor(name: string, entityId: DB_ID) {
     super(name, entityId, 'USER');
   }
 }

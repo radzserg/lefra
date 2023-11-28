@@ -1,10 +1,9 @@
-import { SystemLedgerAccount } from '@/ledger/accounts/SystemLedgerAccount.js';
 import { LedgerOperation } from '@/ledger/operation/LedgerOperation.js';
 import { DoubleEntry } from '@/ledger/records/DoubleEntry.js';
 import { credit, debit } from '@/ledger/records/Entry.js';
 import { Transaction } from '@/ledger/records/Transaction.js';
 import { moneySchema } from '@/money/validation.js';
-import { INTERNAL_ID } from '@/types.js';
+import { DB_ID } from '@/types.js';
 import { systemAccount, userAccount } from '#/customLedger/CustomerLedger.js';
 import { z } from 'zod';
 
@@ -34,7 +33,7 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
     super(schema, payload);
   }
 
-  public async createTransaction(ledgerId: INTERNAL_ID): Promise<Transaction> {
+  public async createTransaction(ledgerId: DB_ID): Promise<Transaction> {
     const {
       amountLockedForCustomer,
       clientUserId,

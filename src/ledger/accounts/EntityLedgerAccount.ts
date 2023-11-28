@@ -1,7 +1,7 @@
 import { LedgerAccount } from './LedgerAccount.js';
 import { LedgerAccountError } from '@/errors.js';
 import { SYSTEM_PREFIX } from '@/ledger/accounts/SystemLedgerAccount.js';
-import { EXTERNAL_ID } from '@/types.js';
+import { DB_ID } from '@/types.js';
 
 /**
  * Represents accounts belonging to some entity - user, company, etc.
@@ -11,7 +11,7 @@ export class EntityLedgerAccount extends LedgerAccount {
 
   public constructor(
     name: string,
-    public readonly entityId: EXTERNAL_ID,
+    public readonly entityId: DB_ID,
     prefix: string = 'ENTITY',
   ) {
     super();

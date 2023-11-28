@@ -7,7 +7,6 @@ describe('SystemLedgerAccount', () => {
 
     expect(account.uniqueNamedIdentifier).toEqual('SYSTEM_CURRENT_ASSETS');
     expect(account.toJSON()).toEqual({
-      id: expect.any(String),
       name: 'SYSTEM_CURRENT_ASSETS',
     });
   });
@@ -33,7 +32,6 @@ describe('SystemLedgerAccount', () => {
   test('cannot override prefix', () => {
     const account = new SystemLedgerAccount('CURRENT_ASSETS', 'CORE');
     expect(account.toJSON()).toEqual({
-      id: expect.any(String),
       name: 'CORE_CURRENT_ASSETS',
     });
   });

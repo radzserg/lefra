@@ -1,24 +1,25 @@
 import { EntityLedgerAccount } from '../accounts/EntityLedgerAccount.js';
 import { LedgerAccount } from '../accounts/LedgerAccount.js';
 import { SystemLedgerAccount } from '../accounts/SystemLedgerAccount.js';
-import { Entry } from '../records/Entry.js';
 import { Transaction } from '../records/Transaction.js';
 import { LedgerStorage } from './LedgerStorage.js';
 import { LedgerError } from '@/errors.js';
+import { Entry } from '@/ledger/records/Entry.js';
+import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
 import { Money } from '@/money/Money.js';
-import { EXTERNAL_ID, INTERNAL_ID } from '@/types.js';
+import { DB_ID, OperationType } from '@/types.js';
 
 type NormalBalance = 'DEBIT' | 'CREDIT';
 
 type SavedTransaction = {
   description: string | null;
-  id: string;
-  ledgerId: string;
+  id: DB_ID;
+  ledgerId: DB_ID;
 };
 
 type SavedAccountCore = {
-  id: string;
-  ledgerId: string;
+  id: DB_ID;
+  ledgerId: DB_ID;
   name: string;
   normalBalance: NormalBalance;
 };
@@ -28,14 +29,22 @@ type SavedSystemAccount = SavedAccountCore & {
 };
 
 type SavedEntityAccount = SavedAccountCore & {
-  entityId: EXTERNAL_ID;
+  entityId: DB_ID;
   type: 'ENTITY';
 };
 
 type SavedUserAccountType = {
-  ledgerId: string;
+  ledgerId: DB_ID;
   name: string;
   normalBalance: NormalBalance;
+};
+
+type SavedEntry = {
+  accountId: DB_ID;
+  amount: Money;
+  id: DB_ID;
+  transactionId: DB_ID;
+  type: OperationType;
 };
 
 type SavedAccount = SavedSystemAccount | SavedEntityAccount;
@@ -47,25 +56,34 @@ type SavedAccount = SavedSystemAccount | SavedEntityAccount;
 export class InMemoryLedgerStorage implements LedgerStorage {
   private transactions: SavedTransaction[] = [];
 
-  private entries: Entry[] = [];
+  private entries: SavedEntry[] = [];
 
   private accounts: SavedAccount[] = [];
 
   private userAccountTypes: SavedUserAccountType[] = [];
 
+  private readonly idGenerator: UuidDatabaseIdGenerator =
+    new UuidDatabaseIdGenerator();
+
   public async insertTransaction(transaction: Transaction) {
+    const savedTransaction: SavedTransaction = {
+      description: transaction.description,
+      id: this.idGenerator.generateId(),
+      ledgerId: transaction.ledgerId,
+    };
+
     await this.saveTransactionLedgerAccounts(transaction);
-    await this.saveTransactionEntries(transaction);
+    await this.saveTransactionEntries(savedTransaction, transaction.entries);
 
     this.transactions.push({
       description: transaction.description,
-      id: transaction.id,
+      id: this.idGenerator.generateId(),
       ledgerId: transaction.ledgerId,
     });
   }
 
   public async saveEntityAccountTypes(
-    ledgerId: INTERNAL_ID,
+    ledgerId: DB_ID,
     accounts: Array<[string, NormalBalance]>,
   ) {
     for (const [name, normalBalance] of accounts) {
@@ -86,7 +104,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   }
 
   public async saveAccounts(
-    ledgerId: INTERNAL_ID,
+    ledgerId: DB_ID,
     accounts: Array<[LedgerAccount, NormalBalance]>,
   ) {
     for (const [account, normalBalance] of accounts) {
@@ -108,13 +126,13 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   }
 
   private accountToSavedAccount(
-    ledgerId: INTERNAL_ID,
+    ledgerId: DB_ID,
     account: LedgerAccount,
     normalBalance: NormalBalance,
   ): SavedAccount {
     if (account instanceof SystemLedgerAccount) {
       return {
-        id: account.id,
+        id: this.idGenerator.generateId(),
         ledgerId,
         name: account.name,
         normalBalance,
@@ -123,7 +141,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     } else if (account instanceof EntityLedgerAccount) {
       return {
         entityId: account.entityId,
-        id: account.id,
+        id: this.idGenerator.generateId(),
         ledgerId,
         name: account.name,
         normalBalance,
@@ -134,22 +152,32 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     }
   }
 
-  private async saveTransactionEntries(transaction: Transaction) {
-    for (const operation of transaction.entries) {
+  private async saveTransactionEntries(
+    transaction: SavedTransaction,
+    entries: Entry[],
+  ) {
+    const savedEntries: SavedEntry[] = [];
+    for (const entry of entries) {
       const existingAccount = await this.findSavedAccount(
         transaction.ledgerId,
-        operation.account,
+        entry.account,
       );
       if (!existingAccount) {
         throw new LedgerError(
-          `Account ${operation.account.uniqueNamedIdentifier} not found`,
+          `Account ${entry.account.uniqueNamedIdentifier} not found`,
         );
       }
 
-      operation.accountId = existingAccount.id;
+      savedEntries.push({
+        accountId: existingAccount.id,
+        amount: entry.amount,
+        id: this.idGenerator.generateId(),
+        transactionId: transaction.id,
+        type: entry.type,
+      });
     }
 
-    this.entries.push(...transaction.entries);
+    this.entries.push(...savedEntries);
   }
 
   private async saveTransactionLedgerAccounts(transaction: Transaction) {
@@ -161,10 +189,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     await this.findOrInsertLedgerAccounts(transaction.ledgerId, ledgerAccounts);
   }
 
-  private async findSavedAccount(
-    ledgerId: INTERNAL_ID,
-    account: LedgerAccount,
-  ) {
+  private async findSavedAccount(ledgerId: DB_ID, account: LedgerAccount) {
     const foundAccount = this.accounts.find((savedAccount) => {
       if (account instanceof SystemLedgerAccount) {
         return (
@@ -190,7 +215,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   }
 
   private async findOrInsertLedgerAccounts(
-    ledgerId: INTERNAL_ID,
+    ledgerId: DB_ID,
     accounts: LedgerAccount[],
   ) {
     for (const account of accounts) {

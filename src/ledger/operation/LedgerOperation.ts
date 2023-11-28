@@ -1,10 +1,10 @@
 import { Transaction } from '../records/Transaction.js';
 import { LedgerOperationError } from '@/errors.js';
-import { INTERNAL_ID } from '@/types.js';
+import { DB_ID } from '@/types.js';
 import { z } from 'zod';
 
 export type ILedgerOperation = {
-  createTransaction: (ledgerId: INTERNAL_ID) => Promise<Transaction>;
+  createTransaction: (ledgerId: DB_ID) => Promise<Transaction>;
 };
 
 /**
@@ -30,7 +30,5 @@ export abstract class LedgerOperation<S extends z.ZodSchema>
     }
   }
 
-  public abstract createTransaction(
-    ledgerId: INTERNAL_ID,
-  ): Promise<Transaction>;
+  public abstract createTransaction(ledgerId: DB_ID): Promise<Transaction>;
 }

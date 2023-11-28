@@ -2,12 +2,9 @@ import { LedgerAccount } from '../accounts/LedgerAccount.js';
 import { LedgerError } from '@/errors.js';
 import { Money } from '@/money/Money.js';
 import { OperationType } from '@/types.js';
-import { v4 as uuid } from 'uuid';
 
 export abstract class Entry {
   public abstract readonly type: OperationType;
-
-  public readonly id: string = uuid();
 
   private _transactionId: string | null = null;
 
@@ -42,16 +39,6 @@ export abstract class Entry {
 
     // eslint-disable-next-line canonical/id-match
     this._accountId = accountId;
-  }
-
-  public toJSON() {
-    return {
-      account: this.account,
-      amount: this.amount,
-      id: this.id,
-      transactionId: this.transactionId,
-      type: this.type,
-    };
   }
 }
 
