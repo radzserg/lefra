@@ -24,7 +24,7 @@ export class EntriesFormatter {
     if (account instanceof SystemLedgerAccount) {
       return `SYSTEM_${account.name}`;
     } else if (account instanceof UserLedgerAccount) {
-      return `USER_${account.name}_${account.userAccountId}`;
+      return `USER_${account.name}:${account.userAccountId}`;
     } else {
       throw new TypeError(`Unknown account type: ${account}`);
     }

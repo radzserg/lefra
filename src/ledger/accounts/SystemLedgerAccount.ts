@@ -8,7 +8,7 @@ export class SystemLedgerAccount extends LedgerAccount {
   }
 
   public get uniqueNamedIdentifier(): string {
-    return `SYSTEM_${this.name}`;
+    return `SYSTEM_${this.name.toUpperCase()}`;
   }
 
   public toJSON() {
