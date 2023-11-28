@@ -2,14 +2,14 @@ import { LedgerError } from '@/errors.js';
 import { CreditEntry, DebitEntry } from '@/ledger/records/Entry.js';
 import { CurrencyCode } from '@/money/currencies.js';
 import { Money } from '@/money/Money.js';
-import { NonEmptyArray, OperationType } from '@/types.js';
+import { EntryAction, NonEmptyArray } from '@/types.js';
 
 /**
  * List of operations of the same type. Either all debit or all credit.
  * All money amounts must be of the same currency.
  */
 export class UniformEntrySet<O extends DebitEntry | CreditEntry> {
-  private readonly type: OperationType;
+  private readonly type: EntryAction;
 
   private readonly currencyCode: CurrencyCode;
 
@@ -20,12 +20,12 @@ export class UniformEntrySet<O extends DebitEntry | CreditEntry> {
       throw new LedgerError('Operations array must not be empty');
     }
 
-    this.type = this.operationList[0].type;
+    this.type = this.operationList[0].action;
     this.currencyCode = this.operationList[0].amount.currencyCode;
 
     let sum = new Money(0, this.currencyCode);
     for (const operation of this.operationList) {
-      if (operation.type !== this.type) {
+      if (operation.action !== this.type) {
         throw new LedgerError('All operations must be of the same type');
       }
 

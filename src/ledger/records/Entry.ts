@@ -1,10 +1,10 @@
 import { LedgerAccount } from '../accounts/LedgerAccount.js';
 import { LedgerError } from '@/errors.js';
 import { Money } from '@/money/Money.js';
-import { OperationType } from '@/types.js';
+import { EntryAction } from '@/types.js';
 
 export abstract class Entry {
-  public abstract readonly type: OperationType;
+  public abstract readonly action: EntryAction;
 
   private _transactionId: string | null = null;
 
@@ -43,11 +43,11 @@ export abstract class Entry {
 }
 
 export class CreditEntry extends Entry {
-  public readonly type: OperationType = 'CREDIT';
+  public readonly action: EntryAction = 'CREDIT';
 }
 
 export class DebitEntry extends Entry {
-  public readonly type: OperationType = 'DEBIT';
+  public readonly action: EntryAction = 'DEBIT';
 }
 
 export const credit = (account: LedgerAccount, amount: Money): CreditEntry => {

@@ -161,31 +161,31 @@ describe('InMemoryLedgerStorage', () => {
     expect(entries).toEqual([
       expect.objectContaining({
         accountId: expect.stringMatching(UUID_REGEX),
+        action: 'DEBIT',
         amount: new Money(100, 'USD'),
         id: expect.any(String),
         transactionId: expect.stringMatching(UUID_REGEX),
-        type: 'DEBIT',
       }),
       expect.objectContaining({
         accountId: expect.stringMatching(UUID_REGEX),
+        action: 'CREDIT',
         amount: new Money(100, 'USD'),
         id: expect.any(String),
         transactionId: expect.stringMatching(UUID_REGEX),
-        type: 'CREDIT',
       }),
       expect.objectContaining({
         accountId: expect.stringMatching(UUID_REGEX),
+        action: 'DEBIT',
         amount: new Money(3, 'USD'),
         id: expect.any(String),
         transactionId: expect.stringMatching(UUID_REGEX),
-        type: 'DEBIT',
       }),
       expect.objectContaining({
         accountId: expect.stringMatching(UUID_REGEX),
+        action: 'CREDIT',
         amount: new Money(3, 'USD'),
         id: expect.any(String),
         transactionId: expect.stringMatching(UUID_REGEX),
-        type: 'CREDIT',
       }),
     ]);
 

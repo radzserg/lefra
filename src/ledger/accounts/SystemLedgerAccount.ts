@@ -14,11 +14,4 @@ export class SystemLedgerAccount extends LedgerAccount {
   public get uniqueNamedIdentifier(): string {
     return this.name;
   }
-
-  public toJSON() {
-    return {
-      id: this.id,
-      name: this.name,
-    };
-  }
 }

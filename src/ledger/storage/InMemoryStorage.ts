@@ -11,7 +11,7 @@ import {
 import { Entry } from '@/ledger/records/Entry.js';
 import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
 import { Money } from '@/money/Money.js';
-import { DB_ID, OperationType } from '@/types.js';
+import { DB_ID, EntryAction } from '@/types.js';
 
 type NormalBalance = 'DEBIT' | 'CREDIT';
 
@@ -45,10 +45,10 @@ type SavedUserAccountType = {
 
 type SavedEntry = {
   accountId: DB_ID;
+  action: EntryAction;
   amount: Money;
   id: DB_ID;
   transactionId: DB_ID;
-  type: OperationType;
 };
 
 type SavedAccount = SavedSystemAccount | SavedEntityAccount;
@@ -174,10 +174,10 @@ export class InMemoryLedgerStorage implements LedgerStorage {
 
       savedEntries.push({
         accountId: existingAccount.id,
+        action: entry.action,
         amount: entry.amount,
         id: this.idGenerator.generateId(),
         transactionId: transaction.id,
-        type: entry.type,
       });
     }
 
@@ -292,20 +292,20 @@ export class InMemoryLedgerStorage implements LedgerStorage {
         continue;
       }
 
-      if (entry.type === 'DEBIT') {
+      if (entry.action === 'DEBIT') {
         if (sumDebits) {
           sumDebits = sumDebits.plus(entry.amount);
         } else {
           sumDebits = entry.amount;
         }
-      } else if (entry.type === 'CREDIT') {
+      } else if (entry.action === 'CREDIT') {
         if (sumCredits) {
           sumCredits = sumCredits.plus(entry.amount);
         } else {
           sumCredits = entry.amount;
         }
       } else {
-        throw new LedgerUnexpectedError(`Unknown entry type ${entry.type}`);
+        throw new LedgerUnexpectedError(`Unknown entry type ${entry.action}`);
       }
     }
 

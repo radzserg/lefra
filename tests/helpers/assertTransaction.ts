@@ -39,7 +39,7 @@ export const assertTransaction = (
   for (const [index, expectedEntry] of entries.entries()) {
     const actualEntry = transaction.entries[index];
 
-    expect(actualEntry.type).toEqual(expectedEntry[0]);
+    expect(actualEntry.action).toEqual(expectedEntry[0]);
     expect(actualEntry.account.uniqueNamedIdentifier).toEqual(expectedEntry[1]);
     expect(actualEntry.amount).toEqual(expectedEntry[2]);
   }

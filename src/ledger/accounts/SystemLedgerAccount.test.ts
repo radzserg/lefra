@@ -6,9 +6,7 @@ describe('SystemLedgerAccount', () => {
     const account = new SystemLedgerAccount('CURRENT_ASSETS');
 
     expect(account.uniqueNamedIdentifier).toEqual('SYSTEM_CURRENT_ASSETS');
-    expect(account.toJSON()).toEqual({
-      name: 'SYSTEM_CURRENT_ASSETS',
-    });
+    expect(account.name).toEqual('SYSTEM_CURRENT_ASSETS');
   });
 
   test('cannot create entity account with empty name', () => {
@@ -31,8 +29,6 @@ describe('SystemLedgerAccount', () => {
 
   test('cannot override prefix', () => {
     const account = new SystemLedgerAccount('CURRENT_ASSETS', 'CORE');
-    expect(account.toJSON()).toEqual({
-      name: 'CORE_CURRENT_ASSETS',
-    });
+    expect(account.name).toEqual('CORE_CURRENT_ASSETS');
   });
 });

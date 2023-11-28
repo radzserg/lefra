@@ -2,7 +2,7 @@ import { EntityLedgerAccount } from '@/ledger/accounts/EntityLedgerAccount.js';
 import { LedgerAccount } from '@/ledger/accounts/LedgerAccount.js';
 import { SystemLedgerAccount } from '@/ledger/accounts/SystemLedgerAccount.js';
 import { Entry } from '@/ledger/records/Entry.js';
-import { OperationType } from '@/types.js';
+import { EntryAction } from '@/types.js';
 
 export class EntriesFormatter {
   public format(entries: Entry[]): string {
@@ -16,7 +16,7 @@ export class EntriesFormatter {
 
   private formatEntry(entry: Entry): string {
     return `${this.formatOperation(
-      entry.type,
+      entry.action,
     )} ${entry.amount.formatCompact()} ${this.formatAccount(entry.account)}`;
   }
 
@@ -30,7 +30,7 @@ export class EntriesFormatter {
     }
   }
 
-  private formatOperation(operation: OperationType): string {
+  private formatOperation(operation: EntryAction): string {
     switch (operation) {
       case 'CREDIT':
         return 'CREDIT';
