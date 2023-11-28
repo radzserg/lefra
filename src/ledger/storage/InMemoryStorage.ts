@@ -1,6 +1,6 @@
+import { EntityLedgerAccount } from '../accounts/EntityLedgerAccount.js';
 import { LedgerAccount } from '../accounts/LedgerAccount.js';
 import { SystemLedgerAccount } from '../accounts/SystemLedgerAccount.js';
-import { UserLedgerAccount } from '../accounts/UserLedgerAccount.js';
 import { Entry } from '../records/Entry.js';
 import { Transaction } from '../records/Transaction.js';
 import { LedgerStorage } from './LedgerStorage.js';
@@ -28,8 +28,8 @@ type SavedSystemAccount = SavedAccountCore & {
 };
 
 type SavedUserAccount = SavedAccountCore & {
+  entityId: EXTERNAL_ID;
   type: 'USER';
-  userAccountId: EXTERNAL_ID;
 };
 
 type SavedUserAccountType = {
@@ -92,7 +92,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     for (const [account, normalBalance] of accounts) {
       const existingAccount = await this.findSavedAccount(ledgerId, account);
       if (existingAccount) {
-        if (!(account instanceof UserLedgerAccount)) {
+        if (!(account instanceof EntityLedgerAccount)) {
           throw new LedgerError(
             `Account ${account.uniqueNamedIdentifier} cannot be inserted`,
           );
@@ -120,14 +120,14 @@ export class InMemoryLedgerStorage implements LedgerStorage {
         normalBalance,
         type: 'SYSTEM',
       };
-    } else if (account instanceof UserLedgerAccount) {
+    } else if (account instanceof EntityLedgerAccount) {
       return {
+        entityId: account.entityId,
         id: account.id,
         ledgerId,
         name: account.name,
         normalBalance,
         type: 'USER',
-        userAccountId: account.userAccountId,
       };
     } else {
       throw new LedgerError(`Unknown account type ${account}`);
@@ -171,7 +171,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
           savedAccount.name === account.name &&
           savedAccount.ledgerId === ledgerId
         );
-      } else if (account instanceof UserLedgerAccount) {
+      } else if (account instanceof EntityLedgerAccount) {
         if (savedAccount.type !== 'USER') {
           return false;
         }
@@ -179,7 +179,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
         return (
           savedAccount.name === account.name &&
           savedAccount.ledgerId === ledgerId &&
-          savedAccount.userAccountId === account.userAccountId
+          savedAccount.entityId === account.entityId
         );
       }
 
@@ -196,7 +196,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     for (const account of accounts) {
       const existingAccount = await this.findSavedAccount(ledgerId, account);
       if (!existingAccount) {
-        if (!(account instanceof UserLedgerAccount)) {
+        if (!(account instanceof EntityLedgerAccount)) {
           throw new LedgerError(
             `Account ${account.uniqueNamedIdentifier} cannot be inserted`,
           );

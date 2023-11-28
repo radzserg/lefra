@@ -1,6 +1,6 @@
+import { EntityLedgerAccount } from '@/ledger/accounts/EntityLedgerAccount.js';
 import { LedgerAccount } from '@/ledger/accounts/LedgerAccount.js';
 import { SystemLedgerAccount } from '@/ledger/accounts/SystemLedgerAccount.js';
-import { UserLedgerAccount } from '@/ledger/accounts/UserLedgerAccount.js';
 import { Entry } from '@/ledger/records/Entry.js';
 import { OperationType } from '@/types.js';
 
@@ -23,8 +23,8 @@ export class EntriesFormatter {
   private formatAccount(account: LedgerAccount): string {
     if (account instanceof SystemLedgerAccount) {
       return `SYSTEM_${account.name}`;
-    } else if (account instanceof UserLedgerAccount) {
-      return `USER_${account.name}:${account.userAccountId}`;
+    } else if (account instanceof EntityLedgerAccount) {
+      return `USER_${account.name}:${account.entityId}`;
     } else {
       throw new TypeError(`Unknown account type: ${account}`);
     }
