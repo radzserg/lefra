@@ -10,8 +10,8 @@ export class Ledger {
   ) {}
 
   public async record(operation: ILedgerOperation): Promise<Transaction> {
-    const transaction = await operation.createTransaction(this.id);
-    await this.storage.insertTransaction(transaction);
+    const transaction = await operation.createTransaction();
+    await this.storage.insertTransaction(this.id, transaction);
     return transaction;
   }
 }

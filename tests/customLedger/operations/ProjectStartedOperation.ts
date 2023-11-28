@@ -3,7 +3,6 @@ import { DoubleEntry } from '@/ledger/records/DoubleEntry.js';
 import { credit, debit } from '@/ledger/records/Entry.js';
 import { Transaction } from '@/ledger/records/Transaction.js';
 import { moneySchema } from '@/money/validation.js';
-import { DB_ID } from '@/types.js';
 import { systemAccount, userAccount } from '#/customLedger/CustomerLedger.js';
 import { z } from 'zod';
 
@@ -33,7 +32,7 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
     super(schema, payload);
   }
 
-  public async createTransaction(ledgerId: DB_ID): Promise<Transaction> {
+  public async createTransaction(): Promise<Transaction> {
     const {
       amountLockedForCustomer,
       clientUserId,
@@ -79,6 +78,6 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
       ),
     );
 
-    return new Transaction(ledgerId, entries, 'test transaction');
+    return new Transaction(entries, 'test transaction');
   }
 }

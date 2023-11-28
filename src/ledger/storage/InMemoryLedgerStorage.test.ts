@@ -115,7 +115,6 @@ describe('InMemoryLedgerStorage', () => {
     ]);
 
     const transaction = new Transaction(
-      ledgerId,
       [
         new DoubleEntry(
           debit(
@@ -140,7 +139,7 @@ describe('InMemoryLedgerStorage', () => {
       'test transaction',
     );
 
-    await storage.insertTransaction(transaction);
+    await storage.insertTransaction(ledgerId, transaction);
 
     const savedAccounts = await storage.findAccounts();
 
@@ -200,7 +199,7 @@ describe('InMemoryLedgerStorage', () => {
     ]);
   });
 
-  test.skip('fetch account balance', async () => {
+  test('fetch account balance', async () => {
     const storage = new InMemoryLedgerStorage();
     await storage.saveAccounts(ledgerId, [
       [new SystemLedgerAccount('INCOME_PAID_PROJECTS'), 'CREDIT'],
@@ -212,7 +211,6 @@ describe('InMemoryLedgerStorage', () => {
     ]);
 
     const transaction = new Transaction(
-      ledgerId,
       [
         new DoubleEntry(
           debit(
@@ -237,9 +235,10 @@ describe('InMemoryLedgerStorage', () => {
       'test transaction',
     );
 
-    await storage.insertTransaction(transaction);
+    await storage.insertTransaction(ledgerId, transaction);
 
     const receivables = await storage.fetchAccountBalance(
+      ledgerId,
       new EntityLedgerAccount('RECEIVABLES', 1),
     );
     expect(receivables).toEqual(new Money(103, 'USD'));

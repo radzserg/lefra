@@ -1,6 +1,5 @@
 import { DoubleEntry } from './DoubleEntry.js';
 import { Entry } from './Entry.js';
-import { DB_ID } from '@/types.js';
 
 /**
  * Represents a transaction in the ledger.
@@ -10,7 +9,6 @@ export class Transaction {
   public readonly entries: Entry[];
 
   public constructor(
-    public readonly ledgerId: DB_ID,
     entries: DoubleEntry[],
     public readonly description: string | null = null,
   ) {

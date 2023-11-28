@@ -65,20 +65,20 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   private readonly idGenerator: UuidDatabaseIdGenerator =
     new UuidDatabaseIdGenerator();
 
-  public async insertTransaction(transaction: Transaction) {
+  public async insertTransaction(ledgerId: DB_ID, transaction: Transaction) {
     const savedTransaction: SavedTransaction = {
       description: transaction.description,
       id: this.idGenerator.generateId(),
-      ledgerId: transaction.ledgerId,
+      ledgerId,
     };
 
-    await this.saveTransactionLedgerAccounts(transaction);
+    await this.saveTransactionLedgerAccounts(ledgerId, transaction);
     await this.saveTransactionEntries(savedTransaction, transaction.entries);
 
     this.transactions.push({
       description: transaction.description,
       id: this.idGenerator.generateId(),
-      ledgerId: transaction.ledgerId,
+      ledgerId,
     });
   }
 
@@ -180,13 +180,16 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     this.entries.push(...savedEntries);
   }
 
-  private async saveTransactionLedgerAccounts(transaction: Transaction) {
+  private async saveTransactionLedgerAccounts(
+    ledgerId: DB_ID,
+    transaction: Transaction,
+  ) {
     const ledgerAccounts: LedgerAccount[] = [];
     for (const entry of transaction.entries) {
       ledgerAccounts.push(entry.account);
     }
 
-    await this.findOrInsertLedgerAccounts(transaction.ledgerId, ledgerAccounts);
+    await this.findOrInsertLedgerAccounts(ledgerId, ledgerAccounts);
   }
 
   private async findSavedAccount(ledgerId: DB_ID, account: LedgerAccount) {
@@ -263,7 +266,12 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     return this.userAccountTypes;
   }
 
-  public async fetchAccountBalance(account: LedgerAccount): Promise<Money> {
+  public async fetchAccountBalance(
+    ledgerId: DB_ID,
+    account: LedgerAccount,
+  ): Promise<Money> {
+    const savedAccount = await this.findSavedAccount(ledgerId, account);
+
     /**
      * -- Determine normal balance type for account ('DEBIT' | 'CREDIT')
      * SELECT normal_balance
