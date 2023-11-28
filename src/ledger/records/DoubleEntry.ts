@@ -4,7 +4,8 @@ import { UniformEntrySet } from '@/ledger/records/UniformEntrySet.js';
 import { NonEmptyArray } from '@/types.js';
 
 /**
- * Represents double-entry bookkeeping entry.
+ * Represents double-entry bookkeeping entry. This means that the sum of all
+ * debit entries must be equal to the sum of all credit entries.
  */
 export class DoubleEntry {
   public readonly debitEntries: NonEmptyArray<DebitEntry>;

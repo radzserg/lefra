@@ -3,7 +3,11 @@ import { LedgerAccount } from '../accounts/LedgerAccount.js';
 import { SystemLedgerAccount } from '../accounts/SystemLedgerAccount.js';
 import { Transaction } from '../records/Transaction.js';
 import { LedgerStorage } from './LedgerStorage.js';
-import { LedgerError } from '@/errors.js';
+import {
+  LedgerError,
+  LedgerNotFoundError,
+  LedgerUnexpectedError,
+} from '@/errors.js';
 import { Entry } from '@/ledger/records/Entry.js';
 import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
 import { Money } from '@/money/Money.js';
@@ -269,52 +273,70 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   public async fetchAccountBalance(
     ledgerId: DB_ID,
     account: LedgerAccount,
-  ): Promise<Money> {
+  ): Promise<Money | null> {
     const savedAccount = await this.findSavedAccount(ledgerId, account);
+    if (!savedAccount) {
+      throw new LedgerNotFoundError(
+        `Account ${account.uniqueNamedIdentifier} not found`,
+      );
+    }
 
-    /**
-     * -- Determine normal balance type for account ('DEBIT' | 'CREDIT')
-     * SELECT normal_balance
-     * FROM ledger_account la
-     * INNER JOIN ledger_account_type lat ON
-     * la.ledger_account_type_id = lat.id
-     * WHERE la.id = input_ledger_account_id
-     * INTO account_balance_type;
-     *
-     * IF account_balance_type IS NULL THEN
-     * RAISE EXCEPTION 'Account does not exist. ID: %', input_ledger_account_id;
-     * END IF;
-     *
-     * -- Sum up all debit entries for this account
-     * SELECT COALESCE(sum(amount), 0)
-     * FROM ledger_transaction_entry lte
-     * LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
-     * WHERE
-     * ledger_account_id = input_ledger_account_id AND
-     * action = 'DEBIT' AND
-     * lt.posted_at < before_date
-     * INTO sum_debits;
-     *
-     * -- Sum up all credit entries for this account
-     * SELECT COALESCE(sum(amount), 0)
-     * FROM ledger_transaction_entry lte
-     * LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
-     * WHERE
-     * ledger_account_id = input_ledger_account_id AND
-     * action = 'CREDIT' AND
-     * lt.posted_at < before_date
-     * INTO sum_credits;
-     *
-     * IF account_balance_type = 'DEBIT' THEN
-     * balance = 0 + sum_debits - sum_credits;
-     * ELSEIF account_balance_type = 'CREDIT' THEN
-     * balance = 0 + sum_credits - sum_debits;
-     * ELSE
-     * RAISE EXCEPTION 'Unexpected account_balance_type: %', account_balance_type;
-     * END IF;
-     *
-     * RETURN balance;
-     */
-    return new Money(0, 'USD');
+    const normalBalance = savedAccount.normalBalance;
+    let sumDebits: Money | null = null;
+    let sumCredits: Money | null = null;
+    for (const entry of this.entries) {
+      if (
+        ledgerId !== savedAccount.ledgerId ||
+        entry.accountId !== savedAccount.id
+      ) {
+        continue;
+      }
+
+      if (entry.type === 'DEBIT') {
+        if (sumDebits) {
+          sumDebits = sumDebits.plus(entry.amount);
+        } else {
+          sumDebits = entry.amount;
+        }
+      } else if (entry.type === 'CREDIT') {
+        if (sumCredits) {
+          sumCredits = sumCredits.plus(entry.amount);
+        } else {
+          sumCredits = entry.amount;
+        }
+      } else {
+        throw new LedgerUnexpectedError(`Unknown entry type ${entry.type}`);
+      }
+    }
+
+    if (!sumDebits && !sumCredits) {
+      return null;
+    }
+
+    if (normalBalance === 'DEBIT') {
+      if (!sumDebits) {
+        throw new LedgerError('Debit account has negative balance');
+      }
+
+      if (sumCredits) {
+        return sumDebits.minus(sumCredits);
+      } else {
+        return sumDebits;
+      }
+    } else if (normalBalance === 'CREDIT') {
+      if (!sumCredits) {
+        throw new LedgerError('Credit account has negative balance');
+      }
+
+      if (sumDebits) {
+        return sumCredits.minus(sumDebits);
+      } else {
+        return sumCredits;
+      }
+    } else {
+      throw new LedgerUnexpectedError(
+        `Unknown normal balance ${normalBalance}`,
+      );
+    }
   }
 }

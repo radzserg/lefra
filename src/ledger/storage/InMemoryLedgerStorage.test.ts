@@ -199,48 +199,77 @@ describe('InMemoryLedgerStorage', () => {
     ]);
   });
 
-  test('fetch account balance', async () => {
-    const storage = new InMemoryLedgerStorage();
-    await storage.saveAccounts(ledgerId, [
-      [new SystemLedgerAccount('INCOME_PAID_PROJECTS'), 'CREDIT'],
-      [new SystemLedgerAccount('INCOME_PAYMENT_FEE'), 'CREDIT'],
-    ]);
+  describe('fetch account balance', () => {
+    test('throw an error if ledger account does not exist', async () => {
+      const storage = new InMemoryLedgerStorage();
 
-    await storage.saveEntityAccountTypes(ledgerId, [
-      ['ENTITY_RECEIVABLES', 'DEBIT'],
-    ]);
+      await expect(async () => {
+        await storage.fetchAccountBalance(
+          ledgerId,
+          new SystemLedgerAccount('INCOME_PAID_PROJECTS'),
+        );
+      }).rejects.toThrow('Account SYSTEM_INCOME_PAID_PROJECTS not found');
+    });
 
-    const transaction = new Transaction(
-      [
-        new DoubleEntry(
-          debit(
-            new EntityLedgerAccount('RECEIVABLES', 1),
-            new Money(100, 'USD'),
+    test('fetch account balance from with no entries', async () => {
+      const storage = new InMemoryLedgerStorage();
+      await storage.saveAccounts(ledgerId, [
+        [new SystemLedgerAccount('INCOME_PAID_PROJECTS'), 'CREDIT'],
+      ]);
+
+      const balance = await storage.fetchAccountBalance(
+        ledgerId,
+        new SystemLedgerAccount('INCOME_PAID_PROJECTS'),
+      );
+      expect(balance).toBeNull();
+    });
+
+    test('fetch account balance', async () => {
+      const storage = new InMemoryLedgerStorage();
+      await storage.saveAccounts(ledgerId, [
+        [new SystemLedgerAccount('INCOME_PAID_PROJECTS'), 'CREDIT'],
+        [new SystemLedgerAccount('INCOME_PAYMENT_FEE'), 'CREDIT'],
+      ]);
+
+      await storage.saveEntityAccountTypes(ledgerId, [
+        ['ENTITY_RECEIVABLES', 'DEBIT'],
+      ]);
+
+      const transaction = new Transaction(
+        [
+          new DoubleEntry(
+            debit(
+              new EntityLedgerAccount('RECEIVABLES', 1),
+              new Money(100, 'USD'),
+            ),
+            credit(
+              new SystemLedgerAccount('INCOME_PAID_PROJECTS'),
+              new Money(100, 'USD'),
+            ),
+            'User owes money for goods',
           ),
-          credit(
-            new SystemLedgerAccount('INCOME_PAID_PROJECTS'),
-            new Money(100, 'USD'),
+          new DoubleEntry(
+            debit(
+              new EntityLedgerAccount('RECEIVABLES', 1),
+              new Money(3, 'USD'),
+            ),
+            credit(
+              new SystemLedgerAccount('INCOME_PAYMENT_FEE'),
+              new Money(3, 'USD'),
+            ),
+            'User owes payment processing fee',
           ),
-          'User owes money for goods',
-        ),
-        new DoubleEntry(
-          debit(new EntityLedgerAccount('RECEIVABLES', 1), new Money(3, 'USD')),
-          credit(
-            new SystemLedgerAccount('INCOME_PAYMENT_FEE'),
-            new Money(3, 'USD'),
-          ),
-          'User owes payment processing fee',
-        ),
-      ],
-      'test transaction',
-    );
+        ],
+        'test transaction',
+      );
 
-    await storage.insertTransaction(ledgerId, transaction);
+      await storage.insertTransaction(ledgerId, transaction);
 
-    const receivables = await storage.fetchAccountBalance(
-      ledgerId,
-      new EntityLedgerAccount('RECEIVABLES', 1),
-    );
-    expect(receivables).toEqual(new Money(103, 'USD'));
+      const receivables = await storage.fetchAccountBalance(
+        ledgerId,
+        new EntityLedgerAccount('RECEIVABLES', 1),
+      );
+      expect(receivables).toEqual(new Money(103, 'USD'));
+    });
   });
 });

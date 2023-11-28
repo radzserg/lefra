@@ -7,7 +7,7 @@ export type LedgerStorage = {
   fetchAccountBalance: (
     ledgerId: DB_ID,
     account: LedgerAccount,
-  ) => Promise<Money>;
+  ) => Promise<Money | null>;
 
   insertTransaction: (
     ledgerId: DB_ID,
