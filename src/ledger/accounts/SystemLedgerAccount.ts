@@ -1,8 +1,6 @@
 import { LedgerAccount } from './LedgerAccount.js';
 
 export class SystemLedgerAccount extends LedgerAccount {
-  public canBeInserted = false;
-
   public constructor(public readonly name: string) {
     super();
   }

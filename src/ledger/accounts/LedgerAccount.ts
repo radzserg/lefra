@@ -8,9 +8,4 @@ export abstract class LedgerAccount {
    * Unique named identifier of this account.
    */
   public abstract get uniqueNamedIdentifier(): string;
-
-  /**
-   * Indicates whether this account can be inserted into the database.
-   */
-  public abstract canBeInserted: boolean;
 }

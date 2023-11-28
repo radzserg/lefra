@@ -1,5 +1,4 @@
 import { account } from '@/index.js';
-import { EntriesFormatter } from '@/ledger/formatter/EntriesFormatter.js';
 import { Ledger } from '@/ledger/Ledger.js';
 import { InMemoryLedgerStorage } from '@/ledger/storage/InMemoryStorage.js';
 import { Money, usd } from '@/money/Money.js';
@@ -17,10 +16,10 @@ describe('ProjectStartedOperation', () => {
 
   beforeAll(async () => {
     await storage.saveAccounts(ledgerId, [
-      account('INCOME_PAID_PROJECTS'),
-      account('INCOME_PAYMENT_FEE'),
-      account('INCOME_CONTRACT_FEES'),
-      account('EXPENSES_PAYOUTS'),
+      [account('INCOME_PAID_PROJECTS'), 'CREDIT'],
+      [account('INCOME_PAYMENT_FEE'), 'CREDIT'],
+      [account('INCOME_CONTRACT_FEES'), 'CREDIT'],
+      [account('EXPENSES_PAYOUTS'), 'DEBIT'],
     ]);
   });
 
@@ -33,7 +32,6 @@ describe('ProjectStartedOperation', () => {
         paymentProcessingFee: new Money(5, 'USD'),
         platformFee: new Money(10, 'USD'),
         targetNetAmount: new Money(100, 'USD'),
-        type: 'PROJECT_STARTED',
       }),
     );
 
@@ -49,8 +47,8 @@ describe('ProjectStartedOperation', () => {
         ['DEBIT', `USER_RECEIVABLES:${clientUserId}`, usd(10)],
         ['CREDIT', 'SYSTEM_INCOME_CONTRACT_FEES', usd(10)],
         ['DEBIT', 'SYSTEM_EXPENSES_PAYOUTS', usd(100)],
-        ['CREDIT', `USER_PAYABLES_LOCKED:${customerUserId}`, usd(50)],
-        ['CREDIT', `USER_PAYABLES:${customerUserId}`, usd(50)],
+        ['CREDIT', `USER_PAYABLE_LOCKED:${customerUserId}`, usd(50)],
+        ['CREDIT', `USER_PAYABLE:${customerUserId}`, usd(50)],
       ],
     });
   });

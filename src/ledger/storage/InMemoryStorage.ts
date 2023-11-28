@@ -5,7 +5,10 @@ import { Entry } from '../records/Entry.js';
 import { Transaction } from '../records/Transaction.js';
 import { LedgerStorage } from './LedgerStorage.js';
 import { LedgerError } from '@/errors.js';
+import { Money } from '@/money/Money.js';
 import { EXTERNAL_ID, INTERNAL_ID } from '@/types.js';
+
+type NormalBalance = 'DEBIT' | 'CREDIT';
 
 type SavedTransaction = {
   description: string | null;
@@ -13,19 +16,26 @@ type SavedTransaction = {
   ledgerId: string;
 };
 
-type SavedSystemAccount = {
+type SavedAccountCore = {
   id: string;
   ledgerId: string;
   name: string;
+  normalBalance: NormalBalance;
+};
+
+type SavedSystemAccount = SavedAccountCore & {
   type: 'SYSTEM';
 };
 
-type SavedUserAccount = {
-  id: string;
-  ledgerId: string;
-  name: string;
+type SavedUserAccount = SavedAccountCore & {
   type: 'USER';
   userAccountId: EXTERNAL_ID;
+};
+
+type SavedUserAccountType = {
+  ledgerId: string;
+  name: string;
+  normalBalance: NormalBalance;
 };
 
 type SavedAccount = SavedSystemAccount | SavedUserAccount;
@@ -41,6 +51,8 @@ export class InMemoryLedgerStorage implements LedgerStorage {
 
   private accounts: SavedAccount[] = [];
 
+  private userAccountTypes: SavedUserAccountType[] = [];
+
   public async insertTransaction(transaction: Transaction) {
     await this.saveTransactionLedgerAccounts(transaction);
     await this.saveTransactionEntries(transaction);
@@ -52,11 +64,35 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     });
   }
 
-  public async saveAccounts(ledgerId: INTERNAL_ID, accounts: LedgerAccount[]) {
-    for (const account of accounts) {
+  public async saveUserAccountTypes(
+    ledgerId: INTERNAL_ID,
+    accounts: Array<[string, NormalBalance]>,
+  ) {
+    for (const [name, normalBalance] of accounts) {
+      const existingAccountType = this.userAccountTypes.find(
+        (accountType) =>
+          accountType.name === name && accountType.ledgerId === ledgerId,
+      );
+      if (existingAccountType) {
+        continue;
+      }
+
+      this.userAccountTypes.push({
+        ledgerId,
+        name,
+        normalBalance,
+      });
+    }
+  }
+
+  public async saveAccounts(
+    ledgerId: INTERNAL_ID,
+    accounts: Array<[LedgerAccount, NormalBalance]>,
+  ) {
+    for (const [account, normalBalance] of accounts) {
       const existingAccount = await this.findSavedAccount(ledgerId, account);
       if (existingAccount) {
-        if (!account.canBeInserted) {
+        if (!(account instanceof UserLedgerAccount)) {
           throw new LedgerError(
             `Account ${account.uniqueNamedIdentifier} cannot be inserted`,
           );
@@ -65,19 +101,23 @@ export class InMemoryLedgerStorage implements LedgerStorage {
         continue;
       }
 
-      this.accounts.push(this.accountToSavedAccount(ledgerId, account));
+      this.accounts.push(
+        this.accountToSavedAccount(ledgerId, account, normalBalance),
+      );
     }
   }
 
   private accountToSavedAccount(
     ledgerId: INTERNAL_ID,
     account: LedgerAccount,
+    normalBalance: NormalBalance,
   ): SavedAccount {
     if (account instanceof SystemLedgerAccount) {
       return {
         id: account.id,
         ledgerId,
         name: account.name,
+        normalBalance,
         type: 'SYSTEM',
       };
     } else if (account instanceof UserLedgerAccount) {
@@ -85,6 +125,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
         id: account.id,
         ledgerId,
         name: account.name,
+        normalBalance,
         type: 'USER',
         userAccountId: account.userAccountId,
       };
@@ -155,13 +196,15 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     for (const account of accounts) {
       const existingAccount = await this.findSavedAccount(ledgerId, account);
       if (!existingAccount) {
-        if (!account.canBeInserted) {
+        if (!(account instanceof UserLedgerAccount)) {
           throw new LedgerError(
             `Account ${account.uniqueNamedIdentifier} cannot be inserted`,
           );
         }
 
-        this.accounts.push(this.accountToSavedAccount(ledgerId, account));
+        this.accounts.push(
+          this.accountToSavedAccount(ledgerId, account, 'DEBIT'), // @todo fix me
+        );
       }
     }
   }
@@ -176,5 +219,56 @@ export class InMemoryLedgerStorage implements LedgerStorage {
 
   public async findTransactions() {
     return this.transactions;
+  }
+
+  public async findUserAccountTypes() {
+    return this.userAccountTypes;
+  }
+
+  public async fetchAccountBalance(account: LedgerAccount): Promise<Money> {
+    /**
+     * -- Determine normal balance type for account ('DEBIT' | 'CREDIT')
+     * SELECT normal_balance
+     * FROM ledger_account la
+     * INNER JOIN ledger_account_type lat ON
+     * la.ledger_account_type_id = lat.id
+     * WHERE la.id = input_ledger_account_id
+     * INTO account_balance_type;
+     *
+     * IF account_balance_type IS NULL THEN
+     * RAISE EXCEPTION 'Account does not exist. ID: %', input_ledger_account_id;
+     * END IF;
+     *
+     * -- Sum up all debit entries for this account
+     * SELECT COALESCE(sum(amount), 0)
+     * FROM ledger_transaction_entry lte
+     * LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
+     * WHERE
+     * ledger_account_id = input_ledger_account_id AND
+     * action = 'DEBIT' AND
+     * lt.posted_at < before_date
+     * INTO sum_debits;
+     *
+     * -- Sum up all credit entries for this account
+     * SELECT COALESCE(sum(amount), 0)
+     * FROM ledger_transaction_entry lte
+     * LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
+     * WHERE
+     * ledger_account_id = input_ledger_account_id AND
+     * action = 'CREDIT' AND
+     * lt.posted_at < before_date
+     * INTO sum_credits;
+     *
+     * IF account_balance_type = 'DEBIT' THEN
+     * balance = 0 + sum_debits - sum_credits;
+     * ELSEIF account_balance_type = 'CREDIT' THEN
+     * balance = 0 + sum_credits - sum_debits;
+     * ELSE
+     * RAISE EXCEPTION 'Unexpected account_balance_type: %', account_balance_type;
+     * END IF;
+     *
+     * RETURN balance;
+     */
+    return new Money(0, 'USD');
   }
 }

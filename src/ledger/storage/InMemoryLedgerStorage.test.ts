@@ -14,9 +14,12 @@ describe('InMemoryLedgerStorage', () => {
     test('save accounts', async () => {
       const storage = new InMemoryLedgerStorage();
       await storage.saveAccounts(ledgerId, [
-        account('INCOME_PAID_PROJECTS'),
-        account('INCOME_PAYMENT_FEE'),
-        account('PAYABLES_LOCKED', 1),
+        [account('INCOME_PAID_PROJECTS'), 'CREDIT'],
+        [account('INCOME_PAYMENT_FEE'), 'CREDIT'],
+      ]);
+
+      await storage.saveUserAccountTypes(ledgerId, [
+        ['PAYABLES_LOCKED', 'CREDIT'],
       ]);
 
       const savedAccounts = await storage.findAccounts();
@@ -32,21 +35,41 @@ describe('InMemoryLedgerStorage', () => {
           ledgerId,
           name: 'INCOME_PAYMENT_FEE',
         }),
-        expect.objectContaining({
-          id: expect.any(String),
+      ]);
+    });
+
+    test('save user account types', async () => {
+      const storage = new InMemoryLedgerStorage();
+
+      await storage.saveUserAccountTypes(ledgerId, [
+        ['PAYABLES_LOCKED', 'CREDIT'],
+        ['RECEIVABLES', 'DEBIT'],
+      ]);
+
+      const userAccountTypes = await storage.findUserAccountTypes();
+      expect(userAccountTypes).toEqual([
+        {
           ledgerId,
           name: 'PAYABLES_LOCKED',
-        }),
+          normalBalance: 'CREDIT',
+        },
+        {
+          ledgerId,
+          name: 'RECEIVABLES',
+          normalBalance: 'DEBIT',
+        },
       ]);
     });
 
     test('cannot override existing system', async () => {
       const storage = new InMemoryLedgerStorage();
       const originalAccount = account('INCOME_PAID_PROJECTS');
-      await storage.saveAccounts(ledgerId, [originalAccount]);
+      await storage.saveAccounts(ledgerId, [[originalAccount, 'CREDIT']]);
 
       await expect(async () => {
-        await storage.saveAccounts(ledgerId, [account('INCOME_PAID_PROJECTS')]);
+        await storage.saveAccounts(ledgerId, [
+          [account('INCOME_PAID_PROJECTS'), 'DEBIT'],
+        ]);
       }).rejects.toThrow(
         `Account SYSTEM_INCOME_PAID_PROJECTS cannot be inserted`,
       );
@@ -55,15 +78,17 @@ describe('InMemoryLedgerStorage', () => {
     test('cannot override existing user account', async () => {
       const storage = new InMemoryLedgerStorage();
       const originalAccount = account('RECEIVABLES', 1);
-      await storage.saveAccounts(ledgerId, [originalAccount]);
-      await storage.saveAccounts(ledgerId, [account('RECEIVABLES', 1)]);
+      await storage.saveAccounts(ledgerId, [[originalAccount, 'DEBIT']]);
+      await storage.saveAccounts(ledgerId, [
+        [account('RECEIVABLES', 1), 'CREDIT'],
+      ]);
 
       const savedAccounts = await storage.findAccounts();
       expect(savedAccounts).toEqual([
         {
           ...originalAccount,
-          canBeInserted: undefined,
           ledgerId,
+          normalBalance: 'DEBIT',
           type: 'USER',
         },
       ]);
@@ -73,8 +98,8 @@ describe('InMemoryLedgerStorage', () => {
   test('save transactions', async () => {
     const storage = new InMemoryLedgerStorage();
     await storage.saveAccounts(ledgerId, [
-      account('INCOME_PAID_PROJECTS'),
-      account('INCOME_PAYMENT_FEE'),
+      [account('INCOME_PAID_PROJECTS'), 'CREDIT'],
+      [account('INCOME_PAYMENT_FEE'), 'CREDIT'],
     ]);
 
     const transaction = new Transaction(

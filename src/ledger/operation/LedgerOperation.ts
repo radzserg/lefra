@@ -1,5 +1,6 @@
 import { Transaction } from '../records/Transaction.js';
 import { INTERNAL_ID } from '@/types.js';
+import { z } from 'zod';
 
 export type ILedgerOperation = {
   createTransaction: (ledgerId: INTERNAL_ID) => Promise<Transaction>;
@@ -10,6 +11,7 @@ export type ILedgerOperation = {
  * It defines logic based on the business rules.
  */
 export abstract class LedgerOperation implements ILedgerOperation {
+  protected abstract inputSchema: z.ZodSchema;
   // protected validateInput<TSchema extends z.ZodSchema>(
   //   schema: TSchema,
   //   payload: z.infer<TSchema>,
@@ -26,5 +28,7 @@ export abstract class LedgerOperation implements ILedgerOperation {
   //   }
   // }
 
-  public abstract createTransaction(): Promise<Transaction>;
+  public abstract createTransaction(
+    ledgerId: INTERNAL_ID,
+  ): Promise<Transaction>;
 }

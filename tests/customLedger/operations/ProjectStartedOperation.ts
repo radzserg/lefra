@@ -1,5 +1,8 @@
 import { account } from '@/index.js';
-import { ILedgerOperation } from '@/ledger/operation/LedgerOperation.js';
+import {
+  ILedgerOperation,
+  LedgerOperation,
+} from '@/ledger/operation/LedgerOperation.js';
 import { DoubleEntry } from '@/ledger/records/DoubleEntry.js';
 import { credit, debit } from '@/ledger/records/Entry.js';
 import { Transaction } from '@/ledger/records/Transaction.js';
@@ -15,7 +18,6 @@ const schema = z
     paymentProcessingFee: moneySchema,
     platformFee: moneySchema.nullable(),
     targetNetAmount: moneySchema,
-    type: z.literal('PROJECT_STARTED'),
   })
   .strict();
 
@@ -27,8 +29,12 @@ export type ProjectStartedOperationData = z.infer<OperationSchema>;
  * Part of money is locked for the customer. Another part is immediately
  * available for the customer to payout.
  */
-export class ProjectStartedOperation implements ILedgerOperation {
-  public constructor(private readonly payload: ProjectStartedOperationData) {}
+export class ProjectStartedOperation extends LedgerOperation {
+  protected inputSchema: OperationSchema = schema;
+
+  public constructor(private readonly payload: ProjectStartedOperationData) {
+    super();
+  }
 
   public async createTransaction(ledgerId: INTERNAL_ID): Promise<Transaction> {
     const {
@@ -69,8 +75,8 @@ export class ProjectStartedOperation implements ILedgerOperation {
         debit(account('EXPENSES_PAYOUTS'), targetNetAmount),
         // prettier-ignore
         [
-          credit(account("PAYABLES_LOCKED", customerUserId), amountLockedForCustomer,),
-          credit(account("PAYABLES", customerUserId), amountAvailable),
+          credit(account("PAYABLE_LOCKED", customerUserId), amountLockedForCustomer,),
+          credit(account("PAYABLE", customerUserId), amountAvailable),
         ],
         'Part of funds are locked for the customer and part of funds are available for the customer',
       ),

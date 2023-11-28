@@ -5,8 +5,6 @@ import { EXTERNAL_ID } from '@/types.js';
  * Represents user-defined ledger account. Defined by name and id.
  */
 export class UserLedgerAccount extends LedgerAccount {
-  public canBeInserted = true;
-
   public constructor(
     public readonly name: string,
     public readonly userAccountId: EXTERNAL_ID,
