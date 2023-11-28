@@ -27,14 +27,11 @@ export type ProjectStartedOperationData = z.infer<OperationSchema>;
  * Part of money is locked for the customer. Another part is immediately
  * available for the customer to payout.
  */
-export class ProjectStartedOperation extends LedgerOperation {
-  protected inputSchema: OperationSchema = schema;
-
+export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
   protected declare payload: ProjectStartedOperationData;
 
   public constructor(payload: ProjectStartedOperationData) {
-    super(payload);
-    this.validatePayload();
+    super(schema, payload);
   }
 
   public async createTransaction(ledgerId: INTERNAL_ID): Promise<Transaction> {
