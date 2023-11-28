@@ -1,4 +1,4 @@
-import { DoubleEntry } from '../records/DoubleEntry.js';
+import { doubleEntry } from '../records/DoubleEntry.js';
 import { credit, debit } from '../records/Entry.js';
 import { Transaction } from '../records/Transaction.js';
 import { InMemoryLedgerStorage } from './InMemoryStorage.js';
@@ -115,12 +115,12 @@ describe('InMemoryLedgerStorage', () => {
 
     const transaction = new Transaction(
       [
-        new DoubleEntry(
+        doubleEntry(
           debit(entityAccount('RECEIVABLES', 1), new Money(100, 'USD')),
           credit(systemAccount('INCOME_PAID_PROJECTS'), new Money(100, 'USD')),
           'User owes money for goods',
         ),
-        new DoubleEntry(
+        doubleEntry(
           debit(entityAccount('RECEIVABLES', 1), new Money(3, 'USD')),
           credit(systemAccount('INCOME_PAYMENT_FEE'), new Money(3, 'USD')),
           'User owes payment processing fee',
@@ -227,7 +227,7 @@ describe('InMemoryLedgerStorage', () => {
 
       const transaction = new Transaction(
         [
-          new DoubleEntry(
+          doubleEntry(
             debit(entityAccount('RECEIVABLES', 1), new Money(100, 'USD')),
             credit(
               systemAccount('INCOME_PAID_PROJECTS'),
@@ -235,7 +235,7 @@ describe('InMemoryLedgerStorage', () => {
             ),
             'User owes money for goods',
           ),
-          new DoubleEntry(
+          doubleEntry(
             debit(entityAccount('RECEIVABLES', 1), new Money(3, 'USD')),
             credit(systemAccount('INCOME_PAYMENT_FEE'), new Money(3, 'USD')),
             'User owes payment processing fee',

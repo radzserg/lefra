@@ -1,7 +1,7 @@
 // eslint-disable-next-line eslint-comments/disable-enable-pair
 /* eslint-disable no-new */
 
-import { DoubleEntry } from './DoubleEntry.js';
+import { doubleEntry } from './DoubleEntry.js';
 import { credit, debit } from './Entry.js';
 import { LedgerError } from '@/errors.js';
 import {
@@ -14,7 +14,7 @@ import { describe, expect, test } from 'vitest';
 describe('Ledger entry', () => {
   test('debit and credit operations must have the same money amount', () => {
     expect(() => {
-      new DoubleEntry(
+      doubleEntry(
         debit(entityAccount('RECEIVABLES', 1), new Money(100, 'USD')),
         credit(systemAccount('EXPENSES'), new Money(100, 'USD')),
       );
@@ -23,7 +23,7 @@ describe('Ledger entry', () => {
 
   test('throw an error if debit and credit operations amount are not equal', () => {
     expect(() => {
-      new DoubleEntry(
+      doubleEntry(
         debit(entityAccount('RECEIVABLES', 1), new Money(100, 'USD')),
         credit(systemAccount('EXPENSES'), new Money(70, 'USD')),
       );
@@ -43,7 +43,7 @@ describe('Ledger entry', () => {
       systemAccount('INCOME_GOODS'),
       new Money(100, 'USD'),
     );
-    const entry = new DoubleEntry(
+    const entry = doubleEntry(
       debitOperation,
       creditOperation,
       'User owes money for goods',
@@ -66,7 +66,7 @@ describe('Ledger entry', () => {
       systemAccount('PAYABLE_LOCKED'),
       new Money(30, 'USD'),
     );
-    const entry = new DoubleEntry(
+    const entry = doubleEntry(
       debitOperation,
       [creditPayablesLocked, creditPayables],
       'Platform owes $30.00 to the contractor and and owes $70.00 but it is locked',

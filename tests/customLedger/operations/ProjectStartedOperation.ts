@@ -1,5 +1,5 @@
 import { LedgerOperation } from '@/ledger/operation/LedgerOperation.js';
-import { DoubleEntry } from '@/ledger/records/DoubleEntry.js';
+import { DoubleEntry, doubleEntry } from '@/ledger/records/DoubleEntry.js';
 import { credit, debit } from '@/ledger/records/Entry.js';
 import { Transaction } from '@/ledger/records/Transaction.js';
 import { moneySchema } from '@/money/validation.js';
@@ -43,12 +43,12 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
     } = this.payload;
     const entries: DoubleEntry[] = [];
     entries.push(
-      new DoubleEntry(
+      doubleEntry(
         debit(userAccount('RECEIVABLES', clientUserId), targetNetAmount),
         credit(systemAccount('INCOME_PAID_PROJECTS'), targetNetAmount),
         'User owes money for the project',
       ),
-      new DoubleEntry(
+      doubleEntry(
         debit(userAccount('RECEIVABLES', clientUserId), paymentProcessingFee),
         credit(systemAccount('INCOME_PAYMENT_FEE'), paymentProcessingFee),
         'User owes payment processing fee',
@@ -57,7 +57,7 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
 
     if (platformFee) {
       entries.push(
-        new DoubleEntry(
+        doubleEntry(
           debit(userAccount('RECEIVABLES', clientUserId), platformFee),
           credit(systemAccount('INCOME_CONTRACT_FEES'), platformFee),
           'User owes platform fee',
@@ -67,7 +67,7 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
 
     const amountAvailable = targetNetAmount.minus(amountLockedForCustomer);
     entries.push(
-      new DoubleEntry(
+      doubleEntry(
         debit(systemAccount('EXPENSES_PAYOUTS'), targetNetAmount),
         // prettier-ignore
         [
