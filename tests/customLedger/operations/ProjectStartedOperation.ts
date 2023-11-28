@@ -30,8 +30,11 @@ export type ProjectStartedOperationData = z.infer<OperationSchema>;
 export class ProjectStartedOperation extends LedgerOperation {
   protected inputSchema: OperationSchema = schema;
 
-  public constructor(private readonly payload: ProjectStartedOperationData) {
-    super();
+  protected declare payload: ProjectStartedOperationData;
+
+  public constructor(payload: ProjectStartedOperationData) {
+    super(payload);
+    this.validatePayload();
   }
 
   public async createTransaction(ledgerId: INTERNAL_ID): Promise<Transaction> {

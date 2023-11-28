@@ -29,6 +29,23 @@ describe('ProjectStartedOperation', () => {
     ]);
   });
 
+  test('try to pass incorrect payload', async () => {
+    await expect(async () => {
+      await ledger.record(
+        new ProjectStartedOperation({
+          amountLockedForCustomer: new Money(50, 'USD'),
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-expect-error
+          clientUserId: 'string',
+          customerUserId,
+          paymentProcessingFee: new Money(5, 'USD'),
+          platformFee: new Money(10, 'USD'),
+          targetNetAmount: new Money(100, 'USD'),
+        }),
+      );
+    }).rejects.toThrow('Invalid operation data');
+  });
+
   test('records ProjectStartedOperation', async () => {
     const transaction = await ledger.record(
       new ProjectStartedOperation({
