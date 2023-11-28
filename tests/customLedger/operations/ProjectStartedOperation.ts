@@ -5,7 +5,7 @@ import { credit, debit } from '@/ledger/records/Entry.js';
 import { Transaction } from '@/ledger/records/Transaction.js';
 import { moneySchema } from '@/money/validation.js';
 import { INTERNAL_ID } from '@/types.js';
-import { userAccount } from '#/customLedger/CustomerLedger.js';
+import { systemAccount, userAccount } from '#/customLedger/CustomerLedger.js';
 import { z } from 'zod';
 
 const schema = z
@@ -47,18 +47,12 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
     entries.push(
       new DoubleEntry(
         debit(userAccount('RECEIVABLES', clientUserId), targetNetAmount),
-        credit(
-          new SystemLedgerAccount('INCOME_PAID_PROJECTS'),
-          targetNetAmount,
-        ),
+        credit(systemAccount('INCOME_PAID_PROJECTS'), targetNetAmount),
         'User owes money for the project',
       ),
       new DoubleEntry(
         debit(userAccount('RECEIVABLES', clientUserId), paymentProcessingFee),
-        credit(
-          new SystemLedgerAccount('INCOME_PAYMENT_FEE'),
-          paymentProcessingFee,
-        ),
+        credit(systemAccount('INCOME_PAYMENT_FEE'), paymentProcessingFee),
         'User owes payment processing fee',
       ),
     );
@@ -67,7 +61,7 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
       entries.push(
         new DoubleEntry(
           debit(userAccount('RECEIVABLES', clientUserId), platformFee),
-          credit(new SystemLedgerAccount('INCOME_CONTRACT_FEES'), platformFee),
+          credit(systemAccount('INCOME_CONTRACT_FEES'), platformFee),
           'User owes platform fee',
         ),
       );
@@ -76,7 +70,7 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
     const amountAvailable = targetNetAmount.minus(amountLockedForCustomer);
     entries.push(
       new DoubleEntry(
-        debit(new SystemLedgerAccount('EXPENSES_PAYOUTS'), targetNetAmount),
+        debit(systemAccount('EXPENSES_PAYOUTS'), targetNetAmount),
         // prettier-ignore
         [
           credit(userAccount("PAYABLE_LOCKED", customerUserId), amountLockedForCustomer,),
