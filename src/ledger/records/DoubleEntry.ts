@@ -1,6 +1,6 @@
 import { CreditEntry, DebitEntry } from './Entry.js';
 import { LedgerError } from '@/errors.js';
-import { UniformEntrySet } from '@/ledger/records/UniformEntrySet.js';
+import { EntriesWithSameAction } from '@/ledger/records/EntriesWithSameAction.js';
 import { NonEmptyArray } from '@/types.js';
 
 /**
@@ -17,8 +17,8 @@ export class DoubleEntry {
     creditEntries: CreditEntry | NonEmptyArray<CreditEntry>,
     public readonly comment: string | null = null,
   ) {
-    const debitEntriesSet = UniformEntrySet.build(debitEntries);
-    const creditEntriesSet = UniformEntrySet.build(creditEntries);
+    const debitEntriesSet = EntriesWithSameAction.build(debitEntries);
+    const creditEntriesSet = EntriesWithSameAction.build(creditEntries);
 
     const debitSum = debitEntriesSet.sum();
     const creditSum = creditEntriesSet.sum();

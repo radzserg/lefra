@@ -3,15 +3,15 @@ import {
   entityAccount,
   systemAccount,
 } from '@/ledger/accounts/LedgerAccount.js';
+import { EntriesWithSameAction } from '@/ledger/records/EntriesWithSameAction.js';
 import { credit, debit } from '@/ledger/records/Entry.js';
-import { UniformEntrySet } from '@/ledger/records/UniformEntrySet.js';
 import { Money } from '@/money/Money.js';
 import { describe, expect, test } from 'vitest';
 
 describe('UniformEntrySet', () => {
   test('cannot create UniformEntrySet with different operation types', () => {
     expect(() => {
-      UniformEntrySet.build([
+      EntriesWithSameAction.build([
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         debit(entityAccount('RECEIVABLES', 1), new Money(100, 'USD')),
@@ -22,7 +22,7 @@ describe('UniformEntrySet', () => {
 
   test('cannot create UniformEntrySet with different currency codes', () => {
     expect(() => {
-      UniformEntrySet.build([
+      EntriesWithSameAction.build([
         credit(entityAccount('RECEIVABLES', 1), new Money(100, 'CAD')),
         credit(systemAccount('EXPENSES'), new Money(100, 'USD')),
       ]);
@@ -31,7 +31,7 @@ describe('UniformEntrySet', () => {
 
   test('cannot create UniformEntrySet with empty operations', () => {
     expect(() => {
-      UniformEntrySet.build(
+      EntriesWithSameAction.build(
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         [],
@@ -41,7 +41,7 @@ describe('UniformEntrySet', () => {
 
   test('create UniformEntrySet from one debit operation', () => {
     const entry = debit(entityAccount('RECEIVABLES', 1), new Money(100, 'USD'));
-    const entries = UniformEntrySet.build(entry);
+    const entries = EntriesWithSameAction.build(entry);
     expect(entries.entries()).toEqual([entry]);
   });
 
@@ -50,7 +50,7 @@ describe('UniformEntrySet', () => {
       entityAccount('RECEIVABLES', 1),
       new Money(100, 'USD'),
     );
-    const entries = UniformEntrySet.build(entry);
+    const entries = EntriesWithSameAction.build(entry);
     expect(entries.entries()).toEqual([entry]);
   });
 });
