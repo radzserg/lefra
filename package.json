@@ -1,8 +1,7 @@
 {
-  "author": "",
+  "author": "Sergey Radzishevskii <radzserg@gmail.com>",
   "dependencies": {
     "bignumber.js": "^9.1.2",
-    "eslint": "^8.54.0",
     "uuid": "^9.0.1",
     "zod": "^3.22.4"
   },
@@ -10,13 +9,16 @@
   "devDependencies": {
     "@types/node": "^20.9.2",
     "@types/uuid": "^9.0.7",
+    "eslint": "^8.54.0",
     "eslint-config-canonical": "^42.8.0",
     "install": "^0.13.0",
     "tsx": "^4.1.4",
     "typescript": "^5.2.2",
     "vitest": "^0.34.6"
   },
-  "keywords": [],
+  "keywords": [
+    "ledger", "bookkeeping", "accounting", "double-entry"
+  ],
   "license": "ISC",
   "name": "ledger",
   "scripts": {

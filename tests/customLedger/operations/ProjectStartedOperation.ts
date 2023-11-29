@@ -42,7 +42,7 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
       contractorUserId,
       payment,
     } = this.payload;
-    const { platformFee, targetNetAmount } = payment;
+    const { platformFee } = payment;
     const entries: DoubleEntry[] = [];
 
     const targetNetAmountWithoutPlatformFee = platformFee
