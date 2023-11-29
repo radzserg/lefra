@@ -1,5 +1,5 @@
-import { credit, debit } from './Entry.js';
 import { entityAccount } from '@/ledger/accounts/LedgerAccount.js';
+import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { usd } from '@/money/Money.js';
 import { describe, expect, test } from 'vitest';
 

@@ -2,6 +2,8 @@
   "author": "Sergey Radzishevskii <radzserg@gmail.com>",
   "dependencies": {
     "bignumber.js": "^9.1.2",
+    "slonik": "^37.2.0",
+    "slonik-interceptor-field-name-transformation": "^1.6.5",
     "uuid": "^9.0.1",
     "zod": "^3.22.4"
   },

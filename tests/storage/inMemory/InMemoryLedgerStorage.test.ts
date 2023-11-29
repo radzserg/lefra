@@ -1,8 +1,8 @@
-import { doubleEntry } from '../../transaction/DoubleEntry.js';
-import { credit, debit } from '../../transaction/Entry.js';
-import { Transaction } from '../../transaction/Transaction.js';
-import { InMemoryLedgerStorage } from './InMemoryStorage.js';
 import { entityAccount } from '@/ledger/accounts/LedgerAccount.js';
+import { InMemoryLedgerStorage } from '@/ledger/storage/inMemory/InMemoryStorage.js';
+import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
+import { credit, debit } from '@/ledger/transaction/Entry.js';
+import { Transaction } from '@/ledger/transaction/Transaction.js';
 import { Money } from '@/money/Money.js';
 import { systemAccount, userAccount } from '#/customLedger/CustomerLedger.js';
 import { v4 as uuid } from 'uuid';

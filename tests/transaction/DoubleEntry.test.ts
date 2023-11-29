@@ -1,13 +1,10 @@
-// eslint-disable-next-line eslint-comments/disable-enable-pair
-/* eslint-disable no-new */
-
-import { doubleEntry } from './DoubleEntry.js';
-import { credit, debit } from './Entry.js';
 import { LedgerError } from '@/errors.js';
 import {
   entityAccount,
   systemAccount,
 } from '@/ledger/accounts/LedgerAccount.js';
+import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
+import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { Money } from '@/money/Money.js';
 import { describe, expect, test } from 'vitest';
 

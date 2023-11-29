@@ -1,10 +1,10 @@
-import { doubleEntry } from './DoubleEntry.js';
-import { credit, debit } from './Entry.js';
-import { Transaction } from './Transaction.js';
 import {
   entityAccount,
   systemAccount,
 } from '@/ledger/accounts/LedgerAccount.js';
+import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
+import { credit, debit } from '@/ledger/transaction/Entry.js';
+import { Transaction } from '@/ledger/transaction/Transaction.js';
 import { Money } from '@/money/Money.js';
 import { describe, expect, test } from 'vitest';
 
