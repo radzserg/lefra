@@ -251,6 +251,12 @@ describe('InMemoryLedgerStorage', () => {
         entityAccount('RECEIVABLES', 1),
       );
       expect(receivables).toEqual(new Money(103, 'USD'));
+
+      const incomePaymentFee = await storage.fetchAccountBalance(
+        ledgerId,
+        systemAccount('INCOME_PAYMENT_FEE'),
+      );
+      expect(incomePaymentFee).toEqual(new Money(3, 'USD'));
     });
   });
 });
