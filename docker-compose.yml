@@ -1,0 +1,17 @@
+version: "3"
+services:
+  db:
+    image: postgres:16
+    ports:
+      - "5473:5432"
+    environment:
+      POSTGRES_HOST: localhost
+      POSTGRES_USER: ledger
+      POSTGRES_PASSWORD: ledger
+      POSTGRES_DB: ledger
+    volumes:
+      - ledger_volume:/var/lib/postgresql/data
+
+volumes:
+  ledger_volume:
+    driver: local

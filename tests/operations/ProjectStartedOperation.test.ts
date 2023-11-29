@@ -1,6 +1,6 @@
 import { LedgerAccount } from '@/ledger/accounts/LedgerAccount.js';
 import { Ledger } from '@/ledger/Ledger.js';
-import { InMemoryLedgerStorage } from '@/ledger/storage/InMemoryStorage.js';
+import { InMemoryLedgerStorage } from '@/ledger/storage/inMemory/InMemoryStorage.js';
 import { Money, usd } from '@/money/Money.js';
 import { systemAccount, userAccount } from '#/customLedger/CustomerLedger.js';
 import { ProjectStartedOperation } from '#/customLedger/operations/ProjectStartedOperation.js';

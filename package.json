@@ -26,10 +26,10 @@
   ],
   "lint-staged": {
     "src/**/*.ts": [
-      "eslint"
+      "lint:format"
     ],
     "tests/**/*.ts": [
-      "eslint"
+      "lint:format"
     ]
   },
   "license": "ISC",

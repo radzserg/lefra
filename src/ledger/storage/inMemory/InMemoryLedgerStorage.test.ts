@@ -1,6 +1,6 @@
-import { doubleEntry } from '../transaction/DoubleEntry.js';
-import { credit, debit } from '../transaction/Entry.js';
-import { Transaction } from '../transaction/Transaction.js';
+import { doubleEntry } from '../../transaction/DoubleEntry.js';
+import { credit, debit } from '../../transaction/Entry.js';
+import { Transaction } from '../../transaction/Transaction.js';
 import { InMemoryLedgerStorage } from './InMemoryStorage.js';
 import { entityAccount } from '@/ledger/accounts/LedgerAccount.js';
 import { Money } from '@/money/Money.js';
