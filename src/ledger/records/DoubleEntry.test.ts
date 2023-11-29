@@ -29,7 +29,8 @@ describe('Ledger entry', () => {
       );
     }).toThrow(
       new LedgerError(
-        `Debit and credit operations must have the same money amount. Debit sum: $100.00, credit sum: $70.00`,
+        `Debit and credit operations must have the same money amount. Debit sum: $100.00, credit sum: $70.00 Entries:
+DEBIT  $100.00 ENTITY_RECEIVABLES:1`,
       ),
     );
   });

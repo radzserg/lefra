@@ -1,5 +1,6 @@
 import { CreditEntry, DebitEntry } from './Entry.js';
 import { LedgerError } from '@/errors.js';
+import { EntriesFormatter } from '@/ledger/formatter/EntriesFormatter.js';
 import { EntriesWithSameAction } from '@/ledger/records/EntriesWithSameAction.js';
 import { NonEmptyArray } from '@/types.js';
 
@@ -24,8 +25,10 @@ export const doubleEntry = (
   const debitSum = debitEntriesSet.sum();
   const creditSum = creditEntriesSet.sum();
   if (!debitSum.equals(creditSum)) {
+    const formatter = new EntriesFormatter();
     throw new LedgerError(
-      `Debit and credit operations must have the same money amount. Debit sum: ${debitSum.format()}, credit sum: ${creditSum.format()}`,
+      `Debit and credit operations must have the same money amount. Debit sum: ${debitSum.format()}, credit sum: ${creditSum.format()}` +
+        ` Entries:\n${formatter.format(debitEntriesSet.entries())}`,
     );
   }
 

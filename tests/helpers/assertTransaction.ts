@@ -1,4 +1,6 @@
+import { LedgerAccount } from '@/ledger/accounts/LedgerAccount.js';
 import { EntriesFormatter } from '@/ledger/formatter/EntriesFormatter.js';
+import { Entry } from '@/ledger/records/Entry.js';
 import { Transaction } from '@/ledger/records/Transaction.js';
 import { Money } from '@/money/Money.js';
 import { expect } from 'vitest';
@@ -11,35 +13,63 @@ type ExpectedTransaction = {
 };
 
 const transformToReadableEntry = (entry: ExpectedEntry) => {
-  return `${entry[0]} ${entry[1]} ${entry[2].formatCompact()}`;
+  return `${entry[0].padEnd(6, ' ')} ${entry[2].format()} ${entry[1]} `;
 };
 
 const transformToReadableEntries = (entries: ExpectedEntry[]) => {
   return entries.map(transformToReadableEntry).join('\n');
 };
 
-export const assertTransaction = (
+const isSameAccount = (account: LedgerAccount, expected: string) => {
+  if (account.type === 'SYSTEM') {
+    return account.name === expected;
+  } else if (account.type === 'ENTITY') {
+    return `${account.name}:${account.entityId}` === expected;
+  }
+
+  return false;
+};
+
+export const assertTransaction = async (
   transaction: Transaction,
-  { description, entries }: ExpectedTransaction,
+  {
+    description: expectedDescription,
+    entries: expectedEntries,
+  }: ExpectedTransaction,
 ) => {
   expect(transaction).not.toBeNull();
-  if (description) {
-    expect(transaction.description).toEqual(description);
+  if (expectedDescription) {
+    expect(transaction.description).toEqual(expectedDescription);
   }
 
   const formatter = new EntriesFormatter();
-  if (transaction.entries.length !== entries.length) {
+  if (transaction.entries.length !== expectedEntries.length) {
     throw new Error(
       `Expected ledger entries !== Actual.\n` +
-        `Expected:\n${transformToReadableEntries(entries)}\n` +
+        `Expected:\n${transformToReadableEntries(expectedEntries)}\n` +
         `Actual:\n${formatter.format(transaction.entries)}\n`,
     );
   }
 
-  for (const [index, expectedEntry] of entries.entries()) {
-    const actualEntry = transaction.entries[index];
+  const actualEntries = transaction.entries;
+  for (const [index, expectedEntry] of expectedEntries.entries()) {
+    const actualEntry: Entry = actualEntries[index];
 
-    expect(actualEntry.action).toEqual(expectedEntry[0]);
-    expect(actualEntry.amount).toEqual(expectedEntry[2]);
+    if (
+      actualEntry.action !== expectedEntry[0] ||
+      !isSameAccount(actualEntry.account, expectedEntry[1]) ||
+      !actualEntry.amount.equals(expectedEntry[2])
+    ) {
+      throw new Error(
+        `Expected ledger entries !== Actual.\n` +
+          `Equal:\n${transformToReadableEntries(
+            expectedEntries.slice(0, index),
+          )}\n\n` +
+          `Expected:\n${transformToReadableEntries(
+            expectedEntries.slice(index),
+          )}\n\n` +
+          `Actual:\n${formatter.format(transaction.entries.slice(index))}\n`,
+      );
+    }
   }
 };

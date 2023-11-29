@@ -44,10 +44,21 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
     } = this.payload;
     const { platformFee, targetNetAmount } = payment;
     const entries: DoubleEntry[] = [];
+
+    const targetNetAmountWithoutPlatformFee = platformFee
+      ? payment.targetNetAmount.minus(platformFee.netAmount)
+      : payment.targetNetAmount;
+
     entries.push(
       doubleEntry(
-        debit(userAccount('RECEIVABLES', clientUserId), targetNetAmount),
-        credit(systemAccount('INCOME_PAID_PROJECTS'), targetNetAmount),
+        debit(
+          userAccount('RECEIVABLES', clientUserId),
+          targetNetAmountWithoutPlatformFee,
+        ),
+        credit(
+          systemAccount('INCOME_PAID_PROJECTS'),
+          targetNetAmountWithoutPlatformFee,
+        ),
         'User owes money for the project',
       ),
     );
@@ -68,10 +79,15 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
       );
     }
 
-    const amountAvailable = targetNetAmount.minus(amountLockedForContractor);
+    const amountAvailable = targetNetAmountWithoutPlatformFee.minus(
+      amountLockedForContractor,
+    );
     entries.push(
       doubleEntry(
-        debit(systemAccount('EXPENSES_PAYOUTS'), targetNetAmount),
+        debit(
+          systemAccount('EXPENSES_PAYOUTS'),
+          targetNetAmountWithoutPlatformFee,
+        ),
         // prettier-ignore
         [
           credit(userAccount("PAYABLE_LOCKED", contractorUserId), amountLockedForContractor,),

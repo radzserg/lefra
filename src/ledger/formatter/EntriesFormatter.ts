@@ -15,7 +15,7 @@ export class EntriesFormatter {
   private formatEntry(entry: Entry): string {
     return `${this.formatOperation(
       entry.action,
-    )} ${entry.amount.formatCompact()} ${this.formatAccount(entry.account)}`;
+    )} ${entry.amount.format()} ${this.formatAccount(entry.account)}`;
   }
 
   private formatAccount(account: LedgerAccount): string {
@@ -29,13 +29,6 @@ export class EntriesFormatter {
   }
 
   private formatOperation(entityAction: EntryAction): string {
-    switch (entityAction) {
-      case 'CREDIT':
-        return 'CREDIT';
-      case 'DEBIT':
-        return 'DEBIT ';
-      default:
-        throw new TypeError(`Unknown operation type: ${entityAction}`);
-    }
+    return entityAction.padEnd(6, ' ');
   }
 }

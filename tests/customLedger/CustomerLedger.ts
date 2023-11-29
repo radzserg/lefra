@@ -2,7 +2,7 @@ import {
   entityAccount,
   systemAccount as defaultSystemAccount,
 } from '@/ledger/accounts/LedgerAccount.js';
-import { usdSchema } from '@/money/validation.js';
+import { moneySchema, usdSchema } from '@/money/validation.js';
 import { z } from 'zod';
 
 // this will be automatically generated
@@ -17,6 +17,7 @@ type SystemAccountType =
   | 'EXPENSES_STRIPE_CONTRACT_FEES'
   | 'CURRENT_ASSETS_STRIPE_PLATFORM_USA'
   | 'EXPENSES_CURRENCY_CONVERSION_LOSSES'
+  | 'INCOME_STRIPE_PAY_IN_FEES'
   | 'INCOME_CURRENCY_CONVERSION_GAINS';
 
 export const userAccount = (
@@ -45,7 +46,7 @@ const processingPaymentSchema = z
     /**
      * The total amount that was charged to the payment method. Includes pay-in fees.
      */
-    chargeAmount: usdSchema,
+    chargeAmount: moneySchema,
 
     estimatedStripeProcessingFee: usdSchema,
     /**
@@ -76,7 +77,7 @@ const confirmedPaymentSchema = z
     /**
      * The total amount that was charged to the payment method. Includes pay-in fees.
      */
-    chargeAmount: usdSchema,
+    chargeAmount: moneySchema,
 
     estimatedStripeProcessingFee: usdSchema,
     /**

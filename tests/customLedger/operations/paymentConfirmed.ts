@@ -30,7 +30,7 @@ export const entriesForPaymentConfirmed = ({
   const entries: DoubleEntry[] = [
     doubleEntry(
       debit(userAccount('RECEIVABLES', clientUserId), stripePayInFeeAmountMinusPlatformProcessingFee),
-      credit(systemAccount('INCOME_PAID_PROJECTS'), stripePayInFeeAmountMinusPlatformProcessingFee),
+      credit(systemAccount('INCOME_STRIPE_PAY_IN_FEES'), stripePayInFeeAmountMinusPlatformProcessingFee),
       'User owes Stripe processing fee',
     ),
     doubleEntry(
@@ -52,6 +52,10 @@ export const entriesForPaymentConfirmed = ({
         credit(userAccount('RECEIVABLES', clientUserId), platformFee.chargeAmount),
         'User owes platform fee',
       ),
+      //
+      //       ['DEBIT', contraPlatformFee.stripeProcessingFee, System('EXPENSES_STRIPE_CONTRACT_FEES')],
+      //       ['DEBIT', contraPlatformFee.netAmount, System('CURRENT_ASSETS_STRIPE_PLATFORM_USA')],
+      //        ['CREDIT', contraPlatformFee.chargeAmount, ClientReceivables(client)],
     );
   }
 

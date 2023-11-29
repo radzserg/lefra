@@ -67,6 +67,13 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   private readonly idGenerator: UuidDatabaseIdGenerator =
     new UuidDatabaseIdGenerator();
 
+  public async reset() {
+    this.transactions = [];
+    this.entries = [];
+    this.accounts = [];
+    this.userAccountTypes = [];
+  }
+
   public async insertTransaction(ledgerId: DB_ID, transaction: Transaction) {
     const savedTransaction: SavedTransaction = {
       description: transaction.description,
