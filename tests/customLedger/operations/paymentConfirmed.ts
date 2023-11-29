@@ -1,5 +1,5 @@
-import { DoubleEntry, doubleEntry } from '@/ledger/records/DoubleEntry.js';
-import { credit, debit } from '@/ledger/records/Entry.js';
+import { DoubleEntry, doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
+import { credit, debit } from '@/ledger/transaction/Entry.js';
 import {
   ConfirmedPayment,
   systemAccount,

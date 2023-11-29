@@ -1,7 +1,7 @@
 import { CreditEntry, DebitEntry } from './Entry.js';
 import { LedgerError } from '@/errors.js';
 import { EntriesFormatter } from '@/ledger/formatter/EntriesFormatter.js';
-import { EntriesWithSameAction } from '@/ledger/records/EntriesWithSameAction.js';
+import { EntriesWithSameAction } from '@/ledger/transaction/EntriesWithSameAction.js';
 import { NonEmptyArray } from '@/types.js';
 
 /**

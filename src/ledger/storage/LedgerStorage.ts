@@ -1,4 +1,4 @@
-import { Transaction } from '../records/Transaction.js';
+import { Transaction } from '../transaction/Transaction.js';
 import { LedgerAccount } from '@/ledger/accounts/LedgerAccount.js';
 import { Money } from '@/money/Money.js';
 import { DB_ID } from '@/types.js';

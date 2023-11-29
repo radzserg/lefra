@@ -3,7 +3,7 @@ import {
   systemAccount,
 } from '@/ledger/accounts/LedgerAccount.js';
 import { EntriesFormatter } from '@/ledger/formatter/EntriesFormatter.js';
-import { credit, debit } from '@/ledger/records/Entry.js';
+import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { Money } from '@/money/Money.js';
 import { describe, expect, test } from 'vitest';
 

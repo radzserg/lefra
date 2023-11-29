@@ -1,7 +1,7 @@
 import { LedgerOperation } from '@/ledger/operation/LedgerOperation.js';
-import { DoubleEntry, doubleEntry } from '@/ledger/records/DoubleEntry.js';
-import { credit, debit } from '@/ledger/records/Entry.js';
-import { Transaction } from '@/ledger/records/Transaction.js';
+import { DoubleEntry, doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
+import { credit, debit } from '@/ledger/transaction/Entry.js';
+import { Transaction } from '@/ledger/transaction/Transaction.js';
 import { usdSchema } from '@/money/validation.js';
 import {
   paymentSchema,

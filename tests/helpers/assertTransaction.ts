@@ -1,7 +1,7 @@
 import { LedgerAccount } from '@/ledger/accounts/LedgerAccount.js';
 import { EntriesFormatter } from '@/ledger/formatter/EntriesFormatter.js';
-import { Entry } from '@/ledger/records/Entry.js';
-import { Transaction } from '@/ledger/records/Transaction.js';
+import { Entry } from '@/ledger/transaction/Entry.js';
+import { Transaction } from '@/ledger/transaction/Transaction.js';
 import { Money } from '@/money/Money.js';
 import { expect } from 'vitest';
 

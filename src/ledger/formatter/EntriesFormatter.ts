@@ -1,5 +1,5 @@
 import { LedgerAccount } from '@/ledger/accounts/LedgerAccount.js';
-import { Entry } from '@/ledger/records/Entry.js';
+import { Entry } from '@/ledger/transaction/Entry.js';
 import { EntryAction } from '@/types.js';
 
 export class EntriesFormatter {

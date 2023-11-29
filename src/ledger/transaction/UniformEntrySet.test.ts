@@ -3,8 +3,8 @@ import {
   entityAccount,
   systemAccount,
 } from '@/ledger/accounts/LedgerAccount.js';
-import { EntriesWithSameAction } from '@/ledger/records/EntriesWithSameAction.js';
-import { credit, debit } from '@/ledger/records/Entry.js';
+import { EntriesWithSameAction } from '@/ledger/transaction/EntriesWithSameAction.js';
+import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { Money } from '@/money/Money.js';
 import { describe, expect, test } from 'vitest';
 

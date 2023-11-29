@@ -1,4 +1,4 @@
-import { Transaction } from '../records/Transaction.js';
+import { Transaction } from '../transaction/Transaction.js';
 import { LedgerOperationError } from '@/errors.js';
 import { z } from 'zod';
 
@@ -19,7 +19,7 @@ export abstract class LedgerOperation<S extends z.ZodSchema>
   ) {
     const result = inputSchema.safeParse(this.payload);
 
-    // If validation of the payload fails, we capture an error in Sentry and cancel this workflow
+    // If validation of the payload fails we throw an error.
     if (!result.success) {
       const issues = result.error.issues;
       const errorDetails = issues.map((issue) => issue.toString).join(', ');

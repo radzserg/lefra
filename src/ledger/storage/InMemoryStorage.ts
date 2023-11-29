@@ -1,12 +1,12 @@
 import { LedgerAccount } from '../accounts/LedgerAccount.js';
-import { Transaction } from '../records/Transaction.js';
+import { Transaction } from '../transaction/Transaction.js';
 import { LedgerStorage } from './LedgerStorage.js';
 import {
   LedgerError,
   LedgerNotFoundError,
   LedgerUnexpectedError,
 } from '@/errors.js';
-import { Entry } from '@/ledger/records/Entry.js';
+import { Entry } from '@/ledger/transaction/Entry.js';
 import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
 import { Money } from '@/money/Money.js';
 import { DB_ID, EntryAction } from '@/types.js';

@@ -1,5 +1,5 @@
 import { LedgerError } from '@/errors.js';
-import { CreditEntry, DebitEntry } from '@/ledger/records/Entry.js';
+import { CreditEntry, DebitEntry } from '@/ledger/transaction/Entry.js';
 import { CurrencyCode } from '@/money/currencies.js';
 import { Money } from '@/money/Money.js';
 import { ArrayType, EntryAction, NonEmptyArray } from '@/types.js';

@@ -1,6 +1,6 @@
 import { LedgerStorage } from './storage/LedgerStorage.js';
 import { ILedgerOperation } from '@/ledger/operation/LedgerOperation.js';
-import { Transaction } from '@/ledger/records/Transaction.js';
+import { Transaction } from '@/ledger/transaction/Transaction.js';
 import { DB_ID } from '@/types.js';
 
 export class Ledger {
