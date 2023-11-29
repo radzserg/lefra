@@ -2,18 +2,21 @@ import { LedgerOperation } from '@/ledger/operation/LedgerOperation.js';
 import { DoubleEntry, doubleEntry } from '@/ledger/records/DoubleEntry.js';
 import { credit, debit } from '@/ledger/records/Entry.js';
 import { Transaction } from '@/ledger/records/Transaction.js';
-import { moneySchema } from '@/money/validation.js';
-import { systemAccount, userAccount } from '#/customLedger/CustomerLedger.js';
+import { usdSchema } from '@/money/validation.js';
+import {
+  paymentSchema,
+  systemAccount,
+  userAccount,
+} from '#/customLedger/CustomerLedger.js';
+import { entriesForPaymentConfirmed } from '#/customLedger/operations/paymentConfirmed.js';
 import { z } from 'zod';
 
 const schema = z
   .object({
-    amountLockedForCustomer: moneySchema,
+    amountLockedForContractor: usdSchema,
     clientUserId: z.number(),
-    customerUserId: z.number(),
-    paymentProcessingFee: moneySchema,
-    platformFee: moneySchema.nullable(),
-    targetNetAmount: moneySchema,
+    contractorUserId: z.number(),
+    payment: paymentSchema,
   })
   .strict();
 
@@ -34,13 +37,12 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
 
   public async createTransaction(): Promise<Transaction> {
     const {
-      amountLockedForCustomer,
+      amountLockedForContractor,
       clientUserId,
-      customerUserId,
-      paymentProcessingFee,
-      platformFee,
-      targetNetAmount,
+      contractorUserId,
+      payment,
     } = this.payload;
+    const { platformFee, targetNetAmount } = payment;
     const entries: DoubleEntry[] = [];
     entries.push(
       doubleEntry(
@@ -48,35 +50,45 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
         credit(systemAccount('INCOME_PAID_PROJECTS'), targetNetAmount),
         'User owes money for the project',
       ),
-      doubleEntry(
-        debit(userAccount('RECEIVABLES', clientUserId), paymentProcessingFee),
-        credit(systemAccount('INCOME_PAYMENT_FEE'), paymentProcessingFee),
-        'User owes payment processing fee',
-      ),
     );
 
     if (platformFee) {
       entries.push(
         doubleEntry(
-          debit(userAccount('RECEIVABLES', clientUserId), platformFee),
-          credit(systemAccount('INCOME_CONTRACT_FEES'), platformFee),
+          debit(
+            userAccount('RECEIVABLES', clientUserId),
+            platformFee.chargeAmount,
+          ),
+          credit(
+            systemAccount('INCOME_CONTRACT_FEES'),
+            platformFee.chargeAmount,
+          ),
           'User owes platform fee',
         ),
       );
     }
 
-    const amountAvailable = targetNetAmount.minus(amountLockedForCustomer);
+    const amountAvailable = targetNetAmount.minus(amountLockedForContractor);
     entries.push(
       doubleEntry(
         debit(systemAccount('EXPENSES_PAYOUTS'), targetNetAmount),
         // prettier-ignore
         [
-          credit(userAccount("PAYABLE_LOCKED", customerUserId), amountLockedForCustomer,),
-          credit(userAccount("PAYABLE", customerUserId), amountAvailable),
+          credit(userAccount("PAYABLE_LOCKED", contractorUserId), amountLockedForContractor,),
+          credit(userAccount("PAYABLE", contractorUserId), amountAvailable),
         ],
         'Part of funds are locked for the customer and part of funds are available for the customer',
       ),
     );
+
+    if (payment.status === 'CONFIRMED') {
+      entries.push(
+        ...entriesForPaymentConfirmed({
+          clientUserId,
+          payment,
+        }),
+      );
+    }
 
     return new Transaction(entries, 'test transaction');
   }
