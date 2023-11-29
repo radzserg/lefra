@@ -1,6 +1,6 @@
 import { credit, debit } from './Entry.js';
 import { entityAccount } from '@/ledger/accounts/LedgerAccount.js';
-import { Money, usd } from '@/money/Money.js';
+import { usd } from '@/money/Money.js';
 import { describe, expect, test } from 'vitest';
 
 describe('Entry', () => {

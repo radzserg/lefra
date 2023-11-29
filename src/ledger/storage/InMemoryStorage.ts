@@ -6,8 +6,8 @@ import {
   LedgerNotFoundError,
   LedgerUnexpectedError,
 } from '@/errors.js';
-import { Entry } from '@/ledger/transaction/Entry.js';
 import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
+import { Entry } from '@/ledger/transaction/Entry.js';
 import { Money } from '@/money/Money.js';
 import { DB_ID, EntryAction } from '@/types.js';
 
