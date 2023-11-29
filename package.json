@@ -11,14 +11,27 @@
     "@types/uuid": "^9.0.7",
     "eslint": "^8.54.0",
     "eslint-config-canonical": "^42.8.0",
+    "husky": "^8.0.3",
     "install": "^0.13.0",
+    "lint-staged": "^15.1.0",
     "tsx": "^4.1.4",
     "typescript": "^5.2.2",
     "vitest": "^0.34.6"
   },
   "keywords": [
-    "ledger", "bookkeeping", "accounting", "double-entry"
+    "ledger",
+    "bookkeeping",
+    "accounting",
+    "double-entry"
   ],
+  "lint-staged": {
+    "src/**/*.ts": [
+      "eslint"
+    ],
+    "tests/**/*.ts": [
+      "eslint"
+    ]
+  },
   "license": "ISC",
   "name": "ledger",
   "scripts": {
