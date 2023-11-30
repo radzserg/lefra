@@ -28,10 +28,10 @@
   ],
   "lint-staged": {
     "src/**/*.ts": [
-      "lint:format"
+      "pnpm lint:format"
     ],
     "tests/**/*.ts": [
-      "lint:format"
+      "pnpm lint:format"
     ]
   },
   "license": "ISC",
@@ -39,7 +39,8 @@
   "scripts": {
     "lint:eslint": "eslint .",
     "lint:format": "eslint --fix $FILES",
-    "test": "vitest"
+    "test": "vitest",
+    "prepare": "husky install"
   },
   "type": "module",
   "version": "1.0.0"
