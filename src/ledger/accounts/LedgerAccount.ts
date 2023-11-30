@@ -8,11 +8,13 @@ export type LedgerAccountType = 'SYSTEM' | 'ENTITY';
 export type EntityLedgerAccount = {
   readonly entityId: DB_ID;
   readonly name: string;
+  readonly slug: string;
   type: 'ENTITY';
 };
 
 export type SystemLedgerAccount = {
   readonly name: string;
+  readonly slug: string;
   type: 'SYSTEM';
 };
 
@@ -46,7 +48,7 @@ export const entityAccount = (
   name: string,
   entityId: DB_ID,
   prefix: string = 'ENTITY',
-) => {
+): EntityLedgerAccount => {
   validateName(name);
   validatePrefix(prefix);
   if (prefix === SYSTEM_PREFIX) {
@@ -56,16 +58,21 @@ export const entityAccount = (
   return {
     entityId,
     name: `${prefix}_${name}`,
+    slug: `${prefix}_${name}:${entityId}`,
     type: 'ENTITY' as const,
   };
 };
 
-export const systemAccount = (name: string, prefix: string = SYSTEM_PREFIX) => {
+export const systemAccount = (
+  name: string,
+  prefix: string = SYSTEM_PREFIX,
+): SystemLedgerAccount => {
   validateName(name);
   validatePrefix(prefix);
 
   return {
     name: `${prefix}_${name}`,
+    slug: `${prefix}_${name}`,
     type: 'SYSTEM' as const,
   };
 };
