@@ -9,6 +9,7 @@ import { DatabaseConnection, sql } from 'slonik';
 import { z } from 'zod';
 
 type IPostgresLedgerStorage = {
+  getLedgerId: (parameters: { slug: string }) => Promise<number>;
   insertLedger: (parameters: {
     currencyCode: string;
     description: string;
@@ -30,6 +31,29 @@ export class PostgresLedgerStorage
   implements LedgerStorage, IPostgresLedgerStorage
 {
   public constructor(private readonly connection: DatabaseConnection) {}
+
+  public async getLedgerId({ slug }: { slug: string }): Promise<number> {
+    const ledger = await this.connection.maybeOne(
+      sql.type(
+        z
+          .object({
+            id: z.number(),
+          })
+          .strict(),
+      )`
+        SELECT 
+          l.id
+        FROM ledger l        
+        WHERE
+          l.slug = ${slug}
+      `,
+    );
+    if (!ledger) {
+      throw new LedgerNotFoundError(`Ledger ${slug} is not found`);
+    }
+
+    return ledger.id;
+  }
 
   public async insertLedger({
     currencyCode,
@@ -77,7 +101,7 @@ export class PostgresLedgerStorage
         }),
       )`
         INSERT INTO ledger_account_type (ledger_id, slug, name, normal_balance, is_entity_ledger_account, parent_ledger_account_type_id) 
-        VALUES (${ledgerId} ${slug}, ${name}, ${normalBalance}, ${isEntityLedgerAccount}, ${parentLedgerAccountTypeId})
+        VALUES (${ledgerId}, ${slug}, ${name}, ${normalBalance}, ${isEntityLedgerAccount}, ${parentLedgerAccountTypeId})
         RETURNING id
       `,
     );

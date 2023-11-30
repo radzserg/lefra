@@ -9,7 +9,7 @@ $$ language 'plpgsql';
 CREATE TYPE credit_or_debit as ENUM (
   'CREDIT',
   'DEBIT'
-);
+  );
 
 CREATE DOMAIN foreign_entity_id as integer;
 
@@ -31,7 +31,7 @@ create unique index if not exists ledger_slug_idx on ledger (slug);
 comment on table ledger is 'Stores the double entry ledgers available in the system';
 
 CREATE TRIGGER update_user_task_updated_on
-BEFORE UPDATE ON ledger FOR EACH ROW
+  BEFORE UPDATE ON ledger FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at();
 
 -- create ledger ledger_account_type
@@ -60,7 +60,7 @@ create index if not exists ledger_account_type_parent_ledger_account_type_id_idx
 create unique index if not exists ledger_account_type_slug_idx on ledger_account_type (ledger_id, slug);
 
 CREATE TRIGGER update_user_task_updated_on
-BEFORE UPDATE ON ledger_account_type FOR EACH ROW
+  BEFORE UPDATE ON ledger_account_type FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at();
 
 
@@ -92,7 +92,7 @@ create unique index if not exists ledger_account_user_account_id_account_type_id
   where (entity_id IS NOT NULL);
 
 CREATE TRIGGER update_user_task_updated_on
-BEFORE UPDATE ON ledger_account FOR EACH ROW
+  BEFORE UPDATE ON ledger_account FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at();
 
 -- create ledger_transaction
@@ -116,7 +116,7 @@ create index if not exists ledger_transaction_ledger_id_idx on ledger_transactio
 create index if not exists ledger_transaction_posted_at_idx on ledger_transaction (posted_at);
 
 CREATE TRIGGER update_user_task_updated_on
-BEFORE UPDATE ON ledger_transaction FOR EACH ROW
+  BEFORE UPDATE ON ledger_transaction FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at();
 
 -- crete ledger_transaction_entry
@@ -128,7 +128,7 @@ create table if not exists ledger_transaction_entry
   ledger_account_id integer not null references ledger_account on delete cascade,
   action credit_or_debit not null,
   amount numeric(18, 8) not null
-  constraint ledger_transaction_entry_amount_positive check (amount > (0)::numeric),
+    constraint ledger_transaction_entry_amount_positive check (amount > (0)::numeric),
   created_at timestamp with time zone default now() not null,
   updated_at timestamp with time zone default now() not null
 );
@@ -143,7 +143,7 @@ create index if not exists ledger_transaction_entry_ledger_account_id_with_actio
   on ledger_transaction_entry (ledger_account_id, action);
 
 CREATE TRIGGER update_user_task_updated_on
-BEFORE UPDATE ON ledger_transaction_entry FOR EACH ROW
+  BEFORE UPDATE ON ledger_transaction_entry FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at();
 
 
@@ -165,8 +165,8 @@ BEGIN
 
   -- Determine normal balance type for account ('DEBIT' | 'CREDIT')
   SELECT normal_balance FROM ledger_account la
-  INNER JOIN ledger_account_type lat ON
-    la.ledger_account_type_id = lat.id
+                               INNER JOIN ledger_account_type lat ON
+      la.ledger_account_type_id = lat.id
   WHERE la.id = input_ledger_account_id
   INTO account_balance_type;
 
@@ -177,23 +177,23 @@ BEGIN
   -- Sum up all debit entries for this account
   SELECT COALESCE(sum(amount), 0)
   FROM ledger_transaction_entry lte
-  LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
+         LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
   WHERE
-    ledger_account_id = input_ledger_account_id AND
-    action = 'DEBIT' AND
-    lt.posted_at < before_date AND
-    lt.posted_at > after_date
+      ledger_account_id = input_ledger_account_id AND
+      action = 'DEBIT' AND
+      lt.posted_at < before_date AND
+      lt.posted_at > after_date
   INTO sum_debits;
 
   -- Sum up all credit entries for this account
   SELECT COALESCE(sum(amount), 0)
   FROM ledger_transaction_entry lte
-  LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
+         LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
   WHERE
-    ledger_account_id = input_ledger_account_id AND
-    action = 'CREDIT' AND
-    lt.posted_at < before_date AND
-    lt.posted_at > after_date
+      ledger_account_id = input_ledger_account_id AND
+      action = 'CREDIT' AND
+      lt.posted_at < before_date AND
+      lt.posted_at > after_date
   INTO sum_credits;
 
   IF account_balance_type = 'DEBIT' THEN
@@ -207,3 +207,7 @@ BEGIN
   RETURN balance;
 END $$
   LANGUAGE plpgsql;
+
+
+INSERT INTO ledger (currency_code, slug, name, description, created_at, updated_at)
+VALUES (1, 'PLATFORM_USD', 'Platform USD', 'The main ledger used for the platform', '2022-09-06 17:25:46.210416 +00:00', '2022-09-06 17:25:46.210416 +00:00');

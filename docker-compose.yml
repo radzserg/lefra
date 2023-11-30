@@ -9,9 +9,10 @@ services:
       POSTGRES_USER: ledger
       POSTGRES_PASSWORD: ledger
       POSTGRES_DB: ledger
-#    volumes:
-#      - ledger_volume:/var/lib/postgresql/data
+    volumes:
+      - ./database/docker_postgres_init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ledger_volume:/var/lib/postgresql/data
 
-#volumes:
-#  ledger_volume:
-#    driver: local
+volumes:
+  ledger_volume:
+    driver: local

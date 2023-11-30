@@ -22,15 +22,6 @@ describe('PostgresLedgerStorage', () => {
     await runWithDatabaseConnectionPool(async ({ pool }) => {
       const storage = new PostgresLedgerStorage(pool);
 
-      const usdLedgerId = await storage.insertLedger({
-        currencyCode: 'USD',
-        description: 'The main ledger used for My platform',
-        name: 'MyComp Platform USD',
-        slug: 'PLATFORM_USD',
-      });
-      expect(usdLedgerId).not.toBeNull();
-      expect(usdLedgerId).toEqual(expect.any(Number));
-
       const eurLedgerId = await storage.insertLedger({
         currencyCode: 'EUR',
         description: 'EUR ledger used for My platform',
@@ -43,8 +34,29 @@ describe('PostgresLedgerStorage', () => {
   });
 
   test('add new ledger account types', async () => {
-    await runWithDatabaseConnectionPool(async () => {
-      // const storage = new PostgresLedgerStorage(pool);
+    await runWithDatabaseConnectionPool(async ({ pool }) => {
+      const storage = new PostgresLedgerStorage(pool);
+
+      const ledgerId = await storage.getLedgerId({ slug: 'PLATFORM_USD' });
+
+      const assetsAccountTypeId = await storage.insertLedgerAccountType({
+        isEntityLedgerAccount: false,
+        ledgerId,
+        name: 'Assets',
+        normalBalance: 'DEBIT',
+        slug: 'ASSETS',
+      });
+      expect(assetsAccountTypeId).not.toBeNull();
+
+      const receivablesAccountTypeId = await storage.insertLedgerAccountType({
+        isEntityLedgerAccount: false,
+        ledgerId,
+        name: 'Receivables',
+        normalBalance: 'DEBIT',
+        parentLedgerAccountTypeId: assetsAccountTypeId,
+        slug: 'RECEIVABLES',
+      });
+      expect(receivablesAccountTypeId).not.toBeNull();
     });
   });
 });
