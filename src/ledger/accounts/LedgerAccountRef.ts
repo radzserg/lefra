@@ -3,22 +3,11 @@ import { DB_ID } from '@/types.js';
 
 const SYSTEM_PREFIX = 'SYSTEM';
 const VALID_NAME_REGEX = /^[A-Z][A-Z_]*[A-Z]$/u;
-export type LedgerAccountType = 'SYSTEM' | 'ENTITY';
 
-export type EntityLedgerAccount = {
-  readonly entityId: DB_ID;
-  readonly name: string;
+export type LedgerAccount = {
+  readonly ledgerSlug: string;
   readonly slug: string;
-  type: 'ENTITY';
 };
-
-export type SystemLedgerAccount = {
-  readonly name: string;
-  readonly slug: string;
-  type: 'SYSTEM';
-};
-
-export type LedgerAccount = EntityLedgerAccount | SystemLedgerAccount;
 
 const validateName = (name: string) => {
   if (!name) {
