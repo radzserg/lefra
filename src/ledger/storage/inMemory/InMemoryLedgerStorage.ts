@@ -315,7 +315,9 @@ export class InMemoryLedgerStorage implements LedgerStorage {
 
     if (normalBalance === 'DEBIT') {
       if (!sumDebits) {
-        throw new LedgerError('Debit account has negative balance');
+        throw new LedgerError(
+          `Debit account ${account.slug} has negative balance`,
+        );
       }
 
       if (sumCredits) {
@@ -325,7 +327,9 @@ export class InMemoryLedgerStorage implements LedgerStorage {
       }
     } else if (normalBalance === 'CREDIT') {
       if (!sumCredits) {
-        throw new LedgerError('Credit account has negative balance');
+        throw new LedgerError(
+          `Credit account ${account.slug} has negative balance`,
+        );
       }
 
       if (sumDebits) {

@@ -20,6 +20,48 @@ const createStorage = async (
   return new InMemoryLedgerStorage();
 };
 
+const saveTestLedgerAccounts = async (storage: LedgerStorage) => {
+  const incomeAccountType = await storage.insertAccountType({
+    description: 'Income accounts',
+    isEntityLedgerAccount: false,
+    ledgerId,
+    name: 'INCOME',
+    normalBalance: 'CREDIT',
+    parentLedgerAccountTypeId: null,
+    slug: 'INCOME',
+  });
+  const receivablesAccountType = await storage.insertAccountType({
+    description: 'Receivables',
+    isEntityLedgerAccount: true,
+    ledgerId,
+    name: 'RECEIVABLES',
+    normalBalance: 'DEBIT',
+    parentLedgerAccountTypeId: null,
+    slug: 'RECEIVABLES',
+  });
+
+  const incomePaidProjectAccount = await storage.upsertAccount({
+    description: 'Income from paid projects',
+    isSystemAccount: true,
+    ledgerAccountTypeId: incomeAccountType.id,
+    ledgerId,
+    slug: 'SYSTEM_INCOME_PAID_PROJECTS',
+  });
+  const incomePaymentFeeAccount = await storage.upsertAccount({
+    description: 'Income from payment fees',
+    isSystemAccount: true,
+    ledgerAccountTypeId: incomeAccountType.id,
+    ledgerId,
+    slug: 'SYSTEM_INCOME_PAYMENT_FEE',
+  });
+
+  return {
+    incomePaidProjectAccount,
+    incomePaymentFeeAccount,
+    receivablesAccountType,
+  };
+};
+
 describe('InMemoryLedgerStorage', () => {
   const storageType = 'IN_MEMORY';
   describe('ledger account types', () => {
@@ -383,39 +425,11 @@ describe('InMemoryLedgerStorage', () => {
   describe('save transactions', () => {
     test('save transactions', async () => {
       const storage = await createStorage(storageType);
-      const incomeAccountType = await storage.insertAccountType({
-        description: 'Income accounts',
-        isEntityLedgerAccount: false,
-        ledgerId,
-        name: 'INCOME',
-        normalBalance: 'CREDIT',
-        parentLedgerAccountTypeId: null,
-        slug: 'INCOME',
-      });
-      const receivablesAccountType = await storage.insertAccountType({
-        description: 'Receivables',
-        isEntityLedgerAccount: true,
-        ledgerId,
-        name: 'RECEIVABLES',
-        normalBalance: 'CREDIT',
-        parentLedgerAccountTypeId: null,
-        slug: 'RECEIVABLES',
-      });
-
-      const incomePaidProjectAccount = await storage.upsertAccount({
-        description: 'Income from paid projects',
-        isSystemAccount: true,
-        ledgerAccountTypeId: incomeAccountType.id,
-        ledgerId,
-        slug: 'SYSTEM_INCOME_PAID_PROJECTS',
-      });
-      const incomePaymentFeeAccount = await storage.upsertAccount({
-        description: 'Income from payment fees',
-        isSystemAccount: true,
-        ledgerAccountTypeId: incomeAccountType.id,
-        ledgerId,
-        slug: 'SYSTEM_INCOME_PAYMENT_FEE',
-      });
+      const {
+        incomePaidProjectAccount,
+        incomePaymentFeeAccount,
+        receivablesAccountType,
+      } = await saveTestLedgerAccounts(storage);
 
       const transaction = new Transaction(
         ledgerId,
@@ -514,77 +528,70 @@ describe('InMemoryLedgerStorage', () => {
     });
   });
 
-  /*
   describe('fetch account balance', () => {
     test('throw an error if ledger account does not exist', async () => {
-      const storage = new InMemoryLedgerStorage();
-
+      const storage = await createStorage(storageType);
       await expect(async () => {
         await storage.fetchAccountBalance(
-          ledgerId,
-          systemAccount('INCOME_PAID_PROJECTS'),
+          new SystemAccountRef(ledgerId, 'INCOME_PAID_PROJECTS'),
         );
       }).rejects.toThrow('Account SYSTEM_INCOME_PAID_PROJECTS not found');
     });
 
     test('fetch account balance from with no entries', async () => {
-      const storage = new InMemoryLedgerStorage();
-      await storage.insertLedgerAccounts(ledgerId, [
-        [systemAccount('INCOME_PAID_PROJECTS'), 'CREDIT'],
-      ]);
+      const storage = await createStorage(storageType);
+      await saveTestLedgerAccounts(storage);
 
       const balance = await storage.fetchAccountBalance(
-        ledgerId,
-        systemAccount('INCOME_PAID_PROJECTS'),
+        new SystemAccountRef(ledgerId, 'INCOME_PAID_PROJECTS'),
       );
       expect(balance).toBeNull();
     });
 
     test('fetch account balance', async () => {
-      const storage = new InMemoryLedgerStorage();
-      await storage.insertLedgerAccounts(ledgerId, [
-        [systemAccount('INCOME_PAID_PROJECTS'), 'CREDIT'],
-        [systemAccount('INCOME_PAYMENT_FEE'), 'CREDIT'],
-      ]);
-
-      await storage.saveEntityAccountTypes(ledgerId, [
-        ['ENTITY_RECEIVABLES', 'DEBIT'],
-      ]);
+      const storage = await createStorage(storageType);
+      await saveTestLedgerAccounts(storage);
 
       const transaction = new Transaction(
+        ledgerId,
         [
           doubleEntry(
-            debit(entityAccount('RECEIVABLES', 1), new Money(100, 'USD')),
+            debit(
+              new EntityAccountRef(ledgerId, 'RECEIVABLES', 1, 'USER'),
+              new Money(100, 'USD'),
+            ),
             credit(
-              systemAccount('INCOME_PAID_PROJECTS'),
+              new SystemAccountRef(ledgerId, 'INCOME_PAID_PROJECTS'),
               new Money(100, 'USD'),
             ),
             'User owes money for goods',
           ),
           doubleEntry(
-            debit(entityAccount('RECEIVABLES', 1), new Money(3, 'USD')),
-            credit(systemAccount('INCOME_PAYMENT_FEE'), new Money(3, 'USD')),
+            debit(
+              new EntityAccountRef(ledgerId, 'RECEIVABLES', 1, 'USER'),
+              new Money(3, 'USD'),
+            ),
+            credit(
+              new SystemAccountRef(ledgerId, 'INCOME_PAYMENT_FEE'),
+              new Money(3, 'USD'),
+            ),
             'User owes payment processing fee',
           ),
         ],
         'test transaction',
       );
 
-      await storage.insertTransaction(ledgerId, transaction);
+      await storage.insertTransaction(transaction);
 
       const receivables = await storage.fetchAccountBalance(
-        ledgerId,
-        entityAccount('RECEIVABLES', 1),
+        new EntityAccountRef(ledgerId, 'RECEIVABLES', 1, 'USER'),
       );
       expect(receivables).toEqual(new Money(103, 'USD'));
 
       const incomePaymentFee = await storage.fetchAccountBalance(
-        ledgerId,
-        systemAccount('INCOME_PAYMENT_FEE'),
+        new SystemAccountRef(ledgerId, 'INCOME_PAYMENT_FEE'),
       );
       expect(incomePaymentFee).toEqual(new Money(3, 'USD'));
     });
   });
-
-   */
 });
