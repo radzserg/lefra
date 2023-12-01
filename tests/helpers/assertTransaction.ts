@@ -1,4 +1,3 @@
-import { LedgerAccount } from '@/ledger/accounts/LedgerAccount.js';
 import { EntriesFormatter } from '@/ledger/formatter/EntriesFormatter.js';
 import { Entry } from '@/ledger/transaction/Entry.js';
 import { Transaction } from '@/ledger/transaction/Transaction.js';
@@ -18,16 +17,6 @@ const transformToReadableEntry = (entry: ExpectedEntry) => {
 
 const transformToReadableEntries = (entries: ExpectedEntry[]) => {
   return entries.map(transformToReadableEntry).join('\n');
-};
-
-const isSameAccount = (account: LedgerAccount, expected: string) => {
-  if (account.type === 'SYSTEM') {
-    return account.name === expected;
-  } else if (account.type === 'ENTITY') {
-    return `${account.name}:${account.entityId}` === expected;
-  }
-
-  return false;
 };
 
 export const assertTransaction = async (
@@ -57,7 +46,7 @@ export const assertTransaction = async (
 
     if (
       actualEntry.action !== expectedEntry[0] ||
-      !isSameAccount(actualEntry.account, expectedEntry[1]) ||
+      actualEntry.account.slug !== expectedEntry[1] ||
       !actualEntry.amount.equals(expectedEntry[2])
     ) {
       throw new Error(

@@ -11,8 +11,6 @@ CREATE TYPE credit_or_debit as ENUM (
   'DEBIT'
   );
 
-CREATE DOMAIN foreign_entity_id as integer;
-
 CREATE DOMAIN slug_text AS TEXT;
 
 -- create ledger
@@ -39,11 +37,11 @@ EXECUTE PROCEDURE update_updated_at();
 create table if not exists ledger_account_type
 (
   id integer generated always as identity primary key,
-  ledger_id integer references ledger on delete restrict,
   slug slug_text not null,
   name text not null,
   normal_balance credit_or_debit not null,
   is_entity_ledger_account boolean not null,
+  description text,
   parent_ledger_account_type_id  integer references ledger_account_type on delete restrict,
   created_at timestamp with time zone default now() not null,
   updated_at timestamp with time zone default now() not null
@@ -57,7 +55,7 @@ comment on column ledger_account_type.parent_ledger_account_type_id is 'If this 
 create index if not exists ledger_account_type_parent_ledger_account_type_id_idx
   on ledger_account_type (parent_ledger_account_type_id);
 
-create unique index if not exists ledger_account_type_slug_idx on ledger_account_type (ledger_id, slug);
+create unique index if not exists ledger_account_type_slug_idx on ledger_account_type (slug);
 
 CREATE TRIGGER update_user_task_updated_on
   BEFORE UPDATE ON ledger_account_type FOR EACH ROW
@@ -71,25 +69,16 @@ create table ledger_account
   ledger_id integer not null references ledger on delete restrict,
   ledger_account_type_id integer not null references ledger_account_type on delete restrict,
   slug slug_text NOT NULL,
-  name text not null,
-  entity_id foreign_entity_id,
   description text,
   created_at timestamp with time zone default now() not null,
   updated_at timestamp with time zone default now() not null
 );
 
 comment on table ledger_account is 'Represents an account on a given ledger. These accounts are used for ledger transactions';
-comment on column ledger_account.entity_id is 'The user account that this ledger account belongs to';
 comment on column ledger_account.description is 'Human readable account name for debugging purposes and for use in external accounting software';
 
 create unique index if not exists ledger_account_slug_idx on ledger_account (ledger_id, slug);
-create unique index if not exists ledger_account_entity_idx on ledger_account (ledger_id, slug, entity_id);
 create index if not exists ledger_account_ledger_id_fkey on ledger_account (ledger_id);
-create index if not exists ledger_account_entity_id_idx on ledger_account (entity_id);
-
-create unique index if not exists ledger_account_user_account_id_account_type_idx
-  on ledger_account (entity_id, ledger_account_type_id)
-  where (entity_id IS NOT NULL);
 
 CREATE TRIGGER update_user_task_updated_on
   BEFORE UPDATE ON ledger_account FOR EACH ROW
@@ -211,3 +200,12 @@ END $$
 
 INSERT INTO ledger (currency_code, slug, name, description, created_at, updated_at)
 VALUES (1, 'PLATFORM_USD', 'Platform USD', 'The main ledger used for the platform', '2022-09-06 17:25:46.210416 +00:00', '2022-09-06 17:25:46.210416 +00:00');
+
+
+INSERT INTO ledger_account_type (slug, name, normal_balance, is_entity_ledger_account)
+VALUES
+  ('ASSETS', 'Assets', 'DEBIT', false),
+  ('LIABILITIES', 'Liabilities', 'CREDIT', false),
+  ('EQUITY', 'Equity', 'CREDIT', false),
+  ('INCOME', 'Income', 'CREDIT', false),
+  ('EXPENSES', 'Expenses', 'DEBIT', false);

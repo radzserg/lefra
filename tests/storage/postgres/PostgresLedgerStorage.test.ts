@@ -37,9 +37,9 @@ describe('PostgresLedgerStorage', () => {
     await runWithDatabaseConnectionPool(async ({ pool }) => {
       const storage = new PostgresLedgerStorage(pool);
 
-      const ledgerId = await storage.getLedgerId({ slug: 'PLATFORM_USD' });
+      const ledgerId = await storage.getLedgerAccount({ slug: 'PLATFORM_USD' });
 
-      const assetsAccountTypeId = await storage.insertLedgerAccountType({
+      const assetsAccountTypeId = await storage.insertAccountType({
         isEntityLedgerAccount: false,
         ledgerId,
         name: 'Assets',
@@ -48,7 +48,7 @@ describe('PostgresLedgerStorage', () => {
       });
       expect(assetsAccountTypeId).not.toBeNull();
 
-      const receivablesAccountTypeId = await storage.insertLedgerAccountType({
+      const receivablesAccountTypeId = await storage.insertAccountType({
         isEntityLedgerAccount: false,
         ledgerId,
         name: 'Receivables',

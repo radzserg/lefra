@@ -1,10 +1,12 @@
-import { entityAccount } from '@/ledger/accounts/LedgerAccount.js';
+import { EntityAccountRef } from '@/ledger/accounts/EntityAccountRef.js';
+import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { usd } from '@/money/Money.js';
 import { describe, expect, test } from 'vitest';
 
 describe('Entry', () => {
-  const account = entityAccount('RECEIVABLES', 1);
+  const ledgerId = new UuidDatabaseIdGenerator().generateId();
+  const account = new EntityAccountRef(ledgerId, 'RECEIVABLES', 1);
 
   test('cannot create debit entry', () => {
     const amount = usd(100);

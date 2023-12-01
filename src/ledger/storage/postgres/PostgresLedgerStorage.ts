@@ -1,38 +1,25 @@
 import { LedgerNotFoundError } from '@/errors.js';
-import { LedgerAccount } from '@/ledger/accounts/LedgerAccount.js';
+import { LedgerAccountRef } from '@/ledger/accounts/LedgerAccountRef.js';
 import { LedgerStorage } from '@/ledger/storage/LedgerStorage.js';
 import { CurrencyCode } from '@/money/currencies.js';
 import { Money } from '@/money/Money.js';
 import { currencyCodeSchema } from '@/money/validation.js';
-import { DB_ID } from '@/types.js';
+import {
+  DB_ID,
+  InputLedgerAccount,
+  InputLedgerAccountType,
+  LedgerInput,
+  PersistedLedgerAccount,
+  PersistedLedgerAccountType,
+  TransactionInput,
+} from '@/types.js';
 import { DatabaseConnection, sql } from 'slonik';
 import { z } from 'zod';
 
-type IPostgresLedgerStorage = {
-  getLedgerId: (parameters: { slug: string }) => Promise<number>;
-  insertLedger: (parameters: {
-    currencyCode: string;
-    description: string;
-    name: string;
-    slug: string;
-  }) => Promise<number>;
-
-  insertLedgerAccountType: (parameters: {
-    isEntityLedgerAccount: boolean;
-    ledgerId: number;
-    name: string;
-    normalBalance: 'CREDIT' | 'DEBIT';
-    parentLedgerAccountTypeId?: number | null;
-    slug: string;
-  }) => Promise<number>;
-};
-
-export class PostgresLedgerStorage
-  implements LedgerStorage, IPostgresLedgerStorage
-{
+export class PostgresLedgerStorage implements LedgerStorage {
   public constructor(private readonly connection: DatabaseConnection) {}
 
-  public async getLedgerId({ slug }: { slug: string }): Promise<number> {
+  public async getLedgerAccount({ slug }: { slug: string }): Promise<number> {
     const ledger = await this.connection.maybeOne(
       sql.type(
         z
@@ -55,18 +42,9 @@ export class PostgresLedgerStorage
     return ledger.id;
   }
 
-  public async insertLedger({
-    currencyCode,
-    description,
-    name,
-    slug,
-  }: {
-    currencyCode: string;
-    description: string;
-    name: string;
-    slug: string;
-  }) {
-    return await this.connection.oneFirst(
+  public async insertLedger(input: LedgerInput) {
+    const { currencyCode, description, name, slug } = input;
+    const ledgerId = await this.connection.oneFirst(
       sql.type(
         z.object({
           id: z.number(),
@@ -77,41 +55,62 @@ export class PostgresLedgerStorage
         RETURNING id
       `,
     );
+    return {
+      ...input,
+      id: ledgerId,
+    };
   }
 
-  public async insertLedgerAccountType({
+  public async insertAccountType({
+    description,
     isEntityLedgerAccount,
     ledgerId,
     name,
     normalBalance,
     parentLedgerAccountTypeId = null,
     slug,
-  }: {
-    isEntityLedgerAccount: boolean;
-    ledgerId: number;
-    name: string;
-    normalBalance: 'CREDIT' | 'DEBIT';
-    parentLedgerAccountTypeId?: number | null;
-    slug: string;
-  }): Promise<number> {
-    return await this.connection.oneFirst(
+  }: InputLedgerAccountType): Promise<PersistedLedgerAccountType> {
+    const ledgerAccountTypeId = await this.connection.oneFirst(
       sql.type(
         z.object({
           id: z.number(),
         }),
       )`
-        INSERT INTO ledger_account_type (ledger_id, slug, name, normal_balance, is_entity_ledger_account, parent_ledger_account_type_id) 
-        VALUES (${ledgerId}, ${slug}, ${name}, ${normalBalance}, ${isEntityLedgerAccount}, ${parentLedgerAccountTypeId})
+        INSERT INTO ledger_account_type (       
+          slug, 
+          name, 
+          description, 
+          normal_balance, 
+          is_entity_ledger_account, 
+          parent_ledger_account_type_id
+        ) 
+        VALUES (
+          ${slug}, 
+          ${name}, 
+          ${normalBalance}, 
+          ${description}, 
+          ${isEntityLedgerAccount}, 
+          ${parentLedgerAccountTypeId}
+        )
         RETURNING id
       `,
     );
+    return {
+      description,
+      id: ledgerAccountTypeId,
+      isEntityLedgerAccount,
+      ledgerId,
+      name,
+      normalBalance,
+      parentLedgerAccountTypeId,
+      slug,
+    };
   }
 
   public async fetchAccountBalance(
-    ledgerId: DB_ID,
-    account: LedgerAccount,
+    account: LedgerAccountRef,
   ): Promise<Money | null> {
-    const id = await this.getLedgerAccountId(ledgerId, account);
+    const id = await this.getLedgerAccountId(account);
     const { amount } = await this.connection.one(
       sql.type(
         z
@@ -123,22 +122,21 @@ export class PostgresLedgerStorage
         SELECT calculate_balance_for_ledger_account(${id}) amount;
       `,
     );
-    const currencyCode = await this.getLedgerCurrencyCode(ledgerId);
+    const currencyCode = await this.getLedgerCurrencyCode(account.ledgerId);
 
     return new Money(amount, currencyCode);
   }
 
-  public async insertTransaction() /*
-    ledgerId: DB_ID,
-    transaction: Transaction,
-    
-     */
-  : Promise<void> {}
+  public async insertTransaction(transaction: TransactionInput) {
+    throw new Error(`Method not implemented. ${transaction}`);
 
-  private async getLedgerAccountId(
-    ledgerId: DB_ID,
-    account: LedgerAccount,
-  ): Promise<number> {
+    return {
+      ...transaction,
+      id: '1',
+    };
+  }
+
+  private async getLedgerAccountId(account: LedgerAccountRef): Promise<number> {
     const ledgerAccount = await this.connection.maybeOne(
       sql.type(
         z
@@ -152,7 +150,7 @@ export class PostgresLedgerStorage
         FROM ledger_account la        
         WHERE
           la.slug = ${account.slug}
-          AND la.ledger_id = ${ledgerId}
+          AND la.ledger_id = ${account.slug}
       `,
     );
     if (!ledgerAccount) {
@@ -185,5 +183,24 @@ export class PostgresLedgerStorage
     }
 
     return ledger.currencyCode;
+  }
+
+  public async findAccount(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    account: LedgerAccountRef,
+  ): Promise<PersistedLedgerAccount | null> {
+    throw new Error('Method not implemented.');
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public async getLedgerIdBySlug(slug: string): Promise<DB_ID> {
+    throw new Error('Method not implemented.');
+  }
+
+  public async upsertAccount(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    parameters: InputLedgerAccount,
+  ): Promise<PersistedLedgerAccount> {
+    throw new Error('Method not implemented.');
   }
 }

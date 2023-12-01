@@ -11,8 +11,8 @@ services:
       POSTGRES_DB: ledger
     volumes:
       - ./database/docker_postgres_init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ledger_volume:/var/lib/postgresql/data
-
-volumes:
-  ledger_volume:
-    driver: local
+#      - ledger_volume:/var/lib/postgresql/data
+#
+#volumes:
+#  ledger_volume:
+#    driver: local

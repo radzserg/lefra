@@ -1,10 +1,12 @@
+import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
 import { DoubleEntry, doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
-import {
-  ConfirmedPayment,
-  systemAccount,
-  userAccount,
-} from '#/customLedger/CustomerLedger.js';
+import { CustomLedger } from '#/customLedger/CustomerLedger.js';
+import { ConfirmedPayment } from '#/customLedger/importedTypes.js';
+
+const ledgerId = new UuidDatabaseIdGenerator().generateId();
+const ledger = new CustomLedger(ledgerId);
+const { systemAccount, userAccount } = ledger.accountFactories();
 
 export const entriesForPaymentConfirmed = ({
   clientUserId,

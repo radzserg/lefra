@@ -3,11 +3,8 @@ import { DoubleEntry, doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { Transaction } from '@/ledger/transaction/Transaction.js';
 import { usdSchema } from '@/money/validation.js';
-import {
-  paymentSchema,
-  systemAccount,
-  userAccount,
-} from '#/customLedger/CustomerLedger.js';
+import { CustomLedger } from '#/customLedger/CustomerLedger.js';
+import { paymentSchema } from '#/customLedger/importedTypes.js';
 import { entriesForPaymentConfirmed } from '#/customLedger/operations/paymentConfirmed.js';
 import { z } from 'zod';
 
@@ -31,11 +28,17 @@ export type ProjectStartedOperationData = z.infer<OperationSchema>;
 export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
   protected declare payload: ProjectStartedOperationData;
 
-  public constructor(payload: ProjectStartedOperationData) {
+  public constructor(
+    payload: ProjectStartedOperationData,
+    private readonly customerLedger: CustomLedger,
+  ) {
     super(schema, payload);
   }
 
   public async createTransaction(): Promise<Transaction> {
+    const { systemAccount, userAccount } =
+      this.customerLedger.accountFactories();
+    const ledgerId = this.customerLedger.ledgerId;
     const {
       amountLockedForContractor,
       clientUserId,
@@ -106,6 +109,6 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
       );
     }
 
-    return new Transaction(entries, 'test transaction');
+    return new Transaction(ledgerId, entries, 'test transaction');
   }
 }

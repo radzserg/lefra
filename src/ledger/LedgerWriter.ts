@@ -3,7 +3,7 @@ import { LedgerStorage } from '@/ledger/storage/LedgerStorage.js';
 import { Transaction } from '@/ledger/transaction/Transaction.js';
 import { DB_ID } from '@/types.js';
 
-export class Ledger {
+export class LedgerWriter {
   public constructor(
     private readonly id: DB_ID,
     private readonly storage: LedgerStorage,

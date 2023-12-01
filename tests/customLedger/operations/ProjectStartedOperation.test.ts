@@ -1,18 +1,23 @@
-import { LedgerAccount } from '@/ledger/accounts/LedgerAccount.js';
-import { Ledger } from '@/ledger/Ledger.js';
-import { InMemoryLedgerStorage } from '@/ledger/storage/inMemory/InMemoryStorage.js';
+import { LedgerAccountRef } from '@/ledger/accounts/LedgerAccountRef.js';
+import { LedgerWriter } from '@/ledger/LedgerWriter.js';
+import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
+import { InMemoryLedgerStorage } from '@/ledger/storage/inMemory/InMemoryLedgerStorage.js';
 import { Money, usd } from '@/money/Money.js';
-import { systemAccount, userAccount } from '#/customLedger/CustomerLedger.js';
+import { CustomLedger } from '#/customLedger/CustomerLedger.js';
 import { ProjectStartedOperation } from '#/customLedger/operations/ProjectStartedOperation.js';
 import { assertTransaction } from '#/helpers/assertTransaction.js';
 import { expectBalanceEqual } from '#/helpers/expectBalanceEqual.js';
 import { v4 as uuid } from 'uuid';
 import { describe, expect, test } from 'vitest';
 
-const createServices = async (ledgerId: string) => {
+const ledgerId = new UuidDatabaseIdGenerator().generateId();
+const ledger = new CustomLedger(ledgerId);
+const { systemAccount, userAccount } = ledger.accountFactories();
+
+const createServices = async () => {
   const storage = new InMemoryLedgerStorage();
-  await storage.reset();
-  await storage.saveAccounts(ledgerId, [
+
+  await storage.insertLedgerAccounts(ledgerId, [
     [systemAccount('INCOME_PAID_PROJECTS'), 'CREDIT'],
     [systemAccount('INCOME_STRIPE_PAY_IN_FEES'), 'CREDIT'],
     [systemAccount('INCOME_PAYMENT_FEE'), 'CREDIT'],
@@ -30,9 +35,9 @@ const createServices = async (ledgerId: string) => {
     ['USER_PAYABLE_LOCKED', 'CREDIT'],
     ['USER_PAYABLE', 'CREDIT'],
   ]);
-  const ledger = new Ledger(ledgerId, storage);
+  const ledgerWriter = new LedgerWriter(ledgerId, storage);
   return {
-    ledger,
+    ledgerWriter,
     storage,
   };
 };
@@ -93,7 +98,7 @@ describe('ProjectStartedOperation', () => {
       ],
     });
 
-    const expectedBalances: Array<[LedgerAccount, Money | null]> = [
+    const expectedBalances: Array<[LedgerAccountRef, Money | null]> = [
       [userAccount('RECEIVABLES', clientUserId), usd(100)],
       [userAccount('PAYABLE_LOCKED', contractorUserId), usd(50)],
       [userAccount('PAYABLE', contractorUserId), usd(50)],
@@ -107,7 +112,7 @@ describe('ProjectStartedOperation', () => {
         ledgerId,
         account,
       );
-      expectBalanceEqual(actualBalance, expectedBalance, account.name);
+      expectBalanceEqual(actualBalance, expectedBalance, account.slug);
     }
   });
 
@@ -173,7 +178,7 @@ describe('ProjectStartedOperation', () => {
       ],
     });
 
-    const expectedBalances: Array<[LedgerAccount, Money]> = [
+    const expectedBalances: Array<[LedgerAccountRef, Money]> = [
       [userAccount('RECEIVABLES', clientUserId), usd(0)],
       [userAccount('PAYABLE_LOCKED', contractorUserId), usd(50)],
       [userAccount('PAYABLE', contractorUserId), usd(50)],
@@ -192,7 +197,7 @@ describe('ProjectStartedOperation', () => {
         ledgerId,
         account,
       );
-      expectBalanceEqual(actualBalance, expectedBalance, account.name);
+      expectBalanceEqual(actualBalance, expectedBalance, account.slug);
     }
   });
 
@@ -227,7 +232,7 @@ describe('ProjectStartedOperation', () => {
       }),
     );
 
-    const expectedBalances: Array<[LedgerAccount, Money]> = [
+    const expectedBalances: Array<[LedgerAccountRef, Money]> = [
       [userAccount('RECEIVABLES', clientUserId), usd(0)],
       [userAccount('PAYABLE_LOCKED', contractorUserId), usd(50)],
       [userAccount('PAYABLE_LOCKED', contractorTwoUserId), usd(50)],
@@ -247,7 +252,7 @@ describe('ProjectStartedOperation', () => {
         ledgerId,
         account,
       );
-      expectBalanceEqual(actualBalance, expectedBalance, account.name);
+      expectBalanceEqual(actualBalance, expectedBalance, account.slug);
     }
   });
 });

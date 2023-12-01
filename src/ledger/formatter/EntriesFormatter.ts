@@ -1,4 +1,3 @@
-import { LedgerAccount } from '@/ledger/accounts/LedgerAccount.js';
 import { Entry } from '@/ledger/transaction/Entry.js';
 import { EntryAction } from '@/types.js';
 
@@ -13,19 +12,9 @@ export class EntriesFormatter {
   }
 
   private formatEntry(entry: Entry): string {
-    return `${this.formatOperation(
-      entry.action,
-    )} ${entry.amount.format()} ${this.formatAccount(entry.account)}`;
-  }
-
-  private formatAccount(account: LedgerAccount): string {
-    if (account.type === 'SYSTEM') {
-      return `${account.name}`;
-    } else if (account.type === 'ENTITY') {
-      return `${account.name}:${account.entityId}`;
-    } else {
-      throw new TypeError(`Unknown account type: ${account}`);
-    }
+    return `${this.formatOperation(entry.action)} ${entry.amount.format()} ${
+      entry.account.slug
+    }`;
   }
 
   private formatOperation(entityAction: EntryAction): string {

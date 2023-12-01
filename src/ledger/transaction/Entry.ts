@@ -1,14 +1,14 @@
-import { LedgerAccount } from '../accounts/LedgerAccount.js';
+import { LedgerAccountRef } from '../accounts/LedgerAccountRef.js';
 import { Money } from '@/money/Money.js';
 
 export type CreditEntry = {
-  account: LedgerAccount;
+  account: LedgerAccountRef;
   action: 'CREDIT';
   amount: Money;
 };
 
 export type DebitEntry = {
-  account: LedgerAccount;
+  account: LedgerAccountRef;
   action: 'DEBIT';
   amount: Money;
 };
@@ -25,7 +25,10 @@ const validateEntry = (entry: Entry) => {
   }
 };
 
-export const credit = (account: LedgerAccount, amount: Money): CreditEntry => {
+export const credit = (
+  account: LedgerAccountRef,
+  amount: Money,
+): CreditEntry => {
   const entry = {
     account,
     action: 'CREDIT' as const,
@@ -35,7 +38,7 @@ export const credit = (account: LedgerAccount, amount: Money): CreditEntry => {
   return entry;
 };
 
-export const debit = (account: LedgerAccount, amount: Money): DebitEntry => {
+export const debit = (account: LedgerAccountRef, amount: Money): DebitEntry => {
   const entry = {
     account,
     action: 'DEBIT' as const,
