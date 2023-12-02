@@ -1,9 +1,10 @@
 import { LedgerOperation } from '@/ledger/operation/LedgerOperation.js';
+import { databaseIdSchema } from '@/ledger/storage/validation.js';
 import { DoubleEntry, doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { Transaction } from '@/ledger/transaction/Transaction.js';
 import { usdSchema } from '@/money/validation.js';
-import { CustomLedger } from '#/customLedger/CustomerLedger.js';
+import { customLedgerAccountFactory } from '#/customLedger/customLedgerAccountFactory.js';
 import { paymentSchema } from '#/customLedger/importedTypes.js';
 import { entriesForPaymentConfirmed } from '#/customLedger/operations/paymentConfirmed.js';
 import { z } from 'zod';
@@ -13,6 +14,7 @@ const schema = z
     amountLockedForContractor: usdSchema,
     clientUserId: z.number(),
     contractorUserId: z.number(),
+    ledgerId: databaseIdSchema,
     payment: paymentSchema,
   })
   .strict();
@@ -28,23 +30,20 @@ export type ProjectStartedOperationData = z.infer<OperationSchema>;
 export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
   protected declare payload: ProjectStartedOperationData;
 
-  public constructor(
-    payload: ProjectStartedOperationData,
-    private readonly customerLedger: CustomLedger,
-  ) {
+  public constructor(payload: ProjectStartedOperationData) {
     super(schema, payload);
   }
 
   public async createTransaction(): Promise<Transaction> {
-    const { systemAccount, userAccount } =
-      this.customerLedger.accountFactories();
-    const ledgerId = this.customerLedger.ledgerId;
     const {
       amountLockedForContractor,
       clientUserId,
       contractorUserId,
+      ledgerId,
       payment,
     } = this.payload;
+
+    const { systemAccount, userAccount } = customLedgerAccountFactory(ledgerId);
     const { platformFee } = payment;
     const entries: DoubleEntry[] = [];
 
@@ -93,8 +92,8 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
         ),
         // prettier-ignore
         [
-          credit(userAccount("PAYABLE_LOCKED", contractorUserId), amountLockedForContractor,),
-          credit(userAccount("PAYABLE", contractorUserId), amountAvailable),
+          credit(userAccount("PAYABLES_LOCKED", contractorUserId), amountLockedForContractor,),
+          credit(userAccount("PAYABLES", contractorUserId), amountAvailable),
         ],
         'Part of funds are locked for the customer and part of funds are available for the customer',
       ),
@@ -105,6 +104,8 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
         ...entriesForPaymentConfirmed({
           clientUserId,
           payment,
+          systemAccount,
+          userAccount,
         }),
       );
     }

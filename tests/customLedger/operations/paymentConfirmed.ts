@@ -1,19 +1,18 @@
-import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
+import { LedgerAccountRefBuilder } from '@/ledger/accounts/EntityAccountRef.js';
 import { DoubleEntry, doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
-import { CustomLedger } from '#/customLedger/CustomerLedger.js';
 import { ConfirmedPayment } from '#/customLedger/importedTypes.js';
-
-const ledgerId = new UuidDatabaseIdGenerator().generateId();
-const ledger = new CustomLedger(ledgerId);
-const { systemAccount, userAccount } = ledger.accountFactories();
 
 export const entriesForPaymentConfirmed = ({
   clientUserId,
   payment,
+  systemAccount,
+  userAccount,
 }: {
   clientUserId: number;
   payment: ConfirmedPayment;
+  systemAccount: LedgerAccountRefBuilder;
+  userAccount: LedgerAccountRefBuilder;
 }): DoubleEntry[] => {
   const platformFee = payment.platformFee;
   const stripePayInFeeAmountMinusPlatformProcessingFee = platformFee
@@ -54,10 +53,6 @@ export const entriesForPaymentConfirmed = ({
         credit(userAccount('RECEIVABLES', clientUserId), platformFee.chargeAmount),
         'User owes platform fee',
       ),
-      //
-      //       ['DEBIT', contraPlatformFee.stripeProcessingFee, System('EXPENSES_STRIPE_CONTRACT_FEES')],
-      //       ['DEBIT', contraPlatformFee.netAmount, System('CURRENT_ASSETS_STRIPE_PLATFORM_USA')],
-      //        ['CREDIT', contraPlatformFee.chargeAmount, ClientReceivables(client)],
     );
   }
 

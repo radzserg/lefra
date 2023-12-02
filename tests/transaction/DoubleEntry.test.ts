@@ -70,11 +70,11 @@ DEBIT  $100.00 ENTITY_RECEIVABLES:1`,
       new Money(100, 'USD'),
     );
     const creditPayablesLocked = credit(
-      new SystemAccountRef(ledgerId, 'PAYABLE_LOCKED'),
+      new SystemAccountRef(ledgerId, 'PAYABLES_LOCKED'),
       new Money(70, 'USD'),
     );
     const creditPayables = credit(
-      new SystemAccountRef(ledgerId, 'PAYABLE_LOCKED'),
+      new SystemAccountRef(ledgerId, 'PAYABLES_LOCKED'),
       new Money(30, 'USD'),
     );
     const entry = doubleEntry(

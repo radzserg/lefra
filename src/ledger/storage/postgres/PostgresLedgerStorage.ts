@@ -9,8 +9,10 @@ import {
   InputLedgerAccount,
   InputLedgerAccountType,
   LedgerInput,
+  PersistedEntry,
   PersistedLedgerAccount,
   PersistedLedgerAccountType,
+  PersistedTransaction,
   TransactionInput,
 } from '@/types.js';
 import { DatabaseConnection, sql } from 'slonik';
@@ -18,6 +20,27 @@ import { z } from 'zod';
 
 export class PostgresLedgerStorage implements LedgerStorage {
   public constructor(private readonly connection: DatabaseConnection) {}
+
+  public async findAccountTypeBySlug(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    slug: string,
+  ): Promise<PersistedLedgerAccountType | null> {
+    throw new Error('Method not implemented.');
+  }
+
+  public async getTransactionById(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    transactionId: DB_ID,
+  ): Promise<PersistedTransaction> {
+    throw new Error('Method not implemented.');
+  }
+
+  public async getTransactionEntries(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    transactionId: DB_ID,
+  ): Promise<PersistedEntry[]> {
+    throw new Error('Method not implemented.');
+  }
 
   public async getLedgerAccount({ slug }: { slug: string }): Promise<number> {
     const ledger = await this.connection.maybeOne(

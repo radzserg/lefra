@@ -254,7 +254,9 @@ export class InMemoryLedgerStorage implements LedgerStorage {
       }
 
       if (!accountType.isEntityLedgerAccount) {
-        throw new LedgerError('Only entity accounts can be inserted');
+        throw new LedgerError(
+          `Account ${account.slug} cannot be inserted. Only entity accounts can be inserted`,
+        );
       }
 
       await this.upsertAccount({

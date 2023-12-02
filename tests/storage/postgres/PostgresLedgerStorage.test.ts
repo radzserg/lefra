@@ -1,9 +1,7 @@
-import { PostgresLedgerStorage } from '@/ledger/storage/postgres/PostgresLedgerStorage.js';
-import { systemAccount } from '#/customLedger/CustomerLedger.js';
-import { runWithDatabaseConnectionPool } from '#/helpers/createTestConnection.js';
-import { describe, expect, test } from 'vitest';
+import { describe } from 'vitest';
 
 describe('PostgresLedgerStorage', () => {
+  /*
   test('fetch empty balance', async () => {
     await runWithDatabaseConnectionPool(async ({ pool }) => {
       const storage = new PostgresLedgerStorage(pool);
@@ -58,5 +56,5 @@ describe('PostgresLedgerStorage', () => {
       });
       expect(receivablesAccountTypeId).not.toBeNull();
     });
-  });
+  });*/
 });

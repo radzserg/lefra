@@ -8,16 +8,20 @@ import { DB_ID } from '@/types.js';
 
 const ENTITY_ACCOUNT_PREFIX = 'ENTITY';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type LedgerAccountRefBuilder = (...args: any) => LedgerAccountRef;
+
 export class EntityAccountRef extends LedgerAccountRef {
   public readonly type = 'ENTITY' as const;
 
+  public readonly name: string;
+
   public constructor(
     public readonly ledgerId: DB_ID,
-    public readonly name: string,
+    name: string,
     public readonly externalId: DB_ID,
     prefix: string = ENTITY_ACCOUNT_PREFIX,
   ) {
-    LedgerAccountRef.validateName(name);
     LedgerAccountRef.validatePrefix(prefix);
     if (prefix === SYSTEM_ACCOUNT_PREFIX) {
       throw new LedgerAccountError(
@@ -25,7 +29,10 @@ export class EntityAccountRef extends LedgerAccountRef {
       );
     }
 
+    LedgerAccountRef.validateName(name);
+
     const slug = `${prefix}${ACCOUNT_NAME_SEPARATOR}${name}:${externalId}`;
     super(ledgerId, slug);
+    this.name = `${prefix}_${name}`;
   }
 }

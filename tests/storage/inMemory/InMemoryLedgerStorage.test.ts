@@ -17,7 +17,11 @@ const ledgerId = new UuidDatabaseIdGenerator().generateId();
 const createStorage = async (
   storageType: 'IN_MEMORY',
 ): Promise<LedgerStorage> => {
-  return new InMemoryLedgerStorage();
+  if (storageType === 'IN_MEMORY') {
+    return new InMemoryLedgerStorage();
+  }
+
+  throw new LedgerUnexpectedError('Unknown storage type');
 };
 
 const saveTestLedgerAccounts = async (storage: LedgerStorage) => {
@@ -34,10 +38,10 @@ const saveTestLedgerAccounts = async (storage: LedgerStorage) => {
     description: 'Receivables',
     isEntityLedgerAccount: true,
     ledgerId,
-    name: 'RECEIVABLES',
+    name: 'USER_RECEIVABLES',
     normalBalance: 'DEBIT',
     parentLedgerAccountTypeId: null,
-    slug: 'RECEIVABLES',
+    slug: 'USER_RECEIVABLES',
   });
 
   const incomePaidProjectAccount = await storage.upsertAccount({
@@ -69,27 +73,27 @@ describe('InMemoryLedgerStorage', () => {
       const storage = await createStorage(storageType);
 
       await storage.insertAccountType({
-        description: 'User payable',
+        description: 'User payables',
         isEntityLedgerAccount: true,
         ledgerId,
-        name: 'USER_PAYABLE_LOCKED',
+        name: 'USER_PAYABLES_LOCKED',
         normalBalance: 'CREDIT',
         parentLedgerAccountTypeId: null,
-        slug: 'USER_PAYABLE_LOCKED',
+        slug: 'USER_PAYABLES_LOCKED',
       });
 
       const payables = await storage.findAccountTypeBySlug(
-        'USER_PAYABLE_LOCKED',
+        'USER_PAYABLES_LOCKED',
       );
       expect(payables).toEqual({
-        description: 'User payable',
+        description: 'User payables',
         id: expect.stringMatching(UUID_REGEX),
         isEntityLedgerAccount: true,
         ledgerId,
-        name: 'USER_PAYABLE_LOCKED',
+        name: 'USER_PAYABLES_LOCKED',
         normalBalance: 'CREDIT',
         parentLedgerAccountTypeId: null,
-        slug: 'USER_PAYABLE_LOCKED',
+        slug: 'USER_PAYABLES_LOCKED',
       });
 
       await storage.insertAccountType({

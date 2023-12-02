@@ -9,7 +9,7 @@ describe('EntityLedgerAccount', () => {
     const account = new EntityAccountRef(ledgerId, 'RECEIVABLES', 1);
 
     expect(account.externalId).toEqual(1);
-    expect(account.name).toEqual('RECEIVABLES');
+    expect(account.name).toEqual('ENTITY_RECEIVABLES');
     expect(account.slug).toEqual('ENTITY_RECEIVABLES:1');
   });
 
@@ -26,7 +26,7 @@ describe('EntityLedgerAccount', () => {
     expect(account.slug).toEqual(
       'USER_RECEIVABLES_LOCKED:a934cae1-f809-4aac-8b82-f639977d9512',
     );
-    expect(account.name).toEqual('RECEIVABLES_LOCKED');
+    expect(account.name).toEqual('USER_RECEIVABLES_LOCKED');
   });
 
   test('cannot create entity account with empty name', () => {
