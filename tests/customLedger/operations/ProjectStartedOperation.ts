@@ -1,8 +1,9 @@
 import { LedgerOperation } from '@/ledger/operation/LedgerOperation.js';
 import { databaseIdSchema } from '@/ledger/storage/validation.js';
-import { DoubleEntry, doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
+import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { Transaction } from '@/ledger/transaction/Transaction.js';
+import { TransactionDoubleEntries } from '@/ledger/transaction/TransactionDoubleEntries.js';
 import { usdSchema } from '@/money/validation.js';
 import { customLedgerAccountFactory } from '#/customLedger/customLedgerAccountFactory.js';
 import { paymentSchema } from '#/customLedger/importedTypes.js';
@@ -45,7 +46,7 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
 
     const { systemAccount, userAccount } = customLedgerAccountFactory(ledgerId);
     const { platformFee } = payment;
-    const entries: DoubleEntry[] = [];
+    const entries = new TransactionDoubleEntries();
 
     const targetNetAmountWithoutPlatformFee = platformFee
       ? payment.targetNetAmount.minus(platformFee.netAmount)
@@ -100,8 +101,8 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
     );
 
     if (payment.status === 'CONFIRMED') {
-      entries.push(
-        ...entriesForPaymentConfirmed({
+      entries.append(
+        entriesForPaymentConfirmed({
           clientUserId,
           payment,
           systemAccount,

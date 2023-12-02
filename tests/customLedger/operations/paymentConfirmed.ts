@@ -1,6 +1,7 @@
 import { LedgerAccountRefBuilder } from '@/ledger/accounts/EntityAccountRef.js';
-import { DoubleEntry, doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
+import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
+import { TransactionDoubleEntries } from '@/ledger/transaction/TransactionDoubleEntries.js';
 import { ConfirmedPayment } from '#/customLedger/importedTypes.js';
 
 export const entriesForPaymentConfirmed = ({
@@ -13,7 +14,7 @@ export const entriesForPaymentConfirmed = ({
   payment: ConfirmedPayment;
   systemAccount: LedgerAccountRefBuilder;
   userAccount: LedgerAccountRefBuilder;
-}): DoubleEntry[] => {
+}): TransactionDoubleEntries => {
   const platformFee = payment.platformFee;
   const stripePayInFeeAmountMinusPlatformProcessingFee = platformFee
     ? payment.estimatedStripeProcessingFee.minus(
@@ -27,8 +28,9 @@ export const entriesForPaymentConfirmed = ({
     ? payment.actualNetAmount.minus(platformFee.netAmount)
     : payment.actualNetAmount;
 
+  const entries = new TransactionDoubleEntries();
   // prettier-ignore
-  const entries: DoubleEntry[] = [
+  entries.push(
     doubleEntry(
       debit(userAccount('RECEIVABLES', clientUserId), stripePayInFeeAmountMinusPlatformProcessingFee),
       credit(systemAccount('INCOME_STRIPE_PAY_IN_FEES'), stripePayInFeeAmountMinusPlatformProcessingFee),
@@ -39,7 +41,7 @@ export const entriesForPaymentConfirmed = ({
       credit(userAccount('RECEIVABLES', clientUserId), stripePayInFeeAmountMinusPlatformProcessingFee),
       'Client successfully paid stripe fees',
     ),
-  ];
+  );
 
   if (platformFee) {
     // Client successfully paid Contra platform fee

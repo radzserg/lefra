@@ -7,6 +7,7 @@ import { LedgerStorage } from '@/ledger/storage/LedgerStorage.js';
 import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { Transaction } from '@/ledger/transaction/Transaction.js';
+import { TransactionDoubleEntries } from '@/ledger/transaction/TransactionDoubleEntries.js';
 import { Money } from '@/money/Money.js';
 import { describe, expect, test } from 'vitest';
 
@@ -437,7 +438,7 @@ describe('InMemoryLedgerStorage', () => {
 
       const transaction = new Transaction(
         ledgerId,
-        [
+        new TransactionDoubleEntries().push(
           doubleEntry(
             debit(
               new EntityAccountRef(ledgerId, 'RECEIVABLES', 1, 'USER'),
@@ -460,7 +461,7 @@ describe('InMemoryLedgerStorage', () => {
             ),
             'User owes payment processing fee',
           ),
-        ],
+        ),
         'test transaction',
       );
 
@@ -558,7 +559,7 @@ describe('InMemoryLedgerStorage', () => {
 
       const transaction = new Transaction(
         ledgerId,
-        [
+        new TransactionDoubleEntries().push(
           doubleEntry(
             debit(
               new EntityAccountRef(ledgerId, 'RECEIVABLES', 1, 'USER'),
@@ -581,7 +582,7 @@ describe('InMemoryLedgerStorage', () => {
             ),
             'User owes payment processing fee',
           ),
-        ],
+        ),
         'test transaction',
       );
 
