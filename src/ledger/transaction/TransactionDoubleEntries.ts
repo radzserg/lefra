@@ -8,7 +8,7 @@ import { DB_ID } from '@/types.js';
 export class TransactionDoubleEntries {
   public entries: DoubleEntry[] = [];
 
-  private ledgerId: DB_ID | null = null;
+  public ledgerId: DB_ID | null = null;
 
   public push(...entries: DoubleEntry[]): TransactionDoubleEntries {
     if (entries.length === 0) {

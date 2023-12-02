@@ -437,7 +437,6 @@ describe('InMemoryLedgerStorage', () => {
       } = await saveTestLedgerAccounts(storage);
 
       const transaction = new Transaction(
-        ledgerId,
         new TransactionDoubleEntries().push(
           doubleEntry(
             debit(
@@ -558,7 +557,6 @@ describe('InMemoryLedgerStorage', () => {
       await saveTestLedgerAccounts(storage);
 
       const transaction = new Transaction(
-        ledgerId,
         new TransactionDoubleEntries().push(
           doubleEntry(
             debit(

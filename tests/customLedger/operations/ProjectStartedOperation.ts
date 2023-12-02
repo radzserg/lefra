@@ -111,6 +111,6 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
       );
     }
 
-    return new Transaction(ledgerId, entries, 'test transaction');
+    return new Transaction(entries, 'test transaction');
   }
 }

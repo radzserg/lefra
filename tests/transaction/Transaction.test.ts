@@ -24,7 +24,6 @@ const incomePaymentFee = new SystemAccountRef(ledgerId, 'INCOME_PAYMENT_FEE');
 describe('Transaction', () => {
   test('create a transaction', () => {
     const transaction = new Transaction(
-      ledgerId,
       new TransactionDoubleEntries().push(
         doubleEntry(
           debit(userReceivables, usd(100)),
@@ -48,7 +47,6 @@ describe('Transaction', () => {
 
   test('transaction is is assigned to all operations', () => {
     const transaction = new Transaction(
-      ledgerId,
       new TransactionDoubleEntries().push(
         doubleEntry(
           debit(userReceivables, usd(100)),
