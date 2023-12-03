@@ -23,7 +23,7 @@ const incomePaidProjects = new SystemAccountRef(
 const incomePaymentFee = new SystemAccountRef(ledgerId, 'INCOME_PAYMENT_FEE');
 
 describe('EntriesFormatter', () => {
-  const formatter = new TransactionFlowRenderer();
+  const renderer = new TransactionFlowRenderer();
 
   test('render detailed transaction information', () => {
     const transaction = new Transaction(
@@ -41,12 +41,13 @@ describe('EntriesFormatter', () => {
       ),
     );
 
-    const formatterValue = formatter.render(transaction);
+    const formatterValue = renderer.render(transaction);
     expect(formatterValue).toEqual(
-      `DEBIT  $100.55 USER_RECEIVABLES:1
-CREDIT $100.55 SYSTEM_INCOME_PAID_PROJECTS
-DEBIT  $3.00 USER_RECEIVABLES:1
-CREDIT $3.00 SYSTEM_INCOME_PAYMENT_FEE`,
+      `Account                           DEBIT     CREDIT    BALANCE\n` +
+        `USER_RECEIVABLES:1              $100.00               $100.00    User owes money for goods\n` +
+        `SYSTEM_INCOME_PAID_PROJECTS                $100.00    $100.00\n\n` +
+        `USER_RECEIVABLES:1                $3.00               $103.00    User owes payment processing fee\n` +
+        `SYSTEM_INCOME_PAYMENT_FEE                    $3.00    $3.00\n`,
     );
   });
 });
