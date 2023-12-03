@@ -53,7 +53,7 @@ export const entriesForPaymentConfirmed = ({
           debit(systemAccount('CURRENT_ASSETS_STRIPE_PLATFORM_USA'), platformFee.netAmount)
         ],
         credit(userAccount('RECEIVABLES', clientUserId), platformFee.chargeAmount),
-        'User owes platform fee',
+        'User paid platform fee',
       ),
     );
   }

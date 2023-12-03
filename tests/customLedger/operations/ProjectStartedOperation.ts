@@ -86,12 +86,9 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
       amountLockedForContractor,
     );
     entries.push(
+      // prettier-ignore
       doubleEntry(
-        debit(
-          systemAccount('EXPENSES_PAYOUTS'),
-          targetNetAmountWithoutPlatformFee,
-        ),
-        // prettier-ignore
+        debit(systemAccount('EXPENSES_PAYOUTS'), targetNetAmountWithoutPlatformFee),
         [
           credit(userAccount("PAYABLES_LOCKED", contractorUserId), amountLockedForContractor,),
           credit(userAccount("PAYABLES", contractorUserId), amountAvailable),

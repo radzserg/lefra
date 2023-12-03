@@ -14,18 +14,18 @@ export class Transaction {
   public readonly ledgerId: DB_ID;
 
   public constructor(
-    entries: TransactionDoubleEntries,
+    public readonly transactionDoubleEntries: TransactionDoubleEntries,
     public readonly description: string | null = null,
     public readonly postedAt: Date | null = new Date(),
   ) {
-    const flatEntries = entries.flatEntries();
+    const flatEntries = transactionDoubleEntries.flatEntries();
     if (!isNonEmptyArray(flatEntries)) {
       throw new LedgerUnexpectedError('Transaction has no entries');
     }
 
     this.entries = flatEntries;
 
-    const ledgerId = entries.ledgerId;
+    const ledgerId = transactionDoubleEntries.ledgerId;
     if (!ledgerId) {
       throw new LedgerUnexpectedError('Transaction has no entries');
     }

@@ -1,4 +1,4 @@
-import { EntriesFormatter } from '@/ledger/formatter/EntriesFormatter.js';
+import { EntriesRenderer } from '@/ledger/renderer/EntriesRenderer.js';
 import { Entry } from '@/ledger/transaction/Entry.js';
 import { Transaction } from '@/ledger/transaction/Transaction.js';
 import { Money } from '@/money/Money.js';
@@ -31,12 +31,12 @@ export const assertTransaction = async (
     expect(transaction.description).toEqual(expectedDescription);
   }
 
-  const formatter = new EntriesFormatter();
+  const entriesRenderer = new EntriesRenderer();
   if (transaction.entries.length !== expectedEntries.length) {
     throw new Error(
       `Expected ledger entries !== Actual.\n` +
         `Expected:\n${transformToReadableEntries(expectedEntries)}\n` +
-        `Actual:\n${formatter.format(transaction.entries)}\n`,
+        `Actual:\n${entriesRenderer.render(transaction.entries)}\n`,
     );
   }
 
@@ -57,7 +57,9 @@ export const assertTransaction = async (
           `Expected:\n${transformToReadableEntries(
             expectedEntries.slice(index),
           )}\n\n` +
-          `Actual:\n${formatter.format(transaction.entries.slice(index))}\n`,
+          `Actual:\n${entriesRenderer.render(
+            transaction.entries.slice(index),
+          )}\n`,
       );
     }
   }

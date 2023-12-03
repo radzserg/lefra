@@ -1,6 +1,6 @@
 import { EntityAccountRef } from '@/ledger/accounts/EntityAccountRef.js';
 import { SystemAccountRef } from '@/ledger/accounts/SystemAccountRef.js';
-import { EntriesFormatter } from '@/ledger/formatter/EntriesFormatter.js';
+import { EntriesRenderer } from '@/ledger/renderer/EntriesRenderer.js';
 import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { Money } from '@/money/Money.js';
@@ -20,7 +20,7 @@ const incomePaidProjects = new SystemAccountRef(
 const incomePaymentFee = new SystemAccountRef(ledgerId, 'INCOME_PAYMENT_FEE');
 
 describe('EntriesFormatter', () => {
-  const formatter = new EntriesFormatter();
+  const formatter = new EntriesRenderer();
 
   test('format entries in compact human readable form', () => {
     const entries = [
@@ -30,7 +30,7 @@ describe('EntriesFormatter', () => {
       credit(incomePaymentFee, new Money(3, 'USD')),
     ];
 
-    const formatterValue = formatter.format(entries);
+    const formatterValue = formatter.render(entries);
     expect(formatterValue).toEqual(
       `DEBIT  $100.55 USER_RECEIVABLES:1
 CREDIT $100.55 SYSTEM_INCOME_PAID_PROJECTS
