@@ -9,13 +9,13 @@ import {
 export const customLedgerAccountFactory = (ledgerId: DB_ID) => {
   return {
     systemAccount: (name: CustomLedgerSystemAccounts) => {
-      return new SystemAccountRef(ledgerId, name);
+      return new SystemAccountRef(ledgerId, 'SYSTEM_' + name);
     },
     teamAccount: (name: CustomLedgerEntityAccounts, teamId: string) => {
-      return new EntityAccountRef(ledgerId, name, teamId, 'TEAM');
+      return new EntityAccountRef(ledgerId, name, teamId);
     },
     userAccount: (name: CustomLedgerEntityAccounts, userAccountId: number) => {
-      return new EntityAccountRef(ledgerId, name, userAccountId, 'USER');
+      return new EntityAccountRef(ledgerId, `USER_` + name, userAccountId);
     },
   };
 };

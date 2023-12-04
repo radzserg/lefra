@@ -1,27 +1,20 @@
-import {
-  ACCOUNT_NAME_SEPARATOR,
-  LedgerAccountRef,
-  SYSTEM_ACCOUNT_PREFIX,
-} from '@/ledger/accounts/LedgerAccountRef.js';
+import { LedgerAccountRef } from '@/ledger/accounts/LedgerAccountRef.js';
 import { DB_ID } from '@/types.js';
 
 /**
  * Represents a reference to a  system ledger account.
  * System accounts must be preset.
  *
+ * Hint: prefix the name with SYSTEM_ to avoid name collisions with entity accounts.
  */
 export class SystemAccountRef extends LedgerAccountRef {
   public readonly type = 'SYSTEM' as const;
 
   public constructor(
     public readonly ledgerId: DB_ID,
-    name: string,
-    prefix: string = SYSTEM_ACCOUNT_PREFIX,
+    slug: string,
   ) {
-    LedgerAccountRef.validateName(name);
-    LedgerAccountRef.validatePrefix(prefix);
-
-    const slug = `${prefix}${ACCOUNT_NAME_SEPARATOR}${name}`;
+    LedgerAccountRef.validateName(slug);
     super(ledgerId, slug);
   }
 }

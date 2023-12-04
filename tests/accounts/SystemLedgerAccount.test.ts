@@ -6,7 +6,7 @@ const ledgerId = new UuidDatabaseIdGenerator().generateId();
 
 describe('SystemLedgerAccount', () => {
   test('create system account', () => {
-    const account = new SystemAccountRef(ledgerId, 'CURRENT_ASSETS');
+    const account = new SystemAccountRef(ledgerId, 'SYSTEM_CURRENT_ASSETS');
     expect(account.slug).toEqual('SYSTEM_CURRENT_ASSETS');
   });
 
@@ -26,10 +26,5 @@ describe('SystemLedgerAccount', () => {
     expect(() => new SystemAccountRef(ledgerId, name)).toThrow(
       'Account name can only contain uppercase letters without special characters',
     );
-  });
-
-  test('cannot override prefix', () => {
-    const account = new SystemAccountRef(ledgerId, 'CURRENT_ASSETS', 'CORE');
-    expect(account.slug).toEqual('CORE_CURRENT_ASSETS');
   });
 });

@@ -30,10 +30,10 @@ const saveTestLedgerAccounts = async (storage: LedgerStorage) => {
     description: 'Income accounts',
     isEntityLedgerAccount: false,
     ledgerId,
-    name: 'INCOME',
+    name: 'SYSTEM_INCOME',
     normalBalance: 'CREDIT',
     parentLedgerAccountTypeId: null,
-    slug: 'INCOME',
+    slug: 'SYSTEM_INCOME',
   });
   const receivablesAccountType = await storage.insertAccountType({
     description: 'Receivables',
@@ -240,10 +240,10 @@ describe('InMemoryLedgerStorage', () => {
         description: 'Income accounts',
         isEntityLedgerAccount: false,
         ledgerId,
-        name: 'INCOME',
+        name: 'SYSTEM_INCOME',
         normalBalance: 'CREDIT',
         parentLedgerAccountTypeId: null,
-        slug: 'INCOME',
+        slug: 'SYSTEM_INCOME',
       });
 
       await storage.upsertAccount({
@@ -255,7 +255,7 @@ describe('InMemoryLedgerStorage', () => {
       });
 
       const incomeProjectAccount = await storage.findAccount(
-        new SystemAccountRef(ledgerId, 'INCOME_PAID_PROJECTS'),
+        new SystemAccountRef(ledgerId, 'SYSTEM_INCOME_PAID_PROJECTS'),
       );
 
       expect(incomeProjectAccount).toEqual({
@@ -289,7 +289,7 @@ describe('InMemoryLedgerStorage', () => {
       });
 
       const receivables = await storage.findAccount(
-        new EntityAccountRef(ledgerId, 'RECEIVABLES', 1, 'USER'),
+        new EntityAccountRef(ledgerId, 'USER_RECEIVABLES', 1),
       );
 
       expect(receivables).toEqual({
@@ -361,7 +361,7 @@ describe('InMemoryLedgerStorage', () => {
       });
 
       const incomeProjectAccount = await storage.findAccount(
-        new SystemAccountRef(ledgerId, 'INCOME_PAID_PROJECTS'),
+        new SystemAccountRef(ledgerId, 'SYSTEM_INCOME_PAID_PROJECTS'),
       );
 
       expect(incomeProjectAccount).toEqual({
@@ -404,7 +404,7 @@ describe('InMemoryLedgerStorage', () => {
       });
 
       const receivables = await storage.findAccount(
-        new EntityAccountRef(ledgerId, 'RECEIVABLES', 1, 'USER'),
+        new EntityAccountRef(ledgerId, 'USER_RECEIVABLES', 1),
       );
 
       expect(receivables).toEqual({
@@ -440,22 +440,22 @@ describe('InMemoryLedgerStorage', () => {
         new TransactionDoubleEntries().push(
           doubleEntry(
             debit(
-              new EntityAccountRef(ledgerId, 'RECEIVABLES', 1, 'USER'),
+              new EntityAccountRef(ledgerId, 'USER_RECEIVABLES', 1),
               new Money(100, 'USD'),
             ),
             credit(
-              new SystemAccountRef(ledgerId, 'INCOME_PAID_PROJECTS'),
+              new SystemAccountRef(ledgerId, 'SYSTEM_INCOME_PAID_PROJECTS'),
               new Money(100, 'USD'),
             ),
             'User owes money for goods',
           ),
           doubleEntry(
             debit(
-              new EntityAccountRef(ledgerId, 'RECEIVABLES', 1, 'USER'),
+              new EntityAccountRef(ledgerId, 'USER_RECEIVABLES', 1),
               new Money(3, 'USD'),
             ),
             credit(
-              new SystemAccountRef(ledgerId, 'INCOME_PAYMENT_FEE'),
+              new SystemAccountRef(ledgerId, 'SYSTEM_INCOME_PAYMENT_FEE'),
               new Money(3, 'USD'),
             ),
             'User owes payment processing fee',
@@ -467,7 +467,7 @@ describe('InMemoryLedgerStorage', () => {
       const persistedTransaction = await storage.insertTransaction(transaction);
 
       const userReceivablesAccount = await storage.findAccount(
-        new EntityAccountRef(ledgerId, 'RECEIVABLES', 1, 'USER'),
+        new EntityAccountRef(ledgerId, 'USER_RECEIVABLES', 1),
       );
 
       // expect that we dynamically created the USER_RECEIVABLES account
@@ -537,7 +537,7 @@ describe('InMemoryLedgerStorage', () => {
       const storage = await createStorage(storageType);
       await expect(async () => {
         await storage.fetchAccountBalance(
-          new SystemAccountRef(ledgerId, 'INCOME_PAID_PROJECTS'),
+          new SystemAccountRef(ledgerId, 'SYSTEM_INCOME_PAID_PROJECTS'),
         );
       }).rejects.toThrow('Account SYSTEM_INCOME_PAID_PROJECTS not found');
     });
@@ -547,7 +547,7 @@ describe('InMemoryLedgerStorage', () => {
       await saveTestLedgerAccounts(storage);
 
       const balance = await storage.fetchAccountBalance(
-        new SystemAccountRef(ledgerId, 'INCOME_PAID_PROJECTS'),
+        new SystemAccountRef(ledgerId, 'SYSTEM_INCOME_PAID_PROJECTS'),
       );
       expect(balance).toBeNull();
     });
@@ -560,22 +560,22 @@ describe('InMemoryLedgerStorage', () => {
         new TransactionDoubleEntries().push(
           doubleEntry(
             debit(
-              new EntityAccountRef(ledgerId, 'RECEIVABLES', 1, 'USER'),
+              new EntityAccountRef(ledgerId, 'USER_RECEIVABLES', 1),
               new Money(100, 'USD'),
             ),
             credit(
-              new SystemAccountRef(ledgerId, 'INCOME_PAID_PROJECTS'),
+              new SystemAccountRef(ledgerId, 'SYSTEM_INCOME_PAID_PROJECTS'),
               new Money(100, 'USD'),
             ),
             'User owes money for goods',
           ),
           doubleEntry(
             debit(
-              new EntityAccountRef(ledgerId, 'RECEIVABLES', 1, 'USER'),
+              new EntityAccountRef(ledgerId, 'USER_RECEIVABLES', 1),
               new Money(3, 'USD'),
             ),
             credit(
-              new SystemAccountRef(ledgerId, 'INCOME_PAYMENT_FEE'),
+              new SystemAccountRef(ledgerId, 'SYSTEM_INCOME_PAYMENT_FEE'),
               new Money(3, 'USD'),
             ),
             'User owes payment processing fee',
@@ -587,12 +587,12 @@ describe('InMemoryLedgerStorage', () => {
       await storage.insertTransaction(transaction);
 
       const receivables = await storage.fetchAccountBalance(
-        new EntityAccountRef(ledgerId, 'RECEIVABLES', 1, 'USER'),
+        new EntityAccountRef(ledgerId, 'USER_RECEIVABLES', 1),
       );
       expect(receivables).toEqual(new Money(103, 'USD'));
 
       const incomePaymentFee = await storage.fetchAccountBalance(
-        new SystemAccountRef(ledgerId, 'INCOME_PAYMENT_FEE'),
+        new SystemAccountRef(ledgerId, 'SYSTEM_INCOME_PAYMENT_FEE'),
       );
       expect(incomePaymentFee).toEqual(new Money(3, 'USD'));
     });
