@@ -1,20 +1,20 @@
-import { LedgerAccountRefBuilder } from '@/ledger/accounts/LedgerAccountRef.js';
+import { LedgerAccountsRefBuilder } from '@/ledger/accounts/LedgerAccountsRefBuilder.js';
 import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { TransactionDoubleEntries } from '@/ledger/transaction/TransactionDoubleEntries.js';
+import { CustomLedgerSpecification } from '#/customLedger/CustomLedgerSpecification.js';
 import { ConfirmedPayment } from '#/customLedger/importedTypes.js';
 
 export const entriesForPaymentConfirmed = ({
   clientUserId,
   payment,
-  systemAccount,
-  userAccount,
 }: {
   clientUserId: number;
   payment: ConfirmedPayment;
-  systemAccount: LedgerAccountRefBuilder;
-  userAccount: LedgerAccountRefBuilder;
 }): TransactionDoubleEntries => {
+  const { entityAccount, systemAccount } = new LedgerAccountsRefBuilder(
+    CustomLedgerSpecification,
+  );
   const platformFee = payment.platformFee;
   const stripePayInFeeAmountMinusPlatformProcessingFee = platformFee
     ? payment.estimatedStripeProcessingFee.minus(
@@ -32,13 +32,13 @@ export const entriesForPaymentConfirmed = ({
   // prettier-ignore
   entries.push(
     doubleEntry(
-      debit(userAccount('USER_RECEIVABLES', clientUserId), stripePayInFeeAmountMinusPlatformProcessingFee),
+      debit(entityAccount('USER_RECEIVABLES', clientUserId), stripePayInFeeAmountMinusPlatformProcessingFee),
       credit(systemAccount('SYSTEM_INCOME_STRIPE_PAY_IN_FEES'), stripePayInFeeAmountMinusPlatformProcessingFee),
       'User owes Stripe processing fee',
     ),
     doubleEntry(
       debit(systemAccount('SYSTEM_EXPENSES_STRIPE_PAY_IN_FEES'), stripePayInFeeAmountMinusPlatformProcessingFee),
-      credit(userAccount('USER_RECEIVABLES', clientUserId), stripePayInFeeAmountMinusPlatformProcessingFee),
+      credit(entityAccount('USER_RECEIVABLES', clientUserId), stripePayInFeeAmountMinusPlatformProcessingFee),
       'Client successfully paid stripe fees',
     ),
   );
@@ -52,7 +52,7 @@ export const entriesForPaymentConfirmed = ({
           debit(systemAccount('SYSTEM_EXPENSES_STRIPE_CONTRACT_FEES'), platformFee.stripeProcessingFee),
           debit(systemAccount('SYSTEM_CURRENT_ASSETS_STRIPE_PLATFORM_USA'), platformFee.netAmount)
         ],
-        credit(userAccount('USER_RECEIVABLES', clientUserId), platformFee.chargeAmount),
+        credit(entityAccount('USER_RECEIVABLES', clientUserId), platformFee.chargeAmount),
         'User paid platform fee',
       ),
     );
@@ -67,7 +67,7 @@ export const entriesForPaymentConfirmed = ({
           actualNetAmountMinusPlatformFee,
         ),
         credit(
-          userAccount('USER_RECEIVABLES', clientUserId),
+          entityAccount('USER_RECEIVABLES', clientUserId),
           targetNetAmountMinusPlatformFee,
         ),
         'Client successfully paid project fee',
@@ -94,7 +94,7 @@ export const entriesForPaymentConfirmed = ({
           ),
         ],
         credit(
-          userAccount('USER_RECEIVABLES', clientUserId),
+          entityAccount('USER_RECEIVABLES', clientUserId),
           targetNetAmountMinusPlatformFee,
         ),
         'Tracking currency conversion losses',
@@ -122,7 +122,7 @@ export const entriesForPaymentConfirmed = ({
             delta,
           ),
           credit(
-            userAccount('USER_RECEIVABLES', clientUserId),
+            entityAccount('USER_RECEIVABLES', clientUserId),
             targetNetAmountMinusPlatformFee,
           ),
         ],

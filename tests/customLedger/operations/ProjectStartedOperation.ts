@@ -1,3 +1,4 @@
+import { LedgerAccountsRefBuilder } from '@/ledger/accounts/LedgerAccountsRefBuilder.js';
 import { LedgerOperation } from '@/ledger/operation/LedgerOperation.js';
 import { databaseIdSchema } from '@/ledger/storage/validation.js';
 import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
@@ -5,7 +6,7 @@ import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { Transaction } from '@/ledger/transaction/Transaction.js';
 import { TransactionDoubleEntries } from '@/ledger/transaction/TransactionDoubleEntries.js';
 import { usdSchema } from '@/money/validation.js';
-import { customLedgerAccountFactory } from '#/customLedger/customLedgerAccountFactory.js';
+import { CustomLedgerSpecification } from '#/customLedger/CustomLedgerSpecification.js';
 import { paymentSchema } from '#/customLedger/importedTypes.js';
 import { entriesForPaymentConfirmed } from '#/customLedger/operations/paymentConfirmed.js';
 import { z } from 'zod';
@@ -31,6 +32,10 @@ export type ProjectStartedOperationData = z.infer<OperationSchema>;
 export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
   protected declare payload: ProjectStartedOperationData;
 
+  private readonly ledgerAccountsRefBuilder = new LedgerAccountsRefBuilder(
+    CustomLedgerSpecification,
+  );
+
   public constructor(payload: ProjectStartedOperationData) {
     super(schema, payload);
   }
@@ -40,11 +45,11 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
       amountLockedForContractor,
       clientUserId,
       contractorUserId,
-      ledgerId,
       payment,
     } = this.payload;
 
-    const { systemAccount, userAccount } = customLedgerAccountFactory(ledgerId);
+    const { entityAccount, systemAccount } = this.ledgerAccountsRefBuilder;
+
     const { platformFee } = payment;
     const entries = new TransactionDoubleEntries();
 
@@ -55,7 +60,7 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
     entries.push(
       doubleEntry(
         debit(
-          userAccount('USER_RECEIVABLES', clientUserId),
+          entityAccount('USER_RECEIVABLES', clientUserId),
           targetNetAmountWithoutPlatformFee,
         ),
         credit(
@@ -70,7 +75,7 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
       entries.push(
         doubleEntry(
           debit(
-            userAccount('USER_RECEIVABLES', clientUserId),
+            entityAccount('USER_RECEIVABLES', clientUserId),
             platformFee.chargeAmount,
           ),
           credit(
@@ -90,8 +95,8 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
       doubleEntry(
         debit(systemAccount('SYSTEM_EXPENSES_PAYOUTS'), targetNetAmountWithoutPlatformFee),
         [
-          credit(userAccount('USER_PAYABLES_LOCKED', contractorUserId), amountLockedForContractor,),
-          credit(userAccount('USER_PAYABLES', contractorUserId), amountAvailable),
+          credit(entityAccount('USER_PAYABLES_LOCKED', contractorUserId), amountLockedForContractor,),
+          credit(entityAccount('USER_PAYABLES', contractorUserId), amountAvailable),
         ],
         'Part of funds are locked for the customer and part of funds are available for the customer',
       ),
@@ -102,8 +107,6 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
         entriesForPaymentConfirmed({
           clientUserId,
           payment,
-          systemAccount,
-          userAccount,
         }),
       );
     }

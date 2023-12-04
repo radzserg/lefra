@@ -1,10 +1,11 @@
 import { LedgerAccountRef } from '@/ledger/accounts/LedgerAccountRef.js';
+import { LedgerAccountsRefBuilder } from '@/ledger/accounts/LedgerAccountsRefBuilder.js';
 import { Ledger } from '@/ledger/Ledger.js';
 import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
 import { InMemoryLedgerStorage } from '@/ledger/storage/inMemory/InMemoryLedgerStorage.js';
 import { Money, usd } from '@/money/Money.js';
 import { buildCustomLedger } from '#/customLedger/buildCustomLedger.js';
-import { customLedgerAccountFactory } from '#/customLedger/customLedgerAccountFactory.js';
+import { CustomLedgerSpecification } from '#/customLedger/CustomLedgerSpecification.js';
 import { ProjectStartedOperation } from '#/customLedger/operations/ProjectStartedOperation.js';
 import { assertTransaction } from '#/helpers/assertTransaction.js';
 import { expectBalanceEqual } from '#/helpers/expectBalanceEqual.js';
@@ -16,13 +17,15 @@ const createServices = async () => {
   const storage = new InMemoryLedgerStorage();
   const ledger = new Ledger(ledgerId, storage);
   await buildCustomLedger(ledgerId, storage);
-  const { systemAccount, userAccount } = customLedgerAccountFactory(ledgerId);
+  const { entityAccount, systemAccount } = new LedgerAccountsRefBuilder(
+    CustomLedgerSpecification,
+  );
 
   return {
+    entityAccount,
     ledger,
     storage,
     systemAccount,
-    userAccount,
   };
 };
 
@@ -50,7 +53,7 @@ describe('ProjectStartedOperation', () => {
   });
 
   test('records ProjectStartedOperation when payment is processing', async () => {
-    const { ledger, storage, systemAccount, userAccount } =
+    const { entityAccount, ledger, storage, systemAccount } =
       await createServices();
     const transaction = await ledger.record(
       new ProjectStartedOperation({
@@ -84,9 +87,9 @@ describe('ProjectStartedOperation', () => {
     });
 
     const expectedBalances: Array<[LedgerAccountRef, Money | null]> = [
-      [userAccount('USER_RECEIVABLES', clientUserId), usd(100)],
-      [userAccount('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
-      [userAccount('USER_PAYABLES', contractorUserId), usd(50)],
+      [entityAccount('USER_RECEIVABLES', clientUserId), usd(100)],
+      [entityAccount('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
+      [entityAccount('USER_PAYABLES', contractorUserId), usd(50)],
       [systemAccount('SYSTEM_INCOME_PAID_PROJECTS'), usd(100)],
       [systemAccount('SYSTEM_INCOME_CONTRACT_FEES'), null],
       [systemAccount('SYSTEM_EXPENSES_PAYOUTS'), usd(100)],
@@ -99,7 +102,7 @@ describe('ProjectStartedOperation', () => {
   });
 
   test('records ProjectStartedOperation when payment is confirmed', async () => {
-    const { ledger, storage, systemAccount, userAccount } =
+    const { entityAccount, ledger, storage, systemAccount } =
       await createServices();
     const transaction = await ledger.record(
       new ProjectStartedOperation({
@@ -163,9 +166,9 @@ describe('ProjectStartedOperation', () => {
     });
 
     const expectedBalances: Array<[LedgerAccountRef, Money]> = [
-      [userAccount('USER_RECEIVABLES', clientUserId), usd(0)],
-      [userAccount('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
-      [userAccount('USER_PAYABLES', contractorUserId), usd(50)],
+      [entityAccount('USER_RECEIVABLES', clientUserId), usd(0)],
+      [entityAccount('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
+      [entityAccount('USER_PAYABLES', contractorUserId), usd(50)],
       [systemAccount('SYSTEM_INCOME_PAID_PROJECTS'), usd(100)],
       [systemAccount('SYSTEM_EXPENSES_PAYOUTS'), usd(100)],
       [systemAccount('SYSTEM_INCOME_CONTRACT_FEES'), usd(19)],
@@ -183,7 +186,7 @@ describe('ProjectStartedOperation', () => {
   });
 
   test('records ProjectStartedOperation when 2 payments are confirmed', async () => {
-    const { ledger, storage, systemAccount, userAccount } =
+    const { entityAccount, ledger, storage, systemAccount } =
       await createServices();
     const payload = {
       amountLockedForContractor: new Money(50, 'USD'),
@@ -216,11 +219,11 @@ describe('ProjectStartedOperation', () => {
     );
 
     const expectedBalances: Array<[LedgerAccountRef, Money]> = [
-      [userAccount('USER_RECEIVABLES', clientUserId), usd(0)],
-      [userAccount('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
-      [userAccount('USER_PAYABLES_LOCKED', contractorTwoUserId), usd(50)],
-      [userAccount('USER_PAYABLES', contractorUserId), usd(50)],
-      [userAccount('USER_PAYABLES', contractorTwoUserId), usd(50)],
+      [entityAccount('USER_RECEIVABLES', clientUserId), usd(0)],
+      [entityAccount('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
+      [entityAccount('USER_PAYABLES_LOCKED', contractorTwoUserId), usd(50)],
+      [entityAccount('USER_PAYABLES', contractorUserId), usd(50)],
+      [entityAccount('USER_PAYABLES', contractorTwoUserId), usd(50)],
       [systemAccount('SYSTEM_INCOME_PAID_PROJECTS'), usd(200)],
       [systemAccount('SYSTEM_EXPENSES_PAYOUTS'), usd(200)],
       [systemAccount('SYSTEM_INCOME_CONTRACT_FEES'), usd(38)],
