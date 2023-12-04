@@ -45,13 +45,16 @@ export class TransactionFlowRenderer implements Renderer {
         );
         const comment = index === 0 ? doubleEntry.comment : '';
         lines.push(
-          debitEntry.account.slug.padEnd(maxAccountNameLength + 1, SPACE) +
+          debitEntry.account.accountSlug.padEnd(
+            maxAccountNameLength + 1,
+            SPACE,
+          ) +
             SEPARATOR +
             debitEntry.amount.format().padStart(maxAmountLength, SPACE) +
             SEPARATOR +
             ''.padStart(maxAmountLength, SPACE) +
             SEPARATOR +
-            accountsBalances[debitEntry.account.slug].format() +
+            accountsBalances[debitEntry.account.accountSlug].format() +
             SEPARATOR +
             comment,
         );
@@ -63,13 +66,16 @@ export class TransactionFlowRenderer implements Renderer {
           creditEntry,
         );
         lines.push(
-          creditEntry.account.slug.padEnd(maxAccountNameLength + 1, SPACE) +
+          creditEntry.account.accountSlug.padEnd(
+            maxAccountNameLength + 1,
+            SPACE,
+          ) +
             SEPARATOR +
             ''.padEnd(maxAmountLength, SPACE) +
             SEPARATOR +
             creditEntry.amount.format().padStart(maxAmountLength, SPACE) +
             SEPARATOR +
-            accountsBalances[creditEntry.account.slug].format(),
+            accountsBalances[creditEntry.account.accountSlug].format(),
         );
       }
 
@@ -89,7 +95,7 @@ export class TransactionFlowRenderer implements Renderer {
     for (const entry of entries) {
       accountsBalances = this.trackAccountBalance(accountsBalances, entry);
 
-      const accountNameLength = entry.account.slug.length;
+      const accountNameLength = entry.account.accountSlug.length;
       if (accountNameLength > maxAccountNameLength) {
         maxAccountNameLength = accountNameLength;
       }
@@ -115,7 +121,7 @@ export class TransactionFlowRenderer implements Renderer {
   }
 
   private trackAccountBalance(accountsBalances: AccountBalances, entry: Entry) {
-    const accountSlug = entry.account.slug;
+    const accountSlug = entry.account.accountSlug;
     if (accountsBalances[accountSlug]) {
       if (entry.action === 'DEBIT') {
         accountsBalances[accountSlug] = accountsBalances[accountSlug].plus(

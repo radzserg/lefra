@@ -1,7 +1,7 @@
 import { Entry } from './Entry.js';
 import { LedgerUnexpectedError } from '@/errors.js';
 import { TransactionDoubleEntries } from '@/ledger/transaction/TransactionDoubleEntries.js';
-import { DB_ID, NonEmptyArray } from '@/types.js';
+import { NonEmptyArray } from '@/types.js';
 import { isNonEmptyArray } from '@/utils.js';
 
 /**
@@ -11,7 +11,7 @@ import { isNonEmptyArray } from '@/utils.js';
 export class Transaction {
   public readonly entries: NonEmptyArray<Entry>;
 
-  public readonly ledgerId: DB_ID;
+  public readonly ledgerSlug: string;
 
   public constructor(
     public readonly transactionDoubleEntries: TransactionDoubleEntries,
@@ -25,11 +25,11 @@ export class Transaction {
 
     this.entries = flatEntries;
 
-    const ledgerId = transactionDoubleEntries.ledgerId;
+    const ledgerId = transactionDoubleEntries.ledgerSlug;
     if (!ledgerId) {
       throw new LedgerUnexpectedError('Transaction has no entries');
     }
 
-    this.ledgerId = ledgerId;
+    this.ledgerSlug = ledgerId;
   }
 }

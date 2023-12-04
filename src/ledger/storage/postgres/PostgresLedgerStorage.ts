@@ -145,7 +145,7 @@ export class PostgresLedgerStorage implements LedgerStorage {
         SELECT calculate_balance_for_ledger_account(${id}) amount;
       `,
     );
-    const currencyCode = await this.getLedgerCurrencyCode(account.ledgerId);
+    const currencyCode = await this.getLedgerCurrencyCode(account.ledgerSlug);
 
     return new Money(amount, currencyCode);
   }
@@ -172,13 +172,13 @@ export class PostgresLedgerStorage implements LedgerStorage {
           la.id
         FROM ledger_account la        
         WHERE
-          la.slug = ${account.slug}
-          AND la.ledger_id = ${account.slug}
+          la.slug = ${account.accountSlug}
+          AND la.ledger_id = ${account.accountSlug}
       `,
     );
     if (!ledgerAccount) {
       throw new LedgerNotFoundError(
-        `Ledger account ${account.slug} is not found`,
+        `Ledger account ${account.accountSlug} is not found`,
       );
     }
 

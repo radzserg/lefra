@@ -14,14 +14,14 @@ export class EntityAccountRef extends LedgerAccountRef {
   public readonly name: string;
 
   public constructor(
-    public readonly ledgerId: DB_ID,
+    public readonly ledgerSlug: string,
     name: string,
     public readonly externalId: DB_ID,
   ) {
     LedgerAccountRef.validateName(name);
 
-    const slug = `${name}:${externalId}`;
-    super(ledgerId, slug);
+    const accountSlug = `${name}:${externalId}`;
+    super(ledgerSlug, accountSlug);
     this.name = name;
   }
 }

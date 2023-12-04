@@ -37,10 +37,14 @@ const systemAccounts = {
 
 export type CustomLedgerSystemAccounts = keyof typeof systemAccounts;
 
-export const buildCustomLedger = async (
-  ledgerId: string,
-  storage: LedgerStorage,
-) => {
+export const buildCustomLedger = async (storage: LedgerStorage) => {
+  const { id: ledgerId } = await storage.insertLedger({
+    currencyCode: 'USD',
+    description: null,
+    name: 'Test ledger',
+    slug: 'PLATFORM_USD',
+  });
+
   for (const [name, [normalBalance]] of Object.entries(systemAccountTypes)) {
     await storage.insertAccountType({
       description: '',
@@ -81,4 +85,6 @@ export const buildCustomLedger = async (
       slug: name,
     });
   }
+
+  return { ledgerId };
 };

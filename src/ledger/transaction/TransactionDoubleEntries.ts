@@ -1,6 +1,5 @@
 import { DoubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { Entry } from '@/ledger/transaction/Entry.js';
-import { DB_ID } from '@/types.js';
 
 /**
  * Guarantees that all entries are of the same ledger.
@@ -8,26 +7,26 @@ import { DB_ID } from '@/types.js';
 export class TransactionDoubleEntries {
   public entries: DoubleEntry[] = [];
 
-  public ledgerId: DB_ID | null = null;
+  public ledgerSlug: string | null = null;
 
   public push(...entries: DoubleEntry[]): TransactionDoubleEntries {
     if (entries.length === 0) {
       return this;
     }
 
-    if (!this.ledgerId) {
-      this.ledgerId = entries[0].debitEntries[0].account.ledgerId;
+    if (!this.ledgerSlug) {
+      this.ledgerSlug = entries[0].debitEntries[0].account.ledgerSlug;
     }
 
     for (const entry of entries) {
       for (const debitEntry of entry.debitEntries) {
-        if (debitEntry.account.ledgerId !== this.ledgerId) {
+        if (debitEntry.account.ledgerSlug !== this.ledgerSlug) {
           throw new Error('All entries must be of the same ledger');
         }
       }
 
       for (const creditEntry of entry.creditEntries) {
-        if (creditEntry.account.ledgerId !== this.ledgerId) {
+        if (creditEntry.account.ledgerSlug !== this.ledgerSlug) {
           throw new Error('All entries must be of the same ledger');
         }
       }

@@ -1,7 +1,6 @@
 import { LedgerAccountRef } from '@/ledger/accounts/LedgerAccountRef.js';
 import { LedgerAccountsRefBuilder } from '@/ledger/accounts/LedgerAccountsRefBuilder.js';
 import { Ledger } from '@/ledger/Ledger.js';
-import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
 import { InMemoryLedgerStorage } from '@/ledger/storage/inMemory/InMemoryLedgerStorage.js';
 import { Money, usd } from '@/money/Money.js';
 import { buildCustomLedger } from '#/customLedger/buildCustomLedger.js';
@@ -12,11 +11,11 @@ import { expectBalanceEqual } from '#/helpers/expectBalanceEqual.js';
 import { describe, expect, test } from 'vitest';
 
 const createServices = async () => {
-  const ledgerId = new UuidDatabaseIdGenerator().generateId();
-
   const storage = new InMemoryLedgerStorage();
+  const { ledgerId } = await buildCustomLedger(storage);
+
   const ledger = new Ledger(ledgerId, storage);
-  await buildCustomLedger(ledgerId, storage);
+
   const { account } = new LedgerAccountsRefBuilder(CustomLedgerSpecification);
 
   return {
@@ -93,7 +92,11 @@ describe('ProjectStartedOperation', () => {
 
     for (const [accountRef, expectedBalance] of expectedBalances) {
       const actualBalance = await storage.fetchAccountBalance(accountRef);
-      expectBalanceEqual(actualBalance, expectedBalance, accountRef.slug);
+      expectBalanceEqual(
+        actualBalance,
+        expectedBalance,
+        accountRef.accountSlug,
+      );
     }
   });
 
@@ -176,7 +179,11 @@ describe('ProjectStartedOperation', () => {
 
     for (const [accountRef, expectedBalance] of expectedBalances) {
       const actualBalance = await storage.fetchAccountBalance(accountRef);
-      expectBalanceEqual(actualBalance, expectedBalance, accountRef.slug);
+      expectBalanceEqual(
+        actualBalance,
+        expectedBalance,
+        accountRef.accountSlug,
+      );
     }
   });
 
@@ -229,7 +236,11 @@ describe('ProjectStartedOperation', () => {
 
     for (const [accountRef, expectedBalance] of expectedBalances) {
       const actualBalance = await storage.fetchAccountBalance(accountRef);
-      expectBalanceEqual(actualBalance, expectedBalance, accountRef.slug);
+      expectBalanceEqual(
+        actualBalance,
+        expectedBalance,
+        accountRef.accountSlug,
+      );
     }
   });
 });

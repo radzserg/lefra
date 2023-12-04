@@ -7,7 +7,7 @@ const ledgerId = new UuidDatabaseIdGenerator().generateId();
 describe('SystemLedgerAccount', () => {
   test('create system account', () => {
     const account = new SystemAccountRef(ledgerId, 'SYSTEM_CURRENT_ASSETS');
-    expect(account.slug).toEqual('SYSTEM_CURRENT_ASSETS');
+    expect(account.accountSlug).toEqual('SYSTEM_CURRENT_ASSETS');
   });
 
   test('cannot create entity account with empty name', () => {

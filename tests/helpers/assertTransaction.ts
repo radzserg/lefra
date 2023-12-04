@@ -46,7 +46,7 @@ export const assertTransaction = async (
 
     if (
       actualEntry.action !== expectedEntry[0] ||
-      actualEntry.account.slug !== expectedEntry[1] ||
+      actualEntry.account.accountSlug !== expectedEntry[1] ||
       !actualEntry.amount.equals(expectedEntry[2])
     ) {
       throw new Error(

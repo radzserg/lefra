@@ -62,7 +62,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     name,
     slug,
   }: LedgerInput) {
-    const existedLedger = await this.getLedgerIdBySlug(slug);
+    const existedLedger = await this.findLedgerIdBySlug(slug);
     if (existedLedger) {
       throw new LedgerError(`Ledger ${slug} already exists`);
     }
@@ -163,7 +163,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   }
 
   public async getLedgerIdBySlug(slug: string) {
-    const existingLedger = this.ledgers.find((ledger) => ledger.slug === slug);
+    const existingLedger = await this.findLedgerIdBySlug(slug);
     if (!existingLedger) {
       throw new LedgerNotFoundError(`Ledger ${slug} not found`);
     }
@@ -171,11 +171,16 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     return existingLedger.id;
   }
 
+  public async findLedgerIdBySlug(slug: string) {
+    return this.ledgers.find((ledger) => ledger.slug === slug);
+  }
+
   public async insertTransaction(transaction: Transaction) {
+    const ledgerId = await this.getLedgerIdBySlug(transaction.ledgerSlug);
     const savedTransaction: PersistedTransaction = {
       description: transaction.description,
       id: this.idGenerator.generateId(),
-      ledgerId: transaction.ledgerId,
+      ledgerId,
       postedAt: transaction.postedAt,
     };
 
@@ -195,7 +200,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
       const existingAccount = await this.findAccount(entry.account);
       if (!existingAccount) {
         throw new LedgerNotFoundError(
-          `Account ${entry.account.slug} not found`,
+          `Account ${entry.account.accountSlug} not found`,
         );
       }
 
@@ -234,30 +239,29 @@ export class InMemoryLedgerStorage implements LedgerStorage {
 
   private async findOrInsertLedgerAccounts(accounts: LedgerAccountRef[]) {
     for (const account of accounts) {
-      const existingAccount = await this.findSavedAccount(
-        account.ledgerId,
-        account.slug,
-      );
+      const existingAccount = await this.findSavedAccountByAccountRef(account);
       if (existingAccount) {
         continue;
       }
 
       if (!(account instanceof EntityAccountRef)) {
         throw new LedgerError(
-          `Account ${account.slug} does not exist. Only entity accounts can be inserted`,
+          `Account ${account.accountSlug} does not exist. Only entity accounts can be inserted`,
         );
       }
 
       const accountType = await this.findAccountTypeBySlug(account.name);
       if (!accountType) {
-        throw new LedgerError(`Account type ${account.slug} not found`);
+        throw new LedgerError(`Account type ${account.accountSlug} not found`);
       }
 
       if (!accountType.isEntityLedgerAccount) {
         throw new LedgerError(
-          `Account ${account.slug} cannot be inserted. Only entity accounts can be inserted`,
+          `Account ${account.accountSlug} cannot be inserted. Only entity accounts can be inserted`,
         );
       }
+
+      const ledgerId = await this.getLedgerIdBySlug(account.ledgerSlug);
 
       await this.upsertAccount({
         description: accountType.description
@@ -265,8 +269,8 @@ export class InMemoryLedgerStorage implements LedgerStorage {
           : null,
         isSystemAccount: false,
         ledgerAccountTypeId: accountType.id,
-        ledgerId: account.ledgerId,
-        slug: account.slug,
+        ledgerId,
+        slug: account.accountSlug,
       });
     }
   }
@@ -276,7 +280,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   ): Promise<Money | null> {
     const savedAccount = await this.findAccount(account);
     if (!savedAccount) {
-      throw new LedgerNotFoundError(`Account ${account.slug} not found`);
+      throw new LedgerNotFoundError(`Account ${account.accountSlug} not found`);
     }
 
     const ledgerAccountTypeId = savedAccount.ledgerAccountTypeId;
@@ -287,10 +291,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     let sumDebits: Money | null = null;
     let sumCredits: Money | null = null;
     for (const entry of this.entries) {
-      if (
-        account.ledgerId !== savedAccount.ledgerId ||
-        entry.ledgerAccountId !== savedAccount.id
-      ) {
+      if (entry.ledgerAccountId !== savedAccount.id) {
         continue;
       }
 
@@ -318,7 +319,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     if (normalBalance === 'DEBIT') {
       if (!sumDebits) {
         throw new LedgerError(
-          `Debit account ${account.slug} has negative balance`,
+          `Debit account ${account.accountSlug} has negative balance`,
         );
       }
 
@@ -330,7 +331,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     } else if (normalBalance === 'CREDIT') {
       if (!sumCredits) {
         throw new LedgerError(
-          `Credit account ${account.slug} has negative balance`,
+          `Credit account ${account.accountSlug} has negative balance`,
         );
       }
 
@@ -349,19 +350,42 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   public async findAccount(
     account: LedgerAccountRef,
   ): Promise<PersistedLedgerAccount | null> {
+    const ledgerId = await this.getLedgerIdBySlug(account.ledgerSlug);
     const foundAccount = this.accounts.find((savedAccount) => {
       return (
-        savedAccount.slug === account.slug &&
-        savedAccount.ledgerId === account.ledgerId
+        savedAccount.slug === account.accountSlug &&
+        savedAccount.ledgerId === ledgerId
       );
     });
 
     return foundAccount ?? null;
   }
 
-  private async findSavedAccount(ledgerId: DB_ID, slug: string) {
+  private async findSavedAccountByAccountRef({
+    accountSlug,
+    ledgerSlug,
+  }: LedgerAccountRef) {
+    const ledger = this.ledgers.find(
+      (savedLedger) => savedLedger.slug === ledgerSlug,
+    );
+    if (!ledger) {
+      throw new LedgerNotFoundError(`Ledger ${ledgerSlug} not found`);
+    }
+
     const foundAccount = this.accounts.find((savedAccount) => {
-      return savedAccount.slug === slug && savedAccount.ledgerId === ledgerId;
+      return (
+        savedAccount.slug === accountSlug && savedAccount.ledgerId === ledger.id
+      );
+    });
+
+    return foundAccount ?? null;
+  }
+
+  private async findSavedAccount(ledgerId: DB_ID, accountSlug: string) {
+    const foundAccount = this.accounts.find((savedAccount) => {
+      return (
+        savedAccount.slug === accountSlug && savedAccount.ledgerId === ledgerId
+      );
     });
 
     return foundAccount ?? null;

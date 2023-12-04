@@ -1,5 +1,4 @@
 import { LedgerAccountError } from '@/errors.js';
-import { DB_ID } from '@/types.js';
 
 type LedgerAccountRefType = 'SYSTEM' | 'ENTITY';
 export const ACCOUNT_NAME_SEPARATOR = '_';
@@ -21,8 +20,8 @@ export abstract class LedgerAccountRef {
   public abstract readonly type: LedgerAccountRefType;
 
   protected constructor(
-    public readonly ledgerId: DB_ID,
-    public readonly slug: string,
+    public readonly ledgerSlug: string,
+    public readonly accountSlug: string,
   ) {}
 
   protected static validateName(name: string) {

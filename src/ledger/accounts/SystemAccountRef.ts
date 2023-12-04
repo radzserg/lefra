@@ -1,5 +1,4 @@
 import { LedgerAccountRef } from '@/ledger/accounts/LedgerAccountRef.js';
-import { DB_ID } from '@/types.js';
 
 /**
  * Represents a reference to a  system ledger account.
@@ -11,10 +10,10 @@ export class SystemAccountRef extends LedgerAccountRef {
   public readonly type = 'SYSTEM' as const;
 
   public constructor(
-    public readonly ledgerId: DB_ID,
-    slug: string,
+    public readonly ledgerSlug: string,
+    accountSlug: string,
   ) {
-    LedgerAccountRef.validateName(slug);
-    super(ledgerId, slug);
+    LedgerAccountRef.validateName(accountSlug);
+    super(ledgerSlug, accountSlug);
   }
 }

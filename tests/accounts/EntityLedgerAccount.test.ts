@@ -10,7 +10,7 @@ describe('EntityLedgerAccount', () => {
 
     expect(account.externalId).toEqual(1);
     expect(account.name).toEqual('USER_RECEIVABLES');
-    expect(account.slug).toEqual('USER_RECEIVABLES:1');
+    expect(account.accountSlug).toEqual('USER_RECEIVABLES:1');
   });
 
   test('create entity user account', () => {
@@ -22,7 +22,7 @@ describe('EntityLedgerAccount', () => {
     );
 
     expect(account.externalId).toEqual('a934cae1-f809-4aac-8b82-f639977d9512');
-    expect(account.slug).toEqual(
+    expect(account.accountSlug).toEqual(
       'USER_RECEIVABLES_LOCKED:a934cae1-f809-4aac-8b82-f639977d9512',
     );
     expect(account.name).toEqual('USER_RECEIVABLES_LOCKED');

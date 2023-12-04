@@ -14,7 +14,7 @@ export class EntriesRenderer implements Renderer {
 
   private formatEntry(entry: Entry): string {
     return `${this.formatOperation(entry.action)} ${entry.amount.format()} ${
-      entry.account.slug
+      entry.account.accountSlug
     }`;
   }
 
