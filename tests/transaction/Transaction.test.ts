@@ -9,17 +9,15 @@ import { usd } from '@/money/Money.js';
 import { describe, expect, test } from 'vitest';
 
 const ledgerId = new UuidDatabaseIdGenerator().generateId();
-const userReceivables = new EntityAccountRef(
-  ledgerId,
-  'RECEIVABLES',
-  1,
-  'USER',
-);
+const userReceivables = new EntityAccountRef(ledgerId, 'USER_RECEIVABLES', 1);
 const incomePaidProjects = new SystemAccountRef(
   ledgerId,
-  'INCOME_PAID_PROJECTS',
+  'SYSTEM_INCOME_PAID_PROJECTS',
 );
-const incomePaymentFee = new SystemAccountRef(ledgerId, 'INCOME_PAYMENT_FEE');
+const incomePaymentFee = new SystemAccountRef(
+  ledgerId,
+  'SYSTEM_INCOME_PAYMENT_FEE',
+);
 
 describe('Transaction', () => {
   test('create a transaction', () => {

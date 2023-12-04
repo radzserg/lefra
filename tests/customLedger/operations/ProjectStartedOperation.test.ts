@@ -84,12 +84,12 @@ describe('ProjectStartedOperation', () => {
     });
 
     const expectedBalances: Array<[LedgerAccountRef, Money | null]> = [
-      [userAccount('RECEIVABLES', clientUserId), usd(100)],
-      [userAccount('PAYABLES_LOCKED', contractorUserId), usd(50)],
-      [userAccount('PAYABLES', contractorUserId), usd(50)],
-      [systemAccount('INCOME_PAID_PROJECTS'), usd(100)],
-      [systemAccount('INCOME_CONTRACT_FEES'), null],
-      [systemAccount('EXPENSES_PAYOUTS'), usd(100)],
+      [userAccount('USER_RECEIVABLES', clientUserId), usd(100)],
+      [userAccount('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
+      [userAccount('USER_PAYABLES', contractorUserId), usd(50)],
+      [systemAccount('SYSTEM_INCOME_PAID_PROJECTS'), usd(100)],
+      [systemAccount('SYSTEM_INCOME_CONTRACT_FEES'), null],
+      [systemAccount('SYSTEM_EXPENSES_PAYOUTS'), usd(100)],
     ];
 
     for (const [account, expectedBalance] of expectedBalances) {
@@ -163,17 +163,17 @@ describe('ProjectStartedOperation', () => {
     });
 
     const expectedBalances: Array<[LedgerAccountRef, Money]> = [
-      [userAccount('RECEIVABLES', clientUserId), usd(0)],
-      [userAccount('PAYABLES_LOCKED', contractorUserId), usd(50)],
-      [userAccount('PAYABLES', contractorUserId), usd(50)],
-      [systemAccount('INCOME_PAID_PROJECTS'), usd(100)],
-      [systemAccount('EXPENSES_PAYOUTS'), usd(100)],
-      [systemAccount('INCOME_CONTRACT_FEES'), usd(19)],
-      [systemAccount('INCOME_STRIPE_PAY_IN_FEES'), usd(3.3)],
-      [systemAccount('EXPENSES_STRIPE_PAY_IN_FEES'), usd(3.3)],
-      [systemAccount('EXPENSES_STRIPE_CONTRACT_FEES'), usd(0.55)],
-      [systemAccount('CURRENT_ASSETS_STRIPE_PLATFORM_USA'), usd(117.44)],
-      [systemAccount('EXPENSES_CURRENCY_CONVERSION_LOSSES'), usd(1.01)],
+      [userAccount('USER_RECEIVABLES', clientUserId), usd(0)],
+      [userAccount('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
+      [userAccount('USER_PAYABLES', contractorUserId), usd(50)],
+      [systemAccount('SYSTEM_INCOME_PAID_PROJECTS'), usd(100)],
+      [systemAccount('SYSTEM_EXPENSES_PAYOUTS'), usd(100)],
+      [systemAccount('SYSTEM_INCOME_CONTRACT_FEES'), usd(19)],
+      [systemAccount('SYSTEM_INCOME_STRIPE_PAY_IN_FEES'), usd(3.3)],
+      [systemAccount('SYSTEM_EXPENSES_STRIPE_PAY_IN_FEES'), usd(3.3)],
+      [systemAccount('SYSTEM_EXPENSES_STRIPE_CONTRACT_FEES'), usd(0.55)],
+      [systemAccount('SYSTEM_CURRENT_ASSETS_STRIPE_PLATFORM_USA'), usd(117.44)],
+      [systemAccount('SYSTEM_EXPENSES_CURRENCY_CONVERSION_LOSSES'), usd(1.01)],
     ];
 
     for (const [account, expectedBalance] of expectedBalances) {
@@ -216,18 +216,18 @@ describe('ProjectStartedOperation', () => {
     );
 
     const expectedBalances: Array<[LedgerAccountRef, Money]> = [
-      [userAccount('RECEIVABLES', clientUserId), usd(0)],
-      [userAccount('PAYABLES_LOCKED', contractorUserId), usd(50)],
-      [userAccount('PAYABLES_LOCKED', contractorTwoUserId), usd(50)],
-      [userAccount('PAYABLES', contractorUserId), usd(50)],
-      [userAccount('PAYABLES', contractorTwoUserId), usd(50)],
-      [systemAccount('INCOME_PAID_PROJECTS'), usd(200)],
-      [systemAccount('EXPENSES_PAYOUTS'), usd(200)],
-      [systemAccount('INCOME_CONTRACT_FEES'), usd(38)],
-      [systemAccount('INCOME_STRIPE_PAY_IN_FEES'), usd(6.6)],
-      [systemAccount('EXPENSES_STRIPE_PAY_IN_FEES'), usd(6.6)],
-      [systemAccount('EXPENSES_STRIPE_CONTRACT_FEES'), usd(1.1)],
-      [systemAccount('CURRENT_ASSETS_STRIPE_PLATFORM_USA'), usd(236.9)],
+      [userAccount('USER_RECEIVABLES', clientUserId), usd(0)],
+      [userAccount('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
+      [userAccount('USER_PAYABLES_LOCKED', contractorTwoUserId), usd(50)],
+      [userAccount('USER_PAYABLES', contractorUserId), usd(50)],
+      [userAccount('USER_PAYABLES', contractorTwoUserId), usd(50)],
+      [systemAccount('SYSTEM_INCOME_PAID_PROJECTS'), usd(200)],
+      [systemAccount('SYSTEM_EXPENSES_PAYOUTS'), usd(200)],
+      [systemAccount('SYSTEM_INCOME_CONTRACT_FEES'), usd(38)],
+      [systemAccount('SYSTEM_INCOME_STRIPE_PAY_IN_FEES'), usd(6.6)],
+      [systemAccount('SYSTEM_EXPENSES_STRIPE_PAY_IN_FEES'), usd(6.6)],
+      [systemAccount('SYSTEM_EXPENSES_STRIPE_CONTRACT_FEES'), usd(1.1)],
+      [systemAccount('SYSTEM_CURRENT_ASSETS_STRIPE_PLATFORM_USA'), usd(236.9)],
     ];
 
     for (const [account, expectedBalance] of expectedBalances) {

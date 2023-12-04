@@ -55,11 +55,11 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
     entries.push(
       doubleEntry(
         debit(
-          userAccount('RECEIVABLES', clientUserId),
+          userAccount('USER_RECEIVABLES', clientUserId),
           targetNetAmountWithoutPlatformFee,
         ),
         credit(
-          systemAccount('INCOME_PAID_PROJECTS'),
+          systemAccount('SYSTEM_INCOME_PAID_PROJECTS'),
           targetNetAmountWithoutPlatformFee,
         ),
         'User owes money for the project',
@@ -70,11 +70,11 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
       entries.push(
         doubleEntry(
           debit(
-            userAccount('RECEIVABLES', clientUserId),
+            userAccount('USER_RECEIVABLES', clientUserId),
             platformFee.chargeAmount,
           ),
           credit(
-            systemAccount('INCOME_CONTRACT_FEES'),
+            systemAccount('SYSTEM_INCOME_CONTRACT_FEES'),
             platformFee.chargeAmount,
           ),
           'User owes platform fee',
@@ -88,10 +88,10 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
     entries.push(
       // prettier-ignore
       doubleEntry(
-        debit(systemAccount('EXPENSES_PAYOUTS'), targetNetAmountWithoutPlatformFee),
+        debit(systemAccount('SYSTEM_EXPENSES_PAYOUTS'), targetNetAmountWithoutPlatformFee),
         [
-          credit(userAccount("PAYABLES_LOCKED", contractorUserId), amountLockedForContractor,),
-          credit(userAccount("PAYABLES", contractorUserId), amountAvailable),
+          credit(userAccount('USER_PAYABLES_LOCKED', contractorUserId), amountLockedForContractor,),
+          credit(userAccount('USER_PAYABLES', contractorUserId), amountAvailable),
         ],
         'Part of funds are locked for the customer and part of funds are available for the customer',
       ),

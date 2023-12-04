@@ -10,13 +10,11 @@ import { describe, expect, test } from 'vitest';
 const ledgerId = new UuidDatabaseIdGenerator().generateId();
 
 describe('UniformEntrySet', () => {
-  const userReceivables = new EntityAccountRef(
+  const userReceivables = new EntityAccountRef(ledgerId, 'USER_RECEIVABLES', 1);
+  const expensesPayouts = new SystemAccountRef(
     ledgerId,
-    'RECEIVABLES',
-    1,
-    'USER',
+    'SYSTEM_EXPENSES_PAYOUTS',
   );
-  const expensesPayouts = new SystemAccountRef(ledgerId, 'EXPENSES_PAYOUTS');
   test('cannot create UniformEntrySet with different operation types', () => {
     expect(() => {
       EntriesWithSameAction.build([

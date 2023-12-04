@@ -55,3 +55,8 @@ export type PersistedLedger = Persisted<LedgerInput>;
 export type PersistedLedgerAccount = Persisted<InputLedgerAccount>;
 export type PersistedTransaction = Persisted<TransactionInput>;
 export type PersistedEntry = Persisted<EntryInput>;
+
+export type LedgerSpec = {
+  entityAccountTypes: NonEmptyArray<string>;
+  systemAccounts: NonEmptyArray<string>;
+};

@@ -2,9 +2,7 @@ import { LedgerUnexpectedError } from '@/errors.js';
 import { LedgerStorage } from '@/ledger/storage/LedgerStorage.js';
 import { NormalBalance } from '@/types.js';
 
-const systemAccountTypes: {
-  [k in string]: [NormalBalance];
-} = {
+const systemAccountTypes = {
   ASSETS: ['DEBIT'],
   CURRENT_ASSETS: ['DEBIT'],
   EQUITY: ['CREDIT'],
@@ -14,19 +12,17 @@ const systemAccountTypes: {
   PAYABLES: ['CREDIT'],
   RECEIVABLES: ['DEBIT'],
 };
-export type CustomLedgerSystemAccounts = keyof typeof systemAccountTypes;
+export type CustomLedgerSystemAccountTypes = keyof typeof systemAccountTypes;
 
-const userAccountTypes: {
-  [k in string]: [NormalBalance];
-} = {
+const userAccountTypes = {
   USER_PAYABLES: ['CREDIT'],
   USER_PAYABLES_LOCKED: ['CREDIT'],
   USER_RECEIVABLES: ['DEBIT'],
 };
 
-const systemAccounts: {
-  [k in string]: [CustomLedgerSystemAccounts];
-} = {
+export type CustomLedgerEntityAccountTypes = keyof typeof userAccountTypes;
+
+const systemAccounts = {
   SYSTEM_CURRENT_ASSETS_STRIPE_PLATFORM_USA: ['ASSETS'],
   SYSTEM_EXPENSES_CURRENCY_CONVERSION_LOSSES: ['EXPENSES'],
   SYSTEM_EXPENSES_PAYOUTS: ['EXPENSES'],
@@ -39,7 +35,7 @@ const systemAccounts: {
   SYSTEM_INCOME_STRIPE_PAY_IN_FEES: ['INCOME'],
 };
 
-export type CustomLedgerEntityAccounts = keyof typeof systemAccountTypes;
+export type CustomLedgerSystemAccounts = keyof typeof systemAccounts;
 
 export const buildCustomLedger = async (
   ledgerId: string,
@@ -51,7 +47,7 @@ export const buildCustomLedger = async (
       isEntityLedgerAccount: false,
       ledgerId,
       name,
-      normalBalance,
+      normalBalance: normalBalance as NormalBalance,
       parentLedgerAccountTypeId: null,
       slug: name,
     });
@@ -63,7 +59,7 @@ export const buildCustomLedger = async (
       isEntityLedgerAccount: true,
       ledgerId,
       name,
-      normalBalance,
+      normalBalance: normalBalance as NormalBalance,
       parentLedgerAccountTypeId: null,
       slug: name,
     });
