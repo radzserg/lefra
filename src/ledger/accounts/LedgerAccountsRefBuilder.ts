@@ -3,6 +3,11 @@ import { EntityAccountRef } from '@/ledger/accounts/EntityAccountRef.js';
 import { SystemAccountRef } from '@/ledger/accounts/SystemAccountRef.js';
 import { DB_ID, LedgerSpecification } from '@/types.js';
 
+type AccountsRefBuilder<S extends LedgerSpecification> = {
+  (slug: S['systemAccounts'][number]): SystemAccountRef;
+  (slug: S['entityAccountTypes'][number], externalId: DB_ID): EntityAccountRef;
+};
+
 export class LedgerAccountsRefBuilder<S extends LedgerSpecification> {
   protected slug: LedgerSpecification['slug'];
 
@@ -16,26 +21,26 @@ export class LedgerAccountsRefBuilder<S extends LedgerSpecification> {
     this.entityAccountTypes = specification.entityAccountTypes;
   }
 
-  public get systemAccount() {
-    return (slug: S['systemAccounts'][number]): SystemAccountRef => {
-      if (!this.systemAccounts.includes(slug)) {
-        throw new LedgerNotFoundError(`Invalid system account slug: ${slug}`);
+  public get account(): AccountsRefBuilder<S> {
+    return ((
+      slug: S['systemAccounts'][number] | S['entityAccountTypes'][number],
+      externalId?: DB_ID,
+    ) => {
+      if (externalId !== undefined) {
+        if (!this.entityAccountTypes.includes(slug)) {
+          throw new LedgerNotFoundError(
+            `Invalid entity account reference. Entity account type ${slug} is not defined.`,
+          );
+        }
+
+        return new EntityAccountRef(this.slug, slug, externalId);
       }
 
-      return new SystemAccountRef(this.slug, slug);
-    };
-  }
-
-  public get entityAccount() {
-    return (
-      slug: S['entityAccountTypes'][number],
-      externalId: DB_ID,
-    ): EntityAccountRef => {
-      if (!this.entityAccountTypes.includes(slug)) {
-        throw new LedgerNotFoundError(`Invalid entity account slug: ${slug}`);
+      if (this.systemAccounts.includes(slug)) {
+        return new SystemAccountRef(this.slug, slug);
       }
 
-      return new EntityAccountRef(this.slug, slug, externalId);
-    };
+      throw new LedgerNotFoundError(`Invalid account slug: ${slug}`);
+    }) as AccountsRefBuilder<S>;
   }
 }

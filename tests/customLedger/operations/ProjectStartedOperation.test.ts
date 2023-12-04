@@ -17,15 +17,12 @@ const createServices = async () => {
   const storage = new InMemoryLedgerStorage();
   const ledger = new Ledger(ledgerId, storage);
   await buildCustomLedger(ledgerId, storage);
-  const { entityAccount, systemAccount } = new LedgerAccountsRefBuilder(
-    CustomLedgerSpecification,
-  );
+  const { account } = new LedgerAccountsRefBuilder(CustomLedgerSpecification);
 
   return {
-    entityAccount,
+    account,
     ledger,
     storage,
-    systemAccount,
   };
 };
 
@@ -53,8 +50,7 @@ describe('ProjectStartedOperation', () => {
   });
 
   test('records ProjectStartedOperation when payment is processing', async () => {
-    const { entityAccount, ledger, storage, systemAccount } =
-      await createServices();
+    const { account, ledger, storage } = await createServices();
     const transaction = await ledger.record(
       new ProjectStartedOperation({
         amountLockedForContractor: new Money(50, 'USD'),
@@ -87,23 +83,22 @@ describe('ProjectStartedOperation', () => {
     });
 
     const expectedBalances: Array<[LedgerAccountRef, Money | null]> = [
-      [entityAccount('USER_RECEIVABLES', clientUserId), usd(100)],
-      [entityAccount('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
-      [entityAccount('USER_PAYABLES', contractorUserId), usd(50)],
-      [systemAccount('SYSTEM_INCOME_PAID_PROJECTS'), usd(100)],
-      [systemAccount('SYSTEM_INCOME_CONTRACT_FEES'), null],
-      [systemAccount('SYSTEM_EXPENSES_PAYOUTS'), usd(100)],
+      [account('USER_RECEIVABLES', clientUserId), usd(100)],
+      [account('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
+      [account('USER_PAYABLES', contractorUserId), usd(50)],
+      [account('SYSTEM_INCOME_PAID_PROJECTS'), usd(100)],
+      [account('SYSTEM_INCOME_CONTRACT_FEES'), null],
+      [account('SYSTEM_EXPENSES_PAYOUTS'), usd(100)],
     ];
 
-    for (const [account, expectedBalance] of expectedBalances) {
-      const actualBalance = await storage.fetchAccountBalance(account);
-      expectBalanceEqual(actualBalance, expectedBalance, account.slug);
+    for (const [accountRef, expectedBalance] of expectedBalances) {
+      const actualBalance = await storage.fetchAccountBalance(accountRef);
+      expectBalanceEqual(actualBalance, expectedBalance, accountRef.slug);
     }
   });
 
   test('records ProjectStartedOperation when payment is confirmed', async () => {
-    const { entityAccount, ledger, storage, systemAccount } =
-      await createServices();
+    const { account, ledger, storage } = await createServices();
     const transaction = await ledger.record(
       new ProjectStartedOperation({
         amountLockedForContractor: new Money(50, 'USD'),
@@ -166,28 +161,27 @@ describe('ProjectStartedOperation', () => {
     });
 
     const expectedBalances: Array<[LedgerAccountRef, Money]> = [
-      [entityAccount('USER_RECEIVABLES', clientUserId), usd(0)],
-      [entityAccount('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
-      [entityAccount('USER_PAYABLES', contractorUserId), usd(50)],
-      [systemAccount('SYSTEM_INCOME_PAID_PROJECTS'), usd(100)],
-      [systemAccount('SYSTEM_EXPENSES_PAYOUTS'), usd(100)],
-      [systemAccount('SYSTEM_INCOME_CONTRACT_FEES'), usd(19)],
-      [systemAccount('SYSTEM_INCOME_STRIPE_PAY_IN_FEES'), usd(3.3)],
-      [systemAccount('SYSTEM_EXPENSES_STRIPE_PAY_IN_FEES'), usd(3.3)],
-      [systemAccount('SYSTEM_EXPENSES_STRIPE_CONTRACT_FEES'), usd(0.55)],
-      [systemAccount('SYSTEM_CURRENT_ASSETS_STRIPE_PLATFORM_USA'), usd(117.44)],
-      [systemAccount('SYSTEM_EXPENSES_CURRENCY_CONVERSION_LOSSES'), usd(1.01)],
+      [account('USER_RECEIVABLES', clientUserId), usd(0)],
+      [account('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
+      [account('USER_PAYABLES', contractorUserId), usd(50)],
+      [account('SYSTEM_INCOME_PAID_PROJECTS'), usd(100)],
+      [account('SYSTEM_EXPENSES_PAYOUTS'), usd(100)],
+      [account('SYSTEM_INCOME_CONTRACT_FEES'), usd(19)],
+      [account('SYSTEM_INCOME_STRIPE_PAY_IN_FEES'), usd(3.3)],
+      [account('SYSTEM_EXPENSES_STRIPE_PAY_IN_FEES'), usd(3.3)],
+      [account('SYSTEM_EXPENSES_STRIPE_CONTRACT_FEES'), usd(0.55)],
+      [account('SYSTEM_CURRENT_ASSETS_STRIPE_PLATFORM_USA'), usd(117.44)],
+      [account('SYSTEM_EXPENSES_CURRENCY_CONVERSION_LOSSES'), usd(1.01)],
     ];
 
-    for (const [account, expectedBalance] of expectedBalances) {
-      const actualBalance = await storage.fetchAccountBalance(account);
-      expectBalanceEqual(actualBalance, expectedBalance, account.slug);
+    for (const [accountRef, expectedBalance] of expectedBalances) {
+      const actualBalance = await storage.fetchAccountBalance(accountRef);
+      expectBalanceEqual(actualBalance, expectedBalance, accountRef.slug);
     }
   });
 
   test('records ProjectStartedOperation when 2 payments are confirmed', async () => {
-    const { entityAccount, ledger, storage, systemAccount } =
-      await createServices();
+    const { account, ledger, storage } = await createServices();
     const payload = {
       amountLockedForContractor: new Money(50, 'USD'),
       clientUserId,
@@ -219,23 +213,23 @@ describe('ProjectStartedOperation', () => {
     );
 
     const expectedBalances: Array<[LedgerAccountRef, Money]> = [
-      [entityAccount('USER_RECEIVABLES', clientUserId), usd(0)],
-      [entityAccount('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
-      [entityAccount('USER_PAYABLES_LOCKED', contractorTwoUserId), usd(50)],
-      [entityAccount('USER_PAYABLES', contractorUserId), usd(50)],
-      [entityAccount('USER_PAYABLES', contractorTwoUserId), usd(50)],
-      [systemAccount('SYSTEM_INCOME_PAID_PROJECTS'), usd(200)],
-      [systemAccount('SYSTEM_EXPENSES_PAYOUTS'), usd(200)],
-      [systemAccount('SYSTEM_INCOME_CONTRACT_FEES'), usd(38)],
-      [systemAccount('SYSTEM_INCOME_STRIPE_PAY_IN_FEES'), usd(6.6)],
-      [systemAccount('SYSTEM_EXPENSES_STRIPE_PAY_IN_FEES'), usd(6.6)],
-      [systemAccount('SYSTEM_EXPENSES_STRIPE_CONTRACT_FEES'), usd(1.1)],
-      [systemAccount('SYSTEM_CURRENT_ASSETS_STRIPE_PLATFORM_USA'), usd(236.9)],
+      [account('USER_RECEIVABLES', clientUserId), usd(0)],
+      [account('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
+      [account('USER_PAYABLES_LOCKED', contractorTwoUserId), usd(50)],
+      [account('USER_PAYABLES', contractorUserId), usd(50)],
+      [account('USER_PAYABLES', contractorTwoUserId), usd(50)],
+      [account('SYSTEM_INCOME_PAID_PROJECTS'), usd(200)],
+      [account('SYSTEM_EXPENSES_PAYOUTS'), usd(200)],
+      [account('SYSTEM_INCOME_CONTRACT_FEES'), usd(38)],
+      [account('SYSTEM_INCOME_STRIPE_PAY_IN_FEES'), usd(6.6)],
+      [account('SYSTEM_EXPENSES_STRIPE_PAY_IN_FEES'), usd(6.6)],
+      [account('SYSTEM_EXPENSES_STRIPE_CONTRACT_FEES'), usd(1.1)],
+      [account('SYSTEM_CURRENT_ASSETS_STRIPE_PLATFORM_USA'), usd(236.9)],
     ];
 
-    for (const [account, expectedBalance] of expectedBalances) {
-      const actualBalance = await storage.fetchAccountBalance(account);
-      expectBalanceEqual(actualBalance, expectedBalance, account.slug);
+    for (const [accountRef, expectedBalance] of expectedBalances) {
+      const actualBalance = await storage.fetchAccountBalance(accountRef);
+      expectBalanceEqual(actualBalance, expectedBalance, accountRef.slug);
     }
   });
 });

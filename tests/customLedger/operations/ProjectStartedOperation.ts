@@ -48,7 +48,7 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
       payment,
     } = this.payload;
 
-    const { entityAccount, systemAccount } = this.ledgerAccountsRefBuilder;
+    const { account } = this.ledgerAccountsRefBuilder;
 
     const { platformFee } = payment;
     const entries = new TransactionDoubleEntries();
@@ -60,11 +60,11 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
     entries.push(
       doubleEntry(
         debit(
-          entityAccount('USER_RECEIVABLES', clientUserId),
+          account('USER_RECEIVABLES', clientUserId),
           targetNetAmountWithoutPlatformFee,
         ),
         credit(
-          systemAccount('SYSTEM_INCOME_PAID_PROJECTS'),
+          account('SYSTEM_INCOME_PAID_PROJECTS'),
           targetNetAmountWithoutPlatformFee,
         ),
         'User owes money for the project',
@@ -75,11 +75,11 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
       entries.push(
         doubleEntry(
           debit(
-            entityAccount('USER_RECEIVABLES', clientUserId),
+            account('USER_RECEIVABLES', clientUserId),
             platformFee.chargeAmount,
           ),
           credit(
-            systemAccount('SYSTEM_INCOME_CONTRACT_FEES'),
+            account('SYSTEM_INCOME_CONTRACT_FEES'),
             platformFee.chargeAmount,
           ),
           'User owes platform fee',
@@ -93,10 +93,10 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
     entries.push(
       // prettier-ignore
       doubleEntry(
-        debit(systemAccount('SYSTEM_EXPENSES_PAYOUTS'), targetNetAmountWithoutPlatformFee),
+        debit(account('SYSTEM_EXPENSES_PAYOUTS'), targetNetAmountWithoutPlatformFee),
         [
-          credit(entityAccount('USER_PAYABLES_LOCKED', contractorUserId), amountLockedForContractor,),
-          credit(entityAccount('USER_PAYABLES', contractorUserId), amountAvailable),
+          credit(account('USER_PAYABLES_LOCKED', contractorUserId), amountLockedForContractor,),
+          credit(account('USER_PAYABLES', contractorUserId), amountAvailable),
         ],
         'Part of funds are locked for the customer and part of funds are available for the customer',
       ),

@@ -12,9 +12,7 @@ export const entriesForPaymentConfirmed = ({
   clientUserId: number;
   payment: ConfirmedPayment;
 }): TransactionDoubleEntries => {
-  const { entityAccount, systemAccount } = new LedgerAccountsRefBuilder(
-    CustomLedgerSpecification,
-  );
+  const { account } = new LedgerAccountsRefBuilder(CustomLedgerSpecification);
   const platformFee = payment.platformFee;
   const stripePayInFeeAmountMinusPlatformProcessingFee = platformFee
     ? payment.estimatedStripeProcessingFee.minus(
@@ -32,13 +30,13 @@ export const entriesForPaymentConfirmed = ({
   // prettier-ignore
   entries.push(
     doubleEntry(
-      debit(entityAccount('USER_RECEIVABLES', clientUserId), stripePayInFeeAmountMinusPlatformProcessingFee),
-      credit(systemAccount('SYSTEM_INCOME_STRIPE_PAY_IN_FEES'), stripePayInFeeAmountMinusPlatformProcessingFee),
+      debit(account('USER_RECEIVABLES', clientUserId), stripePayInFeeAmountMinusPlatformProcessingFee),
+      credit(account('SYSTEM_INCOME_STRIPE_PAY_IN_FEES'), stripePayInFeeAmountMinusPlatformProcessingFee),
       'User owes Stripe processing fee',
     ),
     doubleEntry(
-      debit(systemAccount('SYSTEM_EXPENSES_STRIPE_PAY_IN_FEES'), stripePayInFeeAmountMinusPlatformProcessingFee),
-      credit(entityAccount('USER_RECEIVABLES', clientUserId), stripePayInFeeAmountMinusPlatformProcessingFee),
+      debit(account('SYSTEM_EXPENSES_STRIPE_PAY_IN_FEES'), stripePayInFeeAmountMinusPlatformProcessingFee),
+      credit(account('USER_RECEIVABLES', clientUserId), stripePayInFeeAmountMinusPlatformProcessingFee),
       'Client successfully paid stripe fees',
     ),
   );
@@ -49,10 +47,10 @@ export const entriesForPaymentConfirmed = ({
     entries.push(
       doubleEntry(
         [
-          debit(systemAccount('SYSTEM_EXPENSES_STRIPE_CONTRACT_FEES'), platformFee.stripeProcessingFee),
-          debit(systemAccount('SYSTEM_CURRENT_ASSETS_STRIPE_PLATFORM_USA'), platformFee.netAmount)
+          debit(account('SYSTEM_EXPENSES_STRIPE_CONTRACT_FEES'), platformFee.stripeProcessingFee),
+          debit(account('SYSTEM_CURRENT_ASSETS_STRIPE_PLATFORM_USA'), platformFee.netAmount)
         ],
-        credit(entityAccount('USER_RECEIVABLES', clientUserId), platformFee.chargeAmount),
+        credit(account('USER_RECEIVABLES', clientUserId), platformFee.chargeAmount),
         'User paid platform fee',
       ),
     );
@@ -63,11 +61,11 @@ export const entriesForPaymentConfirmed = ({
     entries.push(
       doubleEntry(
         debit(
-          systemAccount('SYSTEM_CURRENT_ASSETS_STRIPE_PLATFORM_USA'),
+          account('SYSTEM_CURRENT_ASSETS_STRIPE_PLATFORM_USA'),
           actualNetAmountMinusPlatformFee,
         ),
         credit(
-          entityAccount('USER_RECEIVABLES', clientUserId),
+          account('USER_RECEIVABLES', clientUserId),
           targetNetAmountMinusPlatformFee,
         ),
         'Client successfully paid project fee',
@@ -84,17 +82,14 @@ export const entriesForPaymentConfirmed = ({
     entries.push(
       doubleEntry(
         [
+          debit(account('SYSTEM_EXPENSES_CURRENCY_CONVERSION_LOSSES'), delta),
           debit(
-            systemAccount('SYSTEM_EXPENSES_CURRENCY_CONVERSION_LOSSES'),
-            delta,
-          ),
-          debit(
-            systemAccount('SYSTEM_CURRENT_ASSETS_STRIPE_PLATFORM_USA'),
+            account('SYSTEM_CURRENT_ASSETS_STRIPE_PLATFORM_USA'),
             actualNetAmountMinusPlatformFee,
           ),
         ],
         credit(
-          entityAccount('USER_RECEIVABLES', clientUserId),
+          account('USER_RECEIVABLES', clientUserId),
           targetNetAmountMinusPlatformFee,
         ),
         'Tracking currency conversion losses',
@@ -113,16 +108,13 @@ export const entriesForPaymentConfirmed = ({
     entries.push(
       doubleEntry(
         debit(
-          systemAccount('SYSTEM_CURRENT_ASSETS_STRIPE_PLATFORM_USA'),
+          account('SYSTEM_CURRENT_ASSETS_STRIPE_PLATFORM_USA'),
           actualNetAmountMinusPlatformFee,
         ),
         [
+          credit(account('SYSTEM_INCOME_CURRENCY_CONVERSION_GAINS'), delta),
           credit(
-            systemAccount('SYSTEM_INCOME_CURRENCY_CONVERSION_GAINS'),
-            delta,
-          ),
-          credit(
-            entityAccount('USER_RECEIVABLES', clientUserId),
+            account('USER_RECEIVABLES', clientUserId),
             targetNetAmountMinusPlatformFee,
           ),
         ],
