@@ -37,6 +37,9 @@ const systemAccounts = {
 
 export type CustomLedgerSystemAccounts = keyof typeof systemAccounts;
 
+/**
+ * Test function to seed storage with custom ledger accounts.
+ */
 export const buildCustomLedger = async (storage: LedgerStorage) => {
   const { id: ledgerId } = await storage.insertLedger({
     currencyCode: 'USD',

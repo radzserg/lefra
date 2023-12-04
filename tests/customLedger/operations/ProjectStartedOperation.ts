@@ -91,11 +91,16 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
       amountLockedForContractor,
     );
     entries.push(
-      // prettier-ignore
       doubleEntry(
-        debit(account('SYSTEM_EXPENSES_PAYOUTS'), targetNetAmountWithoutPlatformFee),
+        debit(
+          account('SYSTEM_EXPENSES_PAYOUTS'),
+          targetNetAmountWithoutPlatformFee,
+        ),
         [
-          credit(account('USER_PAYABLES_LOCKED', contractorUserId), amountLockedForContractor,),
+          credit(
+            account('USER_PAYABLES_LOCKED', contractorUserId),
+            amountLockedForContractor,
+          ),
           credit(account('USER_PAYABLES', contractorUserId), amountAvailable),
         ],
         'Part of funds are locked for the customer and part of funds are available for the customer',

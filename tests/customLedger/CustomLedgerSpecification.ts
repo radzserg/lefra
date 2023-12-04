@@ -1,3 +1,8 @@
+/**
+ * Ledger specification will be fetched from the database and used to generate
+ * custom ledger types.
+ *
+ */
 export const CustomLedgerSpecification = {
   entityAccountTypes: [
     'USER_PAYABLES',

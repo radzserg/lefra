@@ -1,6 +1,7 @@
 import { LedgerNotFoundError } from '@/errors.js';
 import { LedgerAccountRef } from '@/ledger/accounts/LedgerAccountRef.js';
 import { LedgerStorage } from '@/ledger/storage/LedgerStorage.js';
+import { Transaction } from '@/ledger/transaction/Transaction.js';
 import { CurrencyCode } from '@/money/currencies.js';
 import { Money } from '@/money/Money.js';
 import { currencyCodeSchema } from '@/money/validation.js';
@@ -13,7 +14,6 @@ import {
   PersistedLedgerAccount,
   PersistedLedgerAccountType,
   PersistedTransaction,
-  TransactionInput,
 } from '@/types.js';
 import { DatabaseConnection, sql } from 'slonik';
 import { z } from 'zod';
@@ -150,7 +150,7 @@ export class PostgresLedgerStorage implements LedgerStorage {
     return new Money(amount, currencyCode);
   }
 
-  public async insertTransaction(transaction: TransactionInput) {
+  public async insertTransaction(transaction: Transaction) {
     throw new Error(`Method not implemented. ${transaction}`);
 
     return {

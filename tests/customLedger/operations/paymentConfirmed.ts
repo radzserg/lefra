@@ -27,30 +27,51 @@ export const entriesForPaymentConfirmed = ({
     : payment.actualNetAmount;
 
   const entries = new TransactionDoubleEntries();
-  // prettier-ignore
+
   entries.push(
     doubleEntry(
-      debit(account('USER_RECEIVABLES', clientUserId), stripePayInFeeAmountMinusPlatformProcessingFee),
-      credit(account('SYSTEM_INCOME_STRIPE_PAY_IN_FEES'), stripePayInFeeAmountMinusPlatformProcessingFee),
+      debit(
+        account('USER_RECEIVABLES', clientUserId),
+        stripePayInFeeAmountMinusPlatformProcessingFee,
+      ),
+      credit(
+        account('SYSTEM_INCOME_STRIPE_PAY_IN_FEES'),
+        stripePayInFeeAmountMinusPlatformProcessingFee,
+      ),
       'User owes Stripe processing fee',
     ),
     doubleEntry(
-      debit(account('SYSTEM_EXPENSES_STRIPE_PAY_IN_FEES'), stripePayInFeeAmountMinusPlatformProcessingFee),
-      credit(account('USER_RECEIVABLES', clientUserId), stripePayInFeeAmountMinusPlatformProcessingFee),
+      debit(
+        account('SYSTEM_EXPENSES_STRIPE_PAY_IN_FEES'),
+        stripePayInFeeAmountMinusPlatformProcessingFee,
+      ),
+      credit(
+        account('USER_RECEIVABLES', clientUserId),
+        stripePayInFeeAmountMinusPlatformProcessingFee,
+      ),
       'Client successfully paid stripe fees',
     ),
   );
 
   if (platformFee) {
     // Client successfully paid Contra platform fee
-    // prettier-ignore
+
     entries.push(
       doubleEntry(
         [
-          debit(account('SYSTEM_EXPENSES_STRIPE_CONTRACT_FEES'), platformFee.stripeProcessingFee),
-          debit(account('SYSTEM_CURRENT_ASSETS_STRIPE_PLATFORM_USA'), platformFee.netAmount)
+          debit(
+            account('SYSTEM_EXPENSES_STRIPE_CONTRACT_FEES'),
+            platformFee.stripeProcessingFee,
+          ),
+          debit(
+            account('SYSTEM_CURRENT_ASSETS_STRIPE_PLATFORM_USA'),
+            platformFee.netAmount,
+          ),
         ],
-        credit(account('USER_RECEIVABLES', clientUserId), platformFee.chargeAmount),
+        credit(
+          account('USER_RECEIVABLES', clientUserId),
+          platformFee.chargeAmount,
+        ),
         'User paid platform fee',
       ),
     );
