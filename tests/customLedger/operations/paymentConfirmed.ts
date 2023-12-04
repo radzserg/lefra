@@ -1,4 +1,4 @@
-import { LedgerAccountRefBuilder } from '@/ledger/accounts/EntityAccountRef.js';
+import { LedgerAccountRefBuilder } from '@/ledger/accounts/LedgerAccountRef.js';
 import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { TransactionDoubleEntries } from '@/ledger/transaction/TransactionDoubleEntries.js';

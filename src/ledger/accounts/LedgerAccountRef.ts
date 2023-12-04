@@ -11,6 +11,14 @@ const VALID_NAME_REGEX = new RegExp(
 );
 const VALID_PREFIX_REGEX = /^[A-Z]+$/u;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type LedgerAccountRefBuilder = (...args: any) => LedgerAccountRef;
+
+/**
+ * Represents a reference to a ledger account.
+ * The reference is a slug that is used to identify the account.
+ * The reference does not check if the account exists. It is only a reference.
+ */
 export abstract class LedgerAccountRef {
   public abstract readonly type: LedgerAccountRefType;
 

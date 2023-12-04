@@ -5,6 +5,11 @@ import {
 } from '@/ledger/accounts/LedgerAccountRef.js';
 import { DB_ID } from '@/types.js';
 
+/**
+ * Represents a reference to a  system ledger account.
+ * System accounts must be preset.
+ *
+ */
 export class SystemAccountRef extends LedgerAccountRef {
   public readonly type = 'SYSTEM' as const;
 

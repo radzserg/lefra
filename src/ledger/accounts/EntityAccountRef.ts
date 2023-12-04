@@ -8,9 +8,10 @@ import { DB_ID } from '@/types.js';
 
 const ENTITY_ACCOUNT_PREFIX = 'ENTITY';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type LedgerAccountRefBuilder = (...args: any) => LedgerAccountRef;
-
+/**
+ * Represents a reference to an account associated with an entity. Those accounts
+ * are created dynamically and are not preset.
+ */
 export class EntityAccountRef extends LedgerAccountRef {
   public readonly type = 'ENTITY' as const;
 
