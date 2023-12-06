@@ -1,3 +1,4 @@
+import { CurrencyCode } from '@/money/currencies.js';
 import { Money } from '@/money/Money.js';
 
 export type EntryAction = 'DEBIT' | 'CREDIT';
@@ -12,7 +13,6 @@ export type NormalBalance = 'DEBIT' | 'CREDIT';
 
 export type InputLedgerAccount = {
   description: string | null;
-  isSystemAccount: boolean;
   ledgerAccountTypeId: DB_ID;
   ledgerId: DB_ID;
   slug: string;
@@ -21,7 +21,6 @@ export type InputLedgerAccount = {
 export type InputLedgerAccountType = {
   description: string;
   isEntityLedgerAccount: boolean;
-  ledgerId: DB_ID;
   name: string;
   normalBalance: NormalBalance;
   parentLedgerAccountTypeId: DB_ID | null;
@@ -29,8 +28,8 @@ export type InputLedgerAccountType = {
 };
 
 export type LedgerInput = {
-  currencyCode: string;
-  description: string | null;
+  currencyCode: CurrencyCode;
+  description: string;
   name: string;
   slug: string;
 };
@@ -48,7 +47,7 @@ export type EntryInput = {
   ledgerTransactionId: DB_ID;
 };
 
-export type Persisted<T extends object> = T & { id: DB_ID };
+export type Persisted<T extends object> = Readonly<T & { id: DB_ID }>;
 
 export type PersistedLedgerAccountType = Persisted<InputLedgerAccountType>;
 export type PersistedLedger = Persisted<LedgerInput>;

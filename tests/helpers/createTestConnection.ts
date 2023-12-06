@@ -1,7 +1,16 @@
 /* eslint-disable no-console */
 
 import { randomUUID } from 'node:crypto';
-import { createPool, DatabasePool, Field, sql } from 'slonik';
+import {
+  createBigintTypeParser,
+  createDateTypeParser,
+  createIntervalTypeParser,
+  createNumericTypeParser,
+  createPool,
+  DatabasePool,
+  Field,
+  sql,
+} from 'slonik';
 import { createFieldNameTransformationInterceptor } from 'slonik-interceptor-field-name-transformation';
 import { z } from 'zod';
 
@@ -15,6 +24,12 @@ const configuration = {
         return field.name !== '__typename' && /^[\d_a-z]+$/u.test(field.name);
       },
     }),
+  ],
+  typeParsers: [
+    createDateTypeParser(),
+    createBigintTypeParser(),
+    createIntervalTypeParser(),
+    createNumericTypeParser(),
   ],
 };
 

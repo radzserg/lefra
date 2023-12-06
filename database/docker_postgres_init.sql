@@ -92,14 +92,12 @@ create table if not exists ledger_transaction
   ledger_id integer not null references ledger on delete restrict,
   posted_at timestamp with time zone default now() not null,
   description text,
-  created_by text not null,
   created_at timestamp with time zone default now() not null,
   updated_at timestamp with time zone default now() not null
 );
 
 comment on table ledger_transaction is 'High level transaction on the ledger. It holds a collection of individual ledger_transaction_entry records';
 comment on column ledger_transaction.description is 'Human readable description/memo for debugging purposes and for use in external accounting software';
-comment on column ledger_transaction.created_by is 'Who created the transaction.';
 
 create index if not exists ledger_transaction_ledger_id_idx on ledger_transaction (ledger_id);
 create index if not exists ledger_transaction_posted_at_idx on ledger_transaction (posted_at);
@@ -136,26 +134,21 @@ CREATE TRIGGER update_user_task_updated_on
 EXECUTE PROCEDURE update_updated_at();
 
 
-CREATE OR REPLACE FUNCTION calculate_balance_for_ledger_account(
+CREATE OR REPLACE FUNCTION sum_up_ledger_account_balance(
   input_ledger_account_id int,
-  before_date DATE,
-  after_date DATE
-) RETURNS NUMERIC(18, 8)
+  input_sum_debits NUMERIC(18,8),
+  input_sum_credits NUMERIC(18,8)
+) RETURNS NUMERIC(18, 8) LANGUAGE plpgsql
 AS $$
 DECLARE
   account_balance_type credit_or_debit;
   balance NUMERIC(18,8);
-  sum_debits NUMERIC(18,8);
-  sum_credits NUMERIC(18,8);
 BEGIN
-  IF before_date < after_date THEN
-    RAISE EXCEPTION 'Before date is greater than after date';
-  END IF;
-
   -- Determine normal balance type for account ('DEBIT' | 'CREDIT')
-  SELECT normal_balance FROM ledger_account la
-                               INNER JOIN ledger_account_type lat ON
-      la.ledger_account_type_id = lat.id
+  SELECT normal_balance
+  FROM ledger_account la
+  INNER JOIN ledger_account_type lat ON
+    la.ledger_account_type_id = lat.id
   WHERE la.id = input_ledger_account_id
   INTO account_balance_type;
 
@@ -163,49 +156,201 @@ BEGIN
     RAISE EXCEPTION 'Account does not exist. ID: %', input_ledger_account_id;
   END IF;
 
-  -- Sum up all debit entries for this account
-  SELECT COALESCE(sum(amount), 0)
-  FROM ledger_transaction_entry lte
-         LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
-  WHERE
-      ledger_account_id = input_ledger_account_id AND
-      action = 'DEBIT' AND
-      lt.posted_at < before_date AND
-      lt.posted_at > after_date
-  INTO sum_debits;
-
-  -- Sum up all credit entries for this account
-  SELECT COALESCE(sum(amount), 0)
-  FROM ledger_transaction_entry lte
-         LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
-  WHERE
-      ledger_account_id = input_ledger_account_id AND
-      action = 'CREDIT' AND
-      lt.posted_at < before_date AND
-      lt.posted_at > after_date
-  INTO sum_credits;
-
   IF account_balance_type = 'DEBIT' THEN
-    balance = 0 + sum_debits - sum_credits;
+    balance = 0 + input_sum_debits - input_sum_credits;
   ELSEIF account_balance_type = 'CREDIT' THEN
-    balance = 0 + sum_credits - sum_debits;
+    balance = 0 + input_sum_credits - input_sum_debits;
   ELSE
     RAISE EXCEPTION 'Unexpected account_balance_type: %', account_balance_type;
   END IF;
 
   RETURN balance;
-END $$
-  LANGUAGE plpgsql;
+END
+$$;
+
+CREATE OR REPLACE FUNCTION calculate_balance_for_ledger_account(
+  input_ledger_account_id int
+) RETURNS NUMERIC(18, 8) language plpgsql
+AS $$
+DECLARE
+  sum_debits NUMERIC(18,8);
+  sum_credits NUMERIC(18,8);
+BEGIN
+  -- Sum up all debit entries for this account
+  SELECT COALESCE(sum(amount), 0)
+  FROM ledger_transaction_entry lte
+  LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
+  WHERE
+    ledger_account_id = input_ledger_account_id AND
+    action = 'DEBIT'
+  INTO sum_debits;
+
+  -- Sum up all credit entries for this account
+  SELECT COALESCE(sum(amount), 0)
+  FROM ledger_transaction_entry lte
+  LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
+  WHERE
+    ledger_account_id = input_ledger_account_id AND
+    action = 'CREDIT'
+  INTO sum_credits;
+
+  RETURN sum_up_ledger_account_balance(input_ledger_account_id, sum_debits, sum_credits);
+END $$;
+
+CREATE OR REPLACE FUNCTION calculate_balance_for_ledger_account(
+  input_ledger_account_id int,
+  before_date DATE
+) RETURNS NUMERIC(18, 8) language plpgsql
+AS $$
+DECLARE
+  sum_debits NUMERIC(18,8);
+  sum_credits NUMERIC(18,8);
+BEGIN
+  -- Sum up all debit entries for this account
+  SELECT COALESCE(sum(amount), 0)
+  FROM ledger_transaction_entry lte
+  LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
+  WHERE
+    ledger_account_id = input_ledger_account_id AND
+    action = 'DEBIT' AND
+    lt.posted_at < before_date
+  INTO sum_debits;
+
+  -- Sum up all credit entries for this account
+  SELECT COALESCE(sum(amount), 0)
+  FROM ledger_transaction_entry lte
+  LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
+  WHERE
+    ledger_account_id = input_ledger_account_id AND
+    action = 'CREDIT' AND
+    lt.posted_at < before_date
+  INTO sum_credits;
+
+  RETURN sum_up_ledger_account_balance(input_ledger_account_id, sum_debits, sum_credits);
+END $$;
+
+CREATE OR REPLACE FUNCTION calculate_balance_for_ledger_account(
+  input_ledger_account_id int,
+  before_date DATE,
+  after_date DATE
+) RETURNS NUMERIC(18, 8)
+  language plpgsql
+AS $$
+DECLARE
+  sum_debits NUMERIC(18,8);
+  sum_credits NUMERIC(18,8);
+BEGIN
+  IF before_date < after_date THEN
+    RAISE EXCEPTION 'Before date is greater than after date';
+  END IF;
+
+  -- Sum up all debit entries for this account
+  SELECT COALESCE(sum(amount), 0)
+  FROM ledger_transaction_entry lte
+    LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
+  WHERE
+    ledger_account_id = input_ledger_account_id AND
+    action = 'DEBIT' AND
+    lt.posted_at < before_date AND
+    lt.posted_at > after_date
+  INTO sum_debits;
+
+  -- Sum up all credit entries for this account
+  SELECT COALESCE(sum(amount), 0)
+  FROM ledger_transaction_entry lte
+    LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
+  WHERE
+    ledger_account_id = input_ledger_account_id AND
+    action = 'CREDIT' AND
+    lt.posted_at < before_date AND
+    lt.posted_at > after_date
+  INTO sum_credits;
+
+  RETURN sum_up_ledger_account_balance(input_ledger_account_id, sum_debits, sum_credits);
+END $$;
 
 
-INSERT INTO ledger (currency_code, slug, name, description, created_at, updated_at)
-VALUES (1, 'PLATFORM_USD', 'Platform USD', 'The main ledger used for the platform', '2022-09-06 17:25:46.210416 +00:00', '2022-09-06 17:25:46.210416 +00:00');
+create function ledger_account_id(input_ledger_id int, input_ledger_account_slug text) returns integer
+  language plpgsql
+as
+$$
+DECLARE
+  ledger_account_id int;
+BEGIN
+  SELECT id
+  FROM ledger_account
+  WHERE
+    ledger_id = input_ledger_id AND
+    slug = input_ledger_account_slug
+  INTO ledger_account_id;
+
+  RETURN ledger_account_id;
+END;
+$$;
+
+create function ledger_account_id(input_ledger_id int, input_ledger_account_type_slug text, input_external_id text) returns integer
+  language plpgsql
+as
+$$
+DECLARE
+  ledger_account_id int;
+  account_type ledger_account_type;
+  new_description text;
+BEGIN
+  SELECT id
+  FROM ledger_account
+  WHERE
+    ledger_id = input_ledger_id AND
+    slug = input_ledger_account_type_slug || ':' || input_external_id
+  INTO ledger_account_id;
+
+  IF ledger_account_id IS NOT NULL THEN
+    RETURN ledger_account_id;
+  END IF;
+
+  SELECT *
+  FROM ledger_account_type
+  WHERE slug = input_ledger_account_type_slug
+  INTO account_type;
+
+  IF account_type.id IS NULL THEN
+    RAISE NOTICE 'Account type % not found', input_ledger_account_type_slug;
+  END IF;
+
+  SELECT
+    CASE WHEN account_type.description IS NOT NULL
+      THEN account_type.description || '. Account created for entity ID:' || input_external_id || '.'
+    ELSE null
+  END INTO new_description;
+
+  INSERT INTO ledger_account (
+    description,
+    ledger_account_type_id,
+    ledger_id,
+    slug
+  ) VALUES (
+    new_description,
+    account_type.id,
+    input_ledger_id,
+    input_ledger_account_type_slug || ':' || input_external_id
+  ) RETURNING id
+  INTO ledger_account_id;
+
+  RETURN ledger_account_id;
+END;
+$$;
 
 
-INSERT INTO ledger_account_type (slug, name, normal_balance, is_entity_ledger_account)
-VALUES
-  ('ASSETS', 'Assets', 'DEBIT', false),
-  ('LIABILITIES', 'Liabilities', 'CREDIT', false),
-  ('EQUITY', 'Equity', 'CREDIT', false),
-  ('INCOME', 'Income', 'CREDIT', false),
-  ('EXPENSES', 'Expenses', 'DEBIT', false);
+
+
+-- INSERT INTO ledger (currency_code, slug, name, description, created_at, updated_at)
+-- VALUES (1, 'PLATFORM_USD', 'Platform USD', 'The main ledger used for the platform', '2022-09-06 17:25:46.210416 +00:00', '2022-09-06 17:25:46.210416 +00:00');
+--
+--
+-- INSERT INTO ledger_account_type (slug, name, normal_balance, is_entity_ledger_account)
+-- VALUES
+--   ('ASSETS', 'Assets', 'DEBIT', false),
+--   ('LIABILITIES', 'Liabilities', 'CREDIT', false),
+--   ('EQUITY', 'Equity', 'CREDIT', false),
+--   ('INCOME', 'Income', 'CREDIT', false),
+--   ('EXPENSES', 'Expenses', 'DEBIT', false);

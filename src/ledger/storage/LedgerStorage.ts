@@ -47,7 +47,9 @@ export type LedgerStorage = {
   /**
    * Return transaction entries.
    */
-  getTransactionEntries: (transactionId: DB_ID) => Promise<PersistedEntry[]>;
+  getTransactionEntries: (
+    transactionId: DB_ID,
+  ) => Promise<readonly PersistedEntry[]>;
 
   /**
    * Inserts a new ledger account type.

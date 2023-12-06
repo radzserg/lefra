@@ -1,3 +1,4 @@
+import { LedgerError } from '@/errors.js';
 import { DoubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { Entry } from '@/ledger/transaction/Entry.js';
 
@@ -21,13 +22,13 @@ export class TransactionDoubleEntries {
     for (const entry of entries) {
       for (const debitEntry of entry.debitEntries) {
         if (debitEntry.account.ledgerSlug !== this.ledgerSlug) {
-          throw new Error('All entries must be of the same ledger');
+          throw new LedgerError('All entries must belong to the same ledger');
         }
       }
 
       for (const creditEntry of entry.creditEntries) {
         if (creditEntry.account.ledgerSlug !== this.ledgerSlug) {
-          throw new Error('All entries must be of the same ledger');
+          throw new LedgerError('All entries must belong to the same ledger');
         }
       }
 

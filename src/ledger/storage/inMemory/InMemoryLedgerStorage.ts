@@ -21,20 +21,6 @@ import {
   PersistedTransaction,
 } from '@/types.js';
 
-// const createPersistedEntity = <T extends object>(entry: T): Persisted<T> => {
-//   const idGenerator = new UuidDatabaseIdGenerator();
-//   const id = idGenerator.generateId();
-//   return new Proxy(entry, {
-//     get(target, property) {
-//       if (property === 'id') {
-//         return id;
-//       }
-//
-//       return target[property as keyof T];
-//     },
-//   }) as Persisted<T>;
-// };
-
 /**
  * In memory implementation of the ledger storage.
  * This implementation is not persistent and is used for testing.
@@ -81,7 +67,6 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   public async insertAccountType({
     description,
     isEntityLedgerAccount,
-    ledgerId,
     name,
     normalBalance,
     parentLedgerAccountTypeId = null,
@@ -89,7 +74,6 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   }: {
     description: string;
     isEntityLedgerAccount: boolean;
-    ledgerId: DB_ID;
     name: string;
     normalBalance: 'CREDIT' | 'DEBIT';
     parentLedgerAccountTypeId?: DB_ID | null;
@@ -119,7 +103,6 @@ export class InMemoryLedgerStorage implements LedgerStorage {
       description,
       id: this.idGenerator.generateId(),
       isEntityLedgerAccount,
-      ledgerId,
       name,
       normalBalance,
       parentLedgerAccountTypeId,
@@ -131,7 +114,6 @@ export class InMemoryLedgerStorage implements LedgerStorage {
 
   public async upsertAccount({
     description,
-    isSystemAccount,
     ledgerAccountTypeId,
     ledgerId,
     slug,
@@ -143,17 +125,10 @@ export class InMemoryLedgerStorage implements LedgerStorage {
 
     const accountType = await this.getSavedAccountTypeById(ledgerAccountTypeId);
 
-    if (!isSystemAccount && !accountType.isEntityLedgerAccount) {
-      throw new LedgerError(
-        `The account type with ID ${ledgerAccountTypeId} is not a valid entity ledger account type, so it cannot be used to insert an entity ledger account.`,
-      );
-    }
-
     const persistedAccount = {
       description,
       id: this.idGenerator.generateId(),
-      isSystemAccount,
-      ledgerAccountTypeId,
+      ledgerAccountTypeId: accountType.id,
       ledgerId,
       slug,
     };
@@ -267,7 +242,6 @@ export class InMemoryLedgerStorage implements LedgerStorage {
         description: accountType.description
           ? `${accountType.description}. Account created for entity ID:${account.externalId}.`
           : null,
-        isSystemAccount: false,
         ledgerAccountTypeId: accountType.id,
         ledgerId,
         slug: account.accountSlug,
@@ -313,7 +287,16 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     }
 
     if (!sumDebits && !sumCredits) {
-      return null;
+      const ledger = this.ledgers.find(
+        (savedLedger) => savedLedger.id === savedAccount.ledgerId,
+      );
+      if (!ledger) {
+        throw new LedgerError(
+          `Ledger ${savedAccount.ledgerId} not found for account ${savedAccount.id}`,
+        );
+      }
+
+      return new Money(0, ledger.currencyCode);
     }
 
     if (normalBalance === 'DEBIT') {
