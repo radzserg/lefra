@@ -86,7 +86,7 @@ describe('ProjectStartedOperation', () => {
       [account('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
       [account('USER_PAYABLES', contractorUserId), usd(50)],
       [account('SYSTEM_INCOME_PAID_PROJECTS'), usd(100)],
-      [account('SYSTEM_INCOME_CONTRACT_FEES'), null],
+      [account('SYSTEM_INCOME_CONTRACT_FEES'), usd(0)],
       [account('SYSTEM_EXPENSES_PAYOUTS'), usd(100)],
     ];
 
