@@ -1,19 +1,19 @@
 import { LedgerError } from '@/errors.js';
 import { CreditEntry, DebitEntry } from '@/ledger/transaction/Entry.js';
-import { CurrencyCode } from '@/money/currencies.js';
-import { Money } from '@/money/Money.js';
+import { Unit, UnitCode } from '@/ledger/units/Unit.js';
 import { ArrayType, EntryAction, NonEmptyArray } from '@/types.js';
 
 /**
  * List of operations of the same type. Either all debit or all credit.
  * All money amounts must be of the same currency.
  */
-export class EntriesWithSameAction<O extends DebitEntry | CreditEntry> {
+export class EntriesWithSameAction<
+  C extends UnitCode,
+  O extends DebitEntry<C> | CreditEntry<C>,
+> {
   private readonly action: EntryAction;
 
-  private readonly currencyCode: CurrencyCode;
-
-  private readonly operationsSum: Money;
+  private readonly operationsSum: Unit<C>;
 
   private constructor(private readonly _entries: NonEmptyArray<O>) {
     if (Array.isArray(this._entries) && this._entries.length === 0) {
@@ -21,15 +21,13 @@ export class EntriesWithSameAction<O extends DebitEntry | CreditEntry> {
     }
 
     this.action = this._entries[0].action;
-    this.currencyCode = this._entries[0].amount.currencyCode;
-
-    let sum = new Money(0, this.currencyCode);
+    let sum = this._entries[0].amount.zeroValue();
     for (const operation of this._entries) {
       if (operation.action !== this.action) {
         throw new LedgerError('All operations must be of the same type');
       }
 
-      if (operation.amount.currencyCode !== this.currencyCode) {
+      if (!sum.isSameCurrency(operation.amount)) {
         throw new LedgerError('All operations must be of the same currency');
       }
 
@@ -44,17 +42,19 @@ export class EntriesWithSameAction<O extends DebitEntry | CreditEntry> {
   }
 
   public static build<
+    C extends UnitCode,
     E extends
-      | DebitEntry
-      | NonEmptyArray<DebitEntry>
-      | CreditEntry
-      | NonEmptyArray<CreditEntry>,
-  >(entries: E): EntriesWithSameAction<ArrayType<E>> {
+      | DebitEntry<C>
+      | NonEmptyArray<DebitEntry<C>>
+      | CreditEntry<C>
+      | NonEmptyArray<CreditEntry<C>>,
+  >(entries: E): EntriesWithSameAction<C, ArrayType<E>> {
     if (Array.isArray(entries)) {
       return new EntriesWithSameAction(entries);
     }
 
     return new EntriesWithSameAction([entries]) as EntriesWithSameAction<
+      C,
       ArrayType<E>
     >;
   }
@@ -63,7 +63,7 @@ export class EntriesWithSameAction<O extends DebitEntry | CreditEntry> {
     return this._entries;
   }
 
-  public sum(): Money {
+  public sum(): Unit<C> {
     return this.operationsSum;
   }
 }

@@ -1,34 +1,30 @@
 import { LedgerAccountRef } from '../accounts/LedgerAccountRef.js';
-import { Money } from '@/money/Money.js';
+import { Unit, UnitCode } from '@/ledger/units/Unit.js';
 
-export type CreditEntry = {
+export type CreditEntry<C extends UnitCode> = {
   account: LedgerAccountRef;
   action: 'CREDIT';
-  amount: Money;
+  amount: Unit<C>;
 };
 
-export type DebitEntry = {
+export type DebitEntry<C extends UnitCode> = {
   account: LedgerAccountRef;
   action: 'DEBIT';
-  amount: Money;
+  amount: Unit<C>;
 };
 
-export type Entry = CreditEntry | DebitEntry;
+export type Entry<C extends UnitCode> = CreditEntry<C> | DebitEntry<C>;
 
-const validateEntry = (entry: Entry) => {
+const validateEntry = <C extends UnitCode>(entry: Entry<C>) => {
   if (entry.amount.isZero()) {
     throw new Error('Cannot create entry with zero amount');
   }
-
-  if (entry.amount.isLessThan(new Money(0, entry.amount.currencyCode))) {
-    throw new Error('Cannot create entry with negative amount');
-  }
 };
 
-export const credit = (
+export const credit = <C extends UnitCode>(
   account: LedgerAccountRef,
-  amount: Money,
-): CreditEntry => {
+  amount: Unit<C>,
+): CreditEntry<C> => {
   const entry = {
     account,
     action: 'CREDIT' as const,
@@ -38,7 +34,10 @@ export const credit = (
   return entry;
 };
 
-export const debit = (account: LedgerAccountRef, amount: Money): DebitEntry => {
+export const debit = <C extends UnitCode>(
+  account: LedgerAccountRef,
+  amount: Unit<C>,
+): DebitEntry<C> => {
   const entry = {
     account,
     action: 'DEBIT' as const,

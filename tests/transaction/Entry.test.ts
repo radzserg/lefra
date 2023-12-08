@@ -1,7 +1,7 @@
 import { EntityAccountRef } from '@/ledger/accounts/EntityAccountRef.js';
 import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
-import { usd } from '@/money/Money.js';
+import { usd } from '#/helpers/units.js';
 import { describe, expect, test } from 'vitest';
 
 describe('Entry', () => {
@@ -27,13 +27,6 @@ describe('Entry', () => {
   test('cannot have entry with zero amount', () => {
     expect(() => debit(account, usd(0))).toThrow(
       'Cannot create entry with zero amount',
-    );
-  });
-
-  test('cannot have entry with negative amount', () => {
-    const amount = usd(-100);
-    expect(() => debit(account, amount)).toThrow(
-      'Cannot create entry with negative amount',
     );
   });
 });

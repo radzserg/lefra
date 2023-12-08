@@ -4,7 +4,7 @@ import { SystemAccountRef } from '@/ledger/accounts/SystemAccountRef.js';
 import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
 import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
-import { Money } from '@/money/Money.js';
+import { usd } from '#/helpers/units.js';
 import { describe, expect, test } from 'vitest';
 
 const ledgerId = new UuidDatabaseIdGenerator().generateId();
@@ -13,14 +13,8 @@ describe('Ledger entry', () => {
   test('debit and credit operations must have the same money amount', () => {
     expect(() => {
       doubleEntry(
-        debit(
-          new EntityAccountRef(ledgerId, 'RECEIVABLES', 1),
-          new Money(100, 'USD'),
-        ),
-        credit(
-          new SystemAccountRef(ledgerId, 'EXPENSES'),
-          new Money(100, 'USD'),
-        ),
+        debit(new EntityAccountRef(ledgerId, 'RECEIVABLES', 1), usd(100)),
+        credit(new SystemAccountRef(ledgerId, 'EXPENSES'), usd(100)),
       );
     }).not.toThrow();
   });
@@ -28,14 +22,8 @@ describe('Ledger entry', () => {
   test('throw an error if debit and credit operations amount are not equal', () => {
     expect(() => {
       doubleEntry(
-        debit(
-          new EntityAccountRef(ledgerId, 'RECEIVABLES', 1),
-          new Money(100, 'USD'),
-        ),
-        credit(
-          new SystemAccountRef(ledgerId, 'EXPENSES'),
-          new Money(70, 'USD'),
-        ),
+        debit(new EntityAccountRef(ledgerId, 'RECEIVABLES', 1), usd(100)),
+        credit(new SystemAccountRef(ledgerId, 'EXPENSES'), usd(100)),
       );
     }).toThrow(
       new LedgerError(
@@ -48,11 +36,11 @@ DEBIT  $100.00 RECEIVABLES:1`,
   test('create an entry with a comment', () => {
     const debitOperation = debit(
       new EntityAccountRef(ledgerId, 'RECEIVABLES', 1),
-      new Money(100, 'USD'),
+      usd(100),
     );
     const creditOperation = credit(
       new SystemAccountRef(ledgerId, 'INCOME_GOODS'),
-      new Money(100, 'USD'),
+      usd(100),
     );
     const entry = doubleEntry(
       debitOperation,
@@ -67,15 +55,15 @@ DEBIT  $100.00 RECEIVABLES:1`,
   test('create an entry with divided credit operation', () => {
     const debitOperation = debit(
       new SystemAccountRef(ledgerId, 'EXPENSES_PAYOUTS'),
-      new Money(100, 'USD'),
+      usd(100),
     );
     const creditPayablesLocked = credit(
       new SystemAccountRef(ledgerId, 'PAYABLES_LOCKED'),
-      new Money(70, 'USD'),
+      usd(100),
     );
     const creditPayables = credit(
       new SystemAccountRef(ledgerId, 'PAYABLES_LOCKED'),
-      new Money(30, 'USD'),
+      usd(100),
     );
     const entry = doubleEntry(
       debitOperation,

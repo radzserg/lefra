@@ -4,7 +4,8 @@ import { SystemAccountRef } from '@/ledger/accounts/SystemAccountRef.js';
 import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
 import { EntriesWithSameAction } from '@/ledger/transaction/EntriesWithSameAction.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
-import { Money, usd } from '@/money/Money.js';
+import { Unit } from '@/ledger/units/Unit.js';
+import { usd } from '#/helpers/units.js';
 import { describe, expect, test } from 'vitest';
 
 const ledgerId = new UuidDatabaseIdGenerator().generateId();
@@ -27,11 +28,11 @@ describe('UniformEntrySet', () => {
   });
 
   test('cannot create UniformEntrySet with different currency codes', () => {
+    const cadEntry = credit(userReceivables, new Unit(100, 'CAD', 2));
+    const usdEntry = credit(expensesPayouts, new Unit(100, 'USD', 2));
+
     expect(() => {
-      EntriesWithSameAction.build([
-        credit(userReceivables, new Money(100, 'CAD')),
-        credit(expensesPayouts, new Money(100, 'USD')),
-      ]);
+      EntriesWithSameAction.build([cadEntry, usdEntry]);
     }).toThrow(new LedgerError('All operations must be of the same currency'));
   });
 
