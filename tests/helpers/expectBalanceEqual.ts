@@ -1,9 +1,9 @@
-import { Money } from '@/money/Money.js';
+import { Unit, UnitCode } from '@/ledger/units/Unit.js';
 import { expect } from 'vitest';
 
 export const expectBalanceEqual = (
-  actualBalance: Money | null,
-  expectedBalance: Money | null,
+  actualBalance: Unit<UnitCode> | null,
+  expectedBalance: Unit<UnitCode> | null,
   accountName: string,
 ) => {
   expect(

@@ -1,6 +1,6 @@
 import { Transaction } from '../transaction/Transaction.js';
 import { LedgerAccountRef } from '@/ledger/accounts/LedgerAccountRef.js';
-import { Money } from '@/money/Money.js';
+import { Unit, UnitCode } from '@/ledger/units/Unit.js';
 import {
   DB_ID,
   InputLedgerAccount,
@@ -17,7 +17,9 @@ export type LedgerStorage = {
   /**
    * Fetches the current balance of the account.
    */
-  fetchAccountBalance: (account: LedgerAccountRef) => Promise<Money | null>;
+  fetchAccountBalance: (
+    account: LedgerAccountRef,
+  ) => Promise<Unit<UnitCode> | null>;
 
   /**
    * Return the ledger account by ledger account reference.

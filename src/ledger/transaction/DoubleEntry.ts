@@ -30,6 +30,13 @@ export const doubleEntry = <
 
   const debitSum = debitEntriesSet.sum();
   const creditSum = creditEntriesSet.sum();
+  const creditSomeCode = creditSum.code;
+  if (!debitSum.isSameCurrency(creditSum)) {
+    throw new LedgerError(
+      `Debit and credit operations must have the same currency. Debit currency: ${debitSum.code}, credit currency: ${creditSomeCode}`,
+    );
+  }
+
   if (!debitSum.equals(creditSum)) {
     const formatter = new EntriesRenderer();
     throw new LedgerError(

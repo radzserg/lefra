@@ -9,7 +9,7 @@ import { isNonEmptyArray } from '@/utils.js';
  * Represents a transaction in the ledger.
  * Transaction is a set of entries that are applied atomically.
  */
-export class Transaction<U extends UnitCode> {
+export class Transaction<U extends UnitCode = UnitCode> {
   public readonly entries: NonEmptyArray<Entry<U>>;
 
   public readonly ledgerSlug: string;

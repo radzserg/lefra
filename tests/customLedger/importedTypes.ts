@@ -1,4 +1,4 @@
-import { moneySchema, usdSchema } from '@/money/validation.js';
+import { moneySchema, usdSchema } from '#/customLedger/validation.js';
 import { z } from 'zod';
 
 const platformFeeSchema = z

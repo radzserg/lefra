@@ -11,7 +11,7 @@ export const entriesForPaymentConfirmed = ({
 }: {
   clientUserId: number;
   payment: ConfirmedPayment;
-}): TransactionDoubleEntries => {
+}): TransactionDoubleEntries<'USD'> => {
   const { account } = new LedgerAccountsRefBuilder(CustomLedgerSpecification);
   const platformFee = payment.platformFee;
   const stripePayInFeeAmountMinusPlatformProcessingFee = platformFee
@@ -26,7 +26,7 @@ export const entriesForPaymentConfirmed = ({
     ? payment.actualNetAmount.minus(platformFee.netAmount)
     : payment.actualNetAmount;
 
-  const entries = new TransactionDoubleEntries();
+  const entries = TransactionDoubleEntries.empty<'USD'>();
 
   entries.push(
     doubleEntry(

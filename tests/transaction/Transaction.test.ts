@@ -4,7 +4,7 @@ import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { Transaction } from '@/ledger/transaction/Transaction.js';
 import { TransactionDoubleEntries } from '@/ledger/transaction/TransactionDoubleEntries.js';
-import { usd } from '@/money/Money.js';
+import { usd } from '#/helpers/units.js';
 import { describe, expect, test } from 'vitest';
 
 const ledgerSlug = 'TEST_LEDGER';
@@ -21,7 +21,7 @@ const incomePaymentFee = new SystemAccountRef(
 describe('Transaction', () => {
   test('create a transaction', () => {
     const transaction = new Transaction(
-      new TransactionDoubleEntries().push(
+      new TransactionDoubleEntries([
         doubleEntry(
           debit(userReceivables, usd(100)),
           credit(incomePaidProjects, usd(100)),
@@ -32,7 +32,7 @@ describe('Transaction', () => {
           credit(incomePaymentFee, usd(3)),
           'User owes payment processing fee',
         ),
-      ),
+      ]),
     );
     expect(transaction.entries).toEqual([
       debit(userReceivables, usd(100)),
@@ -44,7 +44,7 @@ describe('Transaction', () => {
 
   test('transaction is is assigned to all operations', () => {
     const transaction = new Transaction(
-      new TransactionDoubleEntries().push(
+      new TransactionDoubleEntries([
         doubleEntry(
           debit(userReceivables, usd(100)),
           credit(incomePaidProjects, usd(100)),
@@ -53,7 +53,7 @@ describe('Transaction', () => {
           debit(userReceivables, usd(3)),
           credit(incomePaymentFee, usd(3)),
         ),
-      ),
+      ]),
     );
 
     expect(transaction.entries).toEqual([

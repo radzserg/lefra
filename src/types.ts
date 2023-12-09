@@ -1,6 +1,5 @@
 import { CreditEntry, DebitEntry } from '@/ledger/transaction/Entry.js';
-import { CurrencyCode } from '@/money/currencies.js';
-import { Money } from '@/money/Money.js';
+import { Unit, UnitCode } from '@/ledger/units/Unit.js';
 
 export type EntryAction = 'DEBIT' | 'CREDIT';
 
@@ -27,7 +26,7 @@ export type InputLedgerAccountType = {
 };
 
 export type LedgerInput = {
-  currencyCode: CurrencyCode;
+  currencyCode: UnitCode;
   description: string;
   name: string;
   slug: string;
@@ -41,7 +40,7 @@ export type TransactionInput = {
 
 export type EntryInput = {
   action: EntryAction;
-  amount: Money;
+  amount: Unit<UnitCode>;
   ledgerAccountId: DB_ID;
   ledgerTransactionId: DB_ID;
 };

@@ -8,8 +8,8 @@ import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { Transaction } from '@/ledger/transaction/Transaction.js';
 import { TransactionDoubleEntries } from '@/ledger/transaction/TransactionDoubleEntries.js';
-import { Money } from '@/money/Money.js';
 import { runWithDatabaseConnectionPool } from '#/helpers/createTestConnection.js';
+import { usd } from '#/helpers/units.js';
 import { describe, expect, test } from 'vitest';
 
 const UUID_REGEX = /^[\dA-Fa-f]{8}(?:-[\dA-Fa-f]{4}){3}-[\dA-Fa-f]{12}$/u;
@@ -434,29 +434,29 @@ describe.each<'IN_MEMORY' | 'POSTGRES'>(['IN_MEMORY', 'POSTGRES'])(
           } = await saveTestLedgerAccounts(storage);
 
           const transaction = new Transaction(
-            new TransactionDoubleEntries().push(
+            TransactionDoubleEntries.empty<'USD'>().push(
               doubleEntry(
                 debit(
                   new EntityAccountRef(ledgerSlug, 'USER_RECEIVABLES', 1),
-                  new Money(100, 'USD'),
+                  usd(100),
                 ),
                 credit(
                   new SystemAccountRef(
                     ledgerSlug,
                     'SYSTEM_INCOME_PAID_PROJECTS',
                   ),
-                  new Money(100, 'USD'),
+                  usd(100),
                 ),
                 'User owes money for goods',
               ),
               doubleEntry(
                 debit(
                   new EntityAccountRef(ledgerSlug, 'USER_RECEIVABLES', 1),
-                  new Money(3, 'USD'),
+                  usd(3),
                 ),
                 credit(
                   new SystemAccountRef(ledgerSlug, 'SYSTEM_INCOME_PAYMENT_FEE'),
-                  new Money(3, 'USD'),
+                  usd(3),
                 ),
                 'User owes payment processing fee',
               ),
@@ -502,28 +502,28 @@ describe.each<'IN_MEMORY' | 'POSTGRES'>(['IN_MEMORY', 'POSTGRES'])(
           expect(entries).toEqual([
             expect.objectContaining({
               action: 'DEBIT',
-              amount: new Money(100, 'USD'),
+              amount: usd(100),
               id: expectDatabaseId(storageType),
               ledgerAccountId: expectDatabaseId(storageType),
               ledgerTransactionId: persistedTransaction.id,
             }),
             expect.objectContaining({
               action: 'CREDIT',
-              amount: new Money(100, 'USD'),
+              amount: usd(100),
               id: expectDatabaseId(storageType),
               ledgerAccountId: incomePaidProjectAccount.id,
               ledgerTransactionId: persistedTransaction.id,
             }),
             expect.objectContaining({
               action: 'DEBIT',
-              amount: new Money(3, 'USD'),
+              amount: usd(3),
               id: expectDatabaseId(storageType),
               ledgerAccountId: userReceivablesAccount.id,
               ledgerTransactionId: persistedTransaction.id,
             }),
             expect.objectContaining({
               action: 'CREDIT',
-              amount: new Money(3, 'USD'),
+              amount: usd(3),
               id: expectDatabaseId(storageType),
               ledgerAccountId: incomePaymentFeeAccount.id,
               ledgerTransactionId: persistedTransaction.id,
@@ -552,7 +552,7 @@ describe.each<'IN_MEMORY' | 'POSTGRES'>(['IN_MEMORY', 'POSTGRES'])(
           const balance = await storage.fetchAccountBalance(
             new SystemAccountRef(ledgerSlug, 'SYSTEM_INCOME_PAID_PROJECTS'),
           );
-          expect(balance).toEqual(new Money(0, 'USD'));
+          expect(balance).toEqual(usd(0));
         });
       });
 
@@ -561,29 +561,29 @@ describe.each<'IN_MEMORY' | 'POSTGRES'>(['IN_MEMORY', 'POSTGRES'])(
           await saveTestLedgerAccounts(storage);
 
           const transaction = new Transaction(
-            new TransactionDoubleEntries().push(
+            TransactionDoubleEntries.empty<'USD'>().push(
               doubleEntry(
                 debit(
                   new EntityAccountRef(ledgerSlug, 'USER_RECEIVABLES', 1),
-                  new Money(100, 'USD'),
+                  usd(100),
                 ),
                 credit(
                   new SystemAccountRef(
                     ledgerSlug,
                     'SYSTEM_INCOME_PAID_PROJECTS',
                   ),
-                  new Money(100, 'USD'),
+                  usd(100),
                 ),
                 'User owes money for goods',
               ),
               doubleEntry(
                 debit(
                   new EntityAccountRef(ledgerSlug, 'USER_RECEIVABLES', 1),
-                  new Money(3, 'USD'),
+                  usd(3),
                 ),
                 credit(
                   new SystemAccountRef(ledgerSlug, 'SYSTEM_INCOME_PAYMENT_FEE'),
-                  new Money(3, 'USD'),
+                  usd(3),
                 ),
                 'User owes payment processing fee',
               ),
@@ -596,12 +596,17 @@ describe.each<'IN_MEMORY' | 'POSTGRES'>(['IN_MEMORY', 'POSTGRES'])(
           const receivables = await storage.fetchAccountBalance(
             new EntityAccountRef(ledgerSlug, 'USER_RECEIVABLES', 1),
           );
-          expect(receivables).toEqual(new Money(103, 'USD'));
+          expect(receivables).toEqual(usd(103));
 
           const incomePaymentFee = await storage.fetchAccountBalance(
             new SystemAccountRef(ledgerSlug, 'SYSTEM_INCOME_PAYMENT_FEE'),
           );
-          expect(incomePaymentFee).toEqual(new Money(3, 'USD'));
+          expect(incomePaymentFee).toEqual(usd(3));
+
+          const incomePaymentPaidProjects = await storage.fetchAccountBalance(
+            new SystemAccountRef(ledgerSlug, 'SYSTEM_INCOME_PAID_PROJECTS'),
+          );
+          expect(incomePaymentPaidProjects).toEqual(usd(100));
         });
       });
     });

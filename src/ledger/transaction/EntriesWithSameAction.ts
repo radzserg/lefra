@@ -30,10 +30,6 @@ export class EntriesWithSameAction<
         throw new LedgerError('All operations must be of the same currency');
       }
 
-      if (!sum.isSameCurrency(operation.amount)) {
-        throw new LedgerError('All operations must be of the same currency');
-      }
-
       sum = sum.plus(operation.amount);
     }
 

@@ -2,7 +2,7 @@ import { LedgerError } from '@/errors.js';
 import { DoubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { Entry } from '@/ledger/transaction/Entry.js';
 import { UnitCode } from '@/ledger/units/Unit.js';
-import { NonEmptyArray } from '@/types.js';
+import { isNonEmptyArray } from '@/utils.js';
 
 /**
  * Guarantees that all entries are of the same ledger.
@@ -12,13 +12,19 @@ export class TransactionDoubleEntries<U extends UnitCode> {
 
   public ledgerSlug: string | null = null;
 
-  // public constructor(entries: NonEmptyArray<DoubleEntry<U>>) {}
+  private constructor(entries: Array<DoubleEntry<U>>) {
+    if (isNonEmptyArray(entries)) {
+      this.push(...entries);
+    }
+  }
 
-  public push(
-    ...entries: NonEmptyArray<DoubleEntry<U>>
-  ): TransactionDoubleEntries<U> {
-    if (entries.length === 0) {
-      return this;
+  public static empty<C extends UnitCode>(): TransactionDoubleEntries<C> {
+    return new TransactionDoubleEntries<C>([]);
+  }
+
+  public push(...entries: Array<DoubleEntry<U>>): TransactionDoubleEntries<U> {
+    if (!isNonEmptyArray(entries)) {
+      throw new LedgerError('Transaction has no entries');
     }
 
     if (!this.ledgerSlug) {

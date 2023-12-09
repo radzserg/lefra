@@ -5,9 +5,8 @@ import { SystemAccountRef } from '@/ledger/accounts/SystemAccountRef.js';
 import { LedgerStorage } from '@/ledger/storage/LedgerStorage.js';
 import { databaseIdSchema } from '@/ledger/storage/validation.js';
 import { Transaction } from '@/ledger/transaction/Transaction.js';
-import { CurrencyCode } from '@/money/currencies.js';
-import { Money } from '@/money/Money.js';
-import { currencyCodeSchema } from '@/money/validation.js';
+import { Unit, UnitCode } from '@/ledger/units/Unit.js';
+import { unitSchema } from '@/ledger/units/validation.js';
 import {
   DB_ID,
   InputLedgerAccount,
@@ -129,7 +128,7 @@ export class PostgresLedgerStorage implements LedgerStorage {
     return entries.map((entry) => {
       return {
         ...entry,
-        amount: new Money(entry.amount.toString(), currencyCode),
+        amount: new Unit(entry.amount.toString(), currencyCode, 2), // @todo fetch currency code from ledger
       };
     });
   }
@@ -242,7 +241,7 @@ export class PostgresLedgerStorage implements LedgerStorage {
 
   public async fetchAccountBalance(
     account: LedgerAccountRef,
-  ): Promise<Money | null> {
+  ): Promise<Unit<UnitCode> | null> {
     const id = await this.getLedgerAccountId(account);
     const { amount } = await this.connection.one(
       sql.type(
@@ -258,7 +257,7 @@ export class PostgresLedgerStorage implements LedgerStorage {
     const ledgerId = await this.getLedgerIdBySlug(account.ledgerSlug);
     const currencyCode = await this.getLedgerCurrencyCode(ledgerId);
 
-    return new Money(amount, currencyCode);
+    return new Unit(amount, currencyCode, 2); // @todo fetch currency code from ledger
   }
 
   private async getLedgerAccountId(account: LedgerAccountRef): Promise<number> {
@@ -286,12 +285,12 @@ export class PostgresLedgerStorage implements LedgerStorage {
     return ledgerAccount.id;
   }
 
-  private async getLedgerCurrencyCode(ledgerId: DB_ID): Promise<CurrencyCode> {
+  private async getLedgerCurrencyCode(ledgerId: DB_ID): Promise<UnitCode> {
     const ledger = await this.connection.maybeOne(
       sql.type(
         z
           .object({
-            currencyCode: currencyCodeSchema,
+            currencyCode: unitSchema,
           })
           .strict(),
       )`

@@ -2,12 +2,13 @@ import { LedgerAccountRef } from '@/ledger/accounts/LedgerAccountRef.js';
 import { LedgerAccountsRefBuilder } from '@/ledger/accounts/LedgerAccountsRefBuilder.js';
 import { Ledger } from '@/ledger/Ledger.js';
 import { InMemoryLedgerStorage } from '@/ledger/storage/inMemory/InMemoryLedgerStorage.js';
-import { Money, usd } from '@/money/Money.js';
+import { Unit } from '@/ledger/units/Unit.js';
 import { buildCustomLedger } from '#/customLedger/buildCustomLedger.js';
 import { CustomLedgerSpecification } from '#/customLedger/CustomLedgerSpecification.js';
 import { ProjectStartedOperation } from '#/customLedger/operations/ProjectStartedOperation.js';
 import { assertTransaction } from '#/helpers/assertTransaction.js';
 import { expectBalanceEqual } from '#/helpers/expectBalanceEqual.js';
+import { cad, usd } from '#/helpers/units.js';
 import { describe, expect, test } from 'vitest';
 
 const createServices = async () => {
@@ -34,15 +35,15 @@ describe('ProjectStartedOperation', () => {
     await expect(async () => {
       await ledger.record(
         new ProjectStartedOperation({
-          amountLockedForContractor: new Money(50, 'USD'),
+          amountLockedForContractor: usd(50),
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-expect-error
           clientUserId: 'string',
           contractorUserId,
           ledgerId: ledger.id,
-          paymentProcessingFee: new Money(5, 'USD'),
-          platformFee: new Money(10, 'USD'),
-          targetNetAmount: new Money(100, 'USD'),
+          paymentProcessingFee: usd(5),
+          platformFee: usd(10),
+          targetNetAmount: usd(100),
         }),
       );
     }).rejects.toThrow('Invalid operation data');
@@ -52,16 +53,16 @@ describe('ProjectStartedOperation', () => {
     const { account, ledger, storage } = await createServices();
     const transaction = await ledger.record(
       new ProjectStartedOperation({
-        amountLockedForContractor: new Money(50, 'USD'),
+        amountLockedForContractor: usd(50),
         clientUserId,
         contractorUserId,
         ledgerId: ledger.id,
         payment: {
-          chargeAmount: new Money(105, 'USD'),
-          estimatedStripeProcessingFee: new Money(5, 'USD'),
+          chargeAmount: usd(105),
+          estimatedStripeProcessingFee: usd(5),
           platformFee: null,
           status: 'PROCESSING',
-          targetNetAmount: new Money(100, 'USD'),
+          targetNetAmount: usd(100),
         },
       }),
     );
@@ -81,7 +82,7 @@ describe('ProjectStartedOperation', () => {
       ],
     });
 
-    const expectedBalances: Array<[LedgerAccountRef, Money | null]> = [
+    const expectedBalances: Array<[LedgerAccountRef, Unit<'USD'> | null]> = [
       [account('USER_RECEIVABLES', clientUserId), usd(100)],
       [account('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
       [account('USER_PAYABLES', contractorUserId), usd(50)],
@@ -104,7 +105,7 @@ describe('ProjectStartedOperation', () => {
     const { account, ledger, storage } = await createServices();
     const transaction = await ledger.record(
       new ProjectStartedOperation({
-        amountLockedForContractor: new Money(50, 'USD'),
+        amountLockedForContractor: usd(50),
         clientUserId,
         contractorUserId,
         ledgerId: ledger.id,
@@ -113,7 +114,7 @@ describe('ProjectStartedOperation', () => {
           actualNetAmount: usd(117.44),
           actualStripeProcessingFee: usd(3.86),
 
-          chargeAmount: new Money(115, 'EUR'),
+          chargeAmount: cad(115),
           estimatedStripeProcessingFee: usd(3.85),
           platformFee: {
             chargeAmount: usd(19),
@@ -163,7 +164,7 @@ describe('ProjectStartedOperation', () => {
       ],
     });
 
-    const expectedBalances: Array<[LedgerAccountRef, Money]> = [
+    const expectedBalances: Array<[LedgerAccountRef, Unit<'USD'>]> = [
       [account('USER_RECEIVABLES', clientUserId), usd(0)],
       [account('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
       [account('USER_PAYABLES', contractorUserId), usd(50)],
@@ -190,7 +191,7 @@ describe('ProjectStartedOperation', () => {
   test('records ProjectStartedOperation when 2 payments are confirmed', async () => {
     const { account, ledger, storage } = await createServices();
     const payload = {
-      amountLockedForContractor: new Money(50, 'USD'),
+      amountLockedForContractor: usd(50),
       clientUserId,
       contractorUserId,
       ledgerId: ledger.id,
@@ -199,7 +200,7 @@ describe('ProjectStartedOperation', () => {
         actualNetAmount: usd(118.45),
         actualStripeProcessingFee: usd(3.85),
 
-        chargeAmount: new Money(115, 'EUR'),
+        chargeAmount: cad(115),
         estimatedStripeProcessingFee: usd(3.85),
         platformFee: {
           chargeAmount: usd(19),
@@ -219,7 +220,7 @@ describe('ProjectStartedOperation', () => {
       }),
     );
 
-    const expectedBalances: Array<[LedgerAccountRef, Money]> = [
+    const expectedBalances: Array<[LedgerAccountRef, Unit<'USD'>]> = [
       [account('USER_RECEIVABLES', clientUserId), usd(0)],
       [account('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
       [account('USER_PAYABLES_LOCKED', contractorTwoUserId), usd(50)],

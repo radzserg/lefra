@@ -1,5 +1,13 @@
 import { BigNumber } from 'bignumber.js';
 
+const NUM_DECIMAL_PLACES = 8;
+
+// Follow "banker's rounding"
+BigNumber.config({
+  DECIMAL_PLACES: NUM_DECIMAL_PLACES,
+  ROUNDING_MODE: BigNumber.ROUND_HALF_EVEN,
+});
+
 export type UnitCode = string;
 
 export class Unit<C extends UnitCode> {
@@ -39,13 +47,13 @@ export class Unit<C extends UnitCode> {
    */
   public format(): string {
     const currencyFormatter = new Intl.NumberFormat('en', {
-      notation: 'standard',
-      style: 'number',
+      minimumFractionDigits: this.numberOfDigits,
     });
 
-    return currencyFormatter.format(
+    const value = currencyFormatter.format(
       this.amount.decimalPlaces(this.numberOfDigits).toNumber(),
     );
+    return `${this.code}:${value}`;
   }
 
   public equals(other: Unit<UnitCode>): boolean {
@@ -66,8 +74,8 @@ export class Unit<C extends UnitCode> {
     return new Unit(0, this.code, this.numberOfDigits);
   }
 
-  public isSameCurrency(otherUnit: Unit<UnitCode>): otherUnit is Unit<C> {
-    return this.code === otherUnit.code;
+  public isSameCurrency(other: Unit<UnitCode>): other is Unit<C> {
+    return this.code === other.code;
   }
 
   public isLessThan(other: Unit<C>): boolean {
@@ -78,6 +86,26 @@ export class Unit<C extends UnitCode> {
     }
 
     return this.amount.isLessThan(other.amount);
+  }
+
+  public isGreaterThan(other: Unit<C>): boolean {
+    if (this.code !== other.code) {
+      throw new Error(
+        `Cannot compare Unit amounts if not the same currency! ${this.code} != ${other.code}`,
+      );
+    }
+
+    return this.amount.isGreaterThan(other.amount);
+  }
+
+  public isGreaterThanOrEqualTo(other: Unit<C>): boolean {
+    if (this.code !== other.code) {
+      throw new Error(
+        `Cannot compare Unit amounts if not the same currency! ${this.code} != ${other.code}`,
+      );
+    }
+
+    return this.amount.isGreaterThanOrEqualTo(other.amount);
   }
 
   public plus(other: Unit<UnitCode>): Unit<C> {
@@ -92,6 +120,31 @@ export class Unit<C extends UnitCode> {
       this.code,
       this.numberOfDigits,
     );
+  }
+
+  public minus(other: Unit<UnitCode>): Unit<C> {
+    if (!this.isSameCurrency(other)) {
+      throw new Error(
+        `Cannot compare Money amounts if not the same currency! ${this.code} != ${other.code}`,
+      );
+    }
+
+    return new Unit(
+      this.amount.minus(other.amount),
+      this.code,
+      this.numberOfDigits,
+    );
+  }
+
+  /**
+   * Stringified version of the amount with 8 decimal places of precision.
+   *
+   * E.g.
+   *
+   * $100.12345678 outputs '100.12345678'
+   */
+  public toFullPrecision(): string {
+    return this.amount.toFixed(NUM_DECIMAL_PLACES);
   }
 }
 

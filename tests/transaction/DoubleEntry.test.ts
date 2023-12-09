@@ -27,19 +27,21 @@ describe('Ledger entry', () => {
         // @ts-expect-error
         credit(new SystemAccountRef(ledgerId, 'EXPENSES'), usd(100)),
       );
-    }).toThrow('sad');
+    }).toThrow(
+      'Debit and credit operations must have the same currency. Debit currency: CAD, credit currency: USD',
+    );
   });
 
   test('throw an error if debit and credit operations amount are not equal', () => {
     expect(() => {
       doubleEntry(
         debit(new EntityAccountRef(ledgerId, 'RECEIVABLES', 1), usd(100)),
-        credit(new SystemAccountRef(ledgerId, 'EXPENSES'), usd(100)),
+        credit(new SystemAccountRef(ledgerId, 'EXPENSES'), usd(70)),
       );
     }).toThrow(
       new LedgerError(
-        `Debit and credit operations must have the same money amount. Debit sum: $100.00, credit sum: $70.00 Entries:
-DEBIT  $100.00 RECEIVABLES:1`,
+        `Debit and credit operations must have the same money amount. Debit sum: USD:100.00, credit sum: USD:70.00 Entries:
+DEBIT  USD:100.00 RECEIVABLES:1`,
       ),
     );
   });
@@ -70,11 +72,11 @@ DEBIT  $100.00 RECEIVABLES:1`,
     );
     const creditPayablesLocked = credit(
       new SystemAccountRef(ledgerId, 'PAYABLES_LOCKED'),
-      usd(100),
+      usd(70),
     );
     const creditPayables = credit(
       new SystemAccountRef(ledgerId, 'PAYABLES_LOCKED'),
-      usd(100),
+      usd(30),
     );
     const entry = doubleEntry(
       debitOperation,

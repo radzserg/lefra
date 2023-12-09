@@ -1,6 +1,6 @@
 import { EntityAccountRef } from '@/ledger/accounts/EntityAccountRef.js';
 import { SystemAccountRef } from '@/ledger/accounts/SystemAccountRef.js';
-import { DoubleEntry, doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
+import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { TransactionDoubleEntries } from '@/ledger/transaction/TransactionDoubleEntries.js';
 import { cad, usd } from '#/helpers/units.js';
@@ -30,8 +30,7 @@ describe('TransactionDoubleEntries', () => {
         'User owes payment processing fee',
       ),
     ];
-    const transactionDoubleEntries = new TransactionDoubleEntries();
-    transactionDoubleEntries.push(...newEntries);
+    const transactionDoubleEntries = new TransactionDoubleEntries(newEntries);
     transactionDoubleEntries.push(...newEntries);
     expect(transactionDoubleEntries.entries).toEqual([
       ...newEntries,
@@ -41,15 +40,17 @@ describe('TransactionDoubleEntries', () => {
   });
 
   test('can not push entries with different unit', () => {
-    const transactionDoubleEntries = new TransactionDoubleEntries<'USD'>();
-    transactionDoubleEntries.push(
+    const transactionDoubleEntries = new TransactionDoubleEntries([
       doubleEntry(
         debit(userReceivables, usd(100)),
         credit(incomePaidProjects, usd(100)),
         'User owes money for goods',
       ),
-    );
+    ]);
+
     transactionDoubleEntries.push(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
       doubleEntry(
         debit(userReceivables, cad(100)),
         credit(incomePaidProjects, cad(100)),
@@ -59,7 +60,7 @@ describe('TransactionDoubleEntries', () => {
   });
 
   test('can append TransactionDoubleEntries', () => {
-    const newEntries: DoubleEntry[] = [
+    const newEntries = [
       doubleEntry(
         debit(userReceivables, usd(100)),
         credit(incomePaidProjects, usd(100)),
@@ -71,10 +72,8 @@ describe('TransactionDoubleEntries', () => {
         'User owes payment processing fee',
       ),
     ];
-    const transactionDoubleEntries = new TransactionDoubleEntries();
-    const transactionDoubleEntries2 = new TransactionDoubleEntries();
-    transactionDoubleEntries.push(...newEntries);
-    transactionDoubleEntries2.push(...newEntries);
+    const transactionDoubleEntries = new TransactionDoubleEntries(newEntries);
+    const transactionDoubleEntries2 = new TransactionDoubleEntries(newEntries);
     transactionDoubleEntries.append(transactionDoubleEntries2);
     expect(transactionDoubleEntries.entries).toEqual([
       ...newEntries,

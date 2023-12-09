@@ -1,10 +1,10 @@
 import { EntriesRenderer } from '@/ledger/renderer/EntriesRenderer.js';
 import { Entry } from '@/ledger/transaction/Entry.js';
 import { Transaction } from '@/ledger/transaction/Transaction.js';
-import { Money } from '@/money/Money.js';
+import { Unit, UnitCode } from '@/ledger/units/Unit.js';
 import { expect } from 'vitest';
 
-type ExpectedEntry = ['DEBIT' | 'CREDIT', string, Money];
+type ExpectedEntry = ['DEBIT' | 'CREDIT', string, Unit<UnitCode>];
 
 type ExpectedTransaction = {
   description?: string;
@@ -42,7 +42,7 @@ export const assertTransaction = async (
 
   const actualEntries = transaction.entries;
   for (const [index, expectedEntry] of expectedEntries.entries()) {
-    const actualEntry: Entry = actualEntries[index];
+    const actualEntry: Entry<UnitCode> = actualEntries[index];
 
     if (
       actualEntry.action !== expectedEntry[0] ||

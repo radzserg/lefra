@@ -3,7 +3,7 @@ import { SystemAccountRef } from '@/ledger/accounts/SystemAccountRef.js';
 import { EntriesRenderer } from '@/ledger/renderer/EntriesRenderer.js';
 import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
-import { Money } from '@/money/Money.js';
+import { usd } from '#/helpers/units.js';
 import { describe, expect, test } from 'vitest';
 
 const ledgerId = new UuidDatabaseIdGenerator().generateId();
@@ -17,23 +17,23 @@ const incomePaymentFee = new SystemAccountRef(
   'SYSTEM_INCOME_PAYMENT_FEE',
 );
 
-describe('EntriesFormatter', () => {
+describe('EntriesRenderer', () => {
   const formatter = new EntriesRenderer();
 
   test('format entries in compact human readable form', () => {
     const entries = [
-      debit(userReceivables, new Money(100.55, 'USD')),
-      credit(incomePaidProjects, new Money(100.55, 'USD')),
-      debit(userReceivables, new Money(3, 'USD')),
-      credit(incomePaymentFee, new Money(3, 'USD')),
+      debit(userReceivables, usd(100.55)),
+      credit(incomePaidProjects, usd(100.55)),
+      debit(userReceivables, usd(3)),
+      credit(incomePaymentFee, usd(3)),
     ];
 
     const formatterValue = formatter.render(entries);
     expect(formatterValue).toEqual(
-      `DEBIT  $100.55 USER_RECEIVABLES:1
-CREDIT $100.55 SYSTEM_INCOME_PAID_PROJECTS
-DEBIT  $3.00 USER_RECEIVABLES:1
-CREDIT $3.00 SYSTEM_INCOME_PAYMENT_FEE`,
+      `DEBIT  USD:100.55 USER_RECEIVABLES:1
+CREDIT USD:100.55 SYSTEM_INCOME_PAID_PROJECTS
+DEBIT  USD:3.00 USER_RECEIVABLES:1
+CREDIT USD:3.00 SYSTEM_INCOME_PAYMENT_FEE`,
     );
   });
 });

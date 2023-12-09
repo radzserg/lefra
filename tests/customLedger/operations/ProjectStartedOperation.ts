@@ -5,10 +5,10 @@ import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { Transaction } from '@/ledger/transaction/Transaction.js';
 import { TransactionDoubleEntries } from '@/ledger/transaction/TransactionDoubleEntries.js';
-import { usdSchema } from '@/money/validation.js';
 import { CustomLedgerSpecification } from '#/customLedger/CustomLedgerSpecification.js';
 import { paymentSchema } from '#/customLedger/importedTypes.js';
 import { entriesForPaymentConfirmed } from '#/customLedger/operations/paymentConfirmed.js';
+import { usdSchema } from '#/customLedger/validation.js';
 import { z } from 'zod';
 
 const schema = z
@@ -40,7 +40,7 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
     super(schema, payload);
   }
 
-  public async createTransaction(): Promise<Transaction> {
+  public async createTransaction() {
     const {
       amountLockedForContractor,
       clientUserId,
@@ -51,7 +51,7 @@ export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
     const { account } = this.ledgerAccountsRefBuilder;
 
     const { platformFee } = payment;
-    const entries = new TransactionDoubleEntries();
+    const entries = TransactionDoubleEntries.empty<'USD'>();
 
     const targetNetAmountWithoutPlatformFee = platformFee
       ? payment.targetNetAmount.minus(platformFee.netAmount)

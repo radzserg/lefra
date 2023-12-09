@@ -9,7 +9,7 @@ import {
 import { EntityAccountRef } from '@/ledger/accounts/EntityAccountRef.js';
 import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
 import { Entry } from '@/ledger/transaction/Entry.js';
-import { Money } from '@/money/Money.js';
+import { Unit, UnitCode } from '@/ledger/units/Unit.js';
 import {
   DB_ID,
   InputLedgerAccount,
@@ -168,7 +168,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
 
   private async saveTransactionEntries(
     transaction: PersistedTransaction,
-    entries: Entry[],
+    entries: Array<Entry<UnitCode>>,
   ) {
     const savedEntries: PersistedEntry[] = [];
     for (const entry of entries) {
@@ -191,7 +191,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     this.entries.push(...savedEntries);
   }
 
-  private async saveTransactionLedgerAccounts(entries: Entry[]) {
+  private async saveTransactionLedgerAccounts(entries: Array<Entry<UnitCode>>) {
     const ledgerAccounts: LedgerAccountRef[] = [];
     for (const entry of entries) {
       ledgerAccounts.push(entry.account);
@@ -251,7 +251,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
 
   public async fetchAccountBalance(
     account: LedgerAccountRef,
-  ): Promise<Money | null> {
+  ): Promise<Unit<UnitCode> | null> {
     const savedAccount = await this.findAccount(account);
     if (!savedAccount) {
       throw new LedgerNotFoundError(`Account ${account.accountSlug} not found`);
@@ -262,8 +262,8 @@ export class InMemoryLedgerStorage implements LedgerStorage {
       await this.getSavedAccountTypeById(ledgerAccountTypeId);
 
     const normalBalance = ledgerAccountType.normalBalance;
-    let sumDebits: Money | null = null;
-    let sumCredits: Money | null = null;
+    let sumDebits: Unit<UnitCode> | null = null;
+    let sumCredits: Unit<UnitCode> | null = null;
     for (const entry of this.entries) {
       if (entry.ledgerAccountId !== savedAccount.id) {
         continue;
@@ -296,7 +296,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
         );
       }
 
-      return new Money(0, ledger.currencyCode);
+      return new Unit(0, ledger.currencyCode, 2);
     }
 
     if (normalBalance === 'DEBIT') {

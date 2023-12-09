@@ -1,7 +1,7 @@
 import { Renderer } from '@/ledger/renderer/Renderer.js';
 import { Entry } from '@/ledger/transaction/Entry.js';
 import { Transaction } from '@/ledger/transaction/Transaction.js';
-import { Money } from '@/money/Money.js';
+import { Unit, UnitCode } from '@/ledger/units/Unit.js';
 
 type RenderSettings = {
   maxAccountBalanceLength: number;
@@ -10,7 +10,7 @@ type RenderSettings = {
 };
 
 type AccountBalances = {
-  [account: string]: Money;
+  [account: string]: Unit<UnitCode>;
 };
 
 const SEPARATOR = '    ';
@@ -75,7 +75,9 @@ export class TransactionFlowRenderer implements Renderer {
             SEPARATOR +
             creditEntry.amount.format().padStart(maxAmountLength, SPACE) +
             SEPARATOR +
-            accountsBalances[creditEntry.account.accountSlug].format(),
+            accountsBalances[creditEntry.account.accountSlug]
+              .format()
+              .padStart(maxAccountBalanceLength, SPACE),
         );
       }
 
@@ -120,7 +122,10 @@ export class TransactionFlowRenderer implements Renderer {
     };
   }
 
-  private trackAccountBalance(accountsBalances: AccountBalances, entry: Entry) {
+  private trackAccountBalance(
+    accountsBalances: AccountBalances,
+    entry: Entry<UnitCode>,
+  ) {
     const accountSlug = entry.account.accountSlug;
     if (accountsBalances[accountSlug]) {
       if (entry.action === 'DEBIT') {

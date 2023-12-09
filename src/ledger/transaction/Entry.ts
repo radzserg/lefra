@@ -13,7 +13,9 @@ export type DebitEntry<C extends UnitCode> = {
   amount: Unit<C>;
 };
 
-export type Entry<C extends UnitCode> = CreditEntry<C> | DebitEntry<C>;
+export type Entry<C extends UnitCode = UnitCode> =
+  | CreditEntry<C>
+  | DebitEntry<C>;
 
 const validateEntry = <C extends UnitCode>(entry: Entry<C>) => {
   if (entry.amount.isZero()) {
