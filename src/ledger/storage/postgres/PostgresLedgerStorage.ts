@@ -11,6 +11,7 @@ import {
   DB_ID,
   InputLedgerAccount,
   InputLedgerAccountType,
+  InputLedgerCurrency,
   LedgerInput,
   PersistedEntry,
   PersistedLedgerAccount,
@@ -123,12 +124,16 @@ export class PostgresLedgerStorage implements LedgerStorage {
       `,
     );
 
-    const currencyCode = await this.getLedgerCurrencyCode(transaction.ledgerId);
+    const currency = await this.getLedgerCurrency(transaction.ledgerId);
 
     return entries.map((entry) => {
       return {
         ...entry,
-        amount: new Unit(entry.amount.toString(), currencyCode, 2), // @todo fetch currency code from ledger
+        amount: new Unit(
+          entry.amount.toString(),
+          currency.currencyCode,
+          currency.minimumFractionDigits,
+        ),
       };
     });
   }
@@ -156,16 +161,35 @@ export class PostgresLedgerStorage implements LedgerStorage {
     return ledger.id;
   }
 
+  public async insertCurrency(parameters: InputLedgerCurrency) {
+    const { code, minimumFractionDigits, symbol } = parameters;
+    const currencyId = await this.connection.oneFirst(
+      sql.type(
+        z.object({
+          id: z.number(),
+        }),
+      )`
+        INSERT INTO ledger_currency (code, minimum_fraction_digits, symbol)
+        VALUES (${code}, ${minimumFractionDigits}, ${symbol})
+        RETURNING id
+      `,
+    );
+    return {
+      ...parameters,
+      id: currencyId,
+    };
+  }
+
   public async insertLedger(input: LedgerInput) {
-    const { currencyCode, description, name, slug } = input;
+    const { description, ledgerCurrencyId, name, slug } = input;
     const ledgerId = await this.connection.oneFirst(
       sql.type(
         z.object({
           id: z.number(),
         }),
       )`
-        INSERT INTO ledger (slug, name, description, currency_code)
-        VALUES (${slug}, ${name}, ${description}, ${currencyCode})
+        INSERT INTO ledger (slug, name, description, ledger_currency_id)
+        VALUES (${slug}, ${name}, ${description}, ${ledgerCurrencyId})
         RETURNING id
       `,
     );
@@ -255,9 +279,13 @@ export class PostgresLedgerStorage implements LedgerStorage {
       `,
     );
     const ledgerId = await this.getLedgerIdBySlug(account.ledgerSlug);
-    const currencyCode = await this.getLedgerCurrencyCode(ledgerId);
+    const currency = await this.getLedgerCurrency(ledgerId);
 
-    return new Unit(amount, currencyCode, 2); // @todo fetch currency code from ledger
+    return new Unit(
+      amount,
+      currency.currencyCode,
+      currency.minimumFractionDigits,
+    );
   }
 
   private async getLedgerAccountId(account: LedgerAccountRef): Promise<number> {
@@ -285,18 +313,23 @@ export class PostgresLedgerStorage implements LedgerStorage {
     return ledgerAccount.id;
   }
 
-  private async getLedgerCurrencyCode(ledgerId: DB_ID): Promise<UnitCode> {
+  private async getLedgerCurrency(
+    ledgerId: DB_ID,
+  ): Promise<{ currencyCode: UnitCode; minimumFractionDigits: number }> {
     const ledger = await this.connection.maybeOne(
       sql.type(
         z
           .object({
             currencyCode: unitSchema,
+            minimumFractionDigits: z.number(),
           })
           .strict(),
       )`
-        SELECT 
-          l.currency_code
+        SELECT
+          lc.code currency_code,
+          lc.minimum_fraction_digits
         FROM ledger l        
+        INNER JOIN ledger_currency lc ON lc.id = l.ledger_currency_id
         WHERE
           l.id = ${ledgerId}
       `,
@@ -305,7 +338,10 @@ export class PostgresLedgerStorage implements LedgerStorage {
       throw new LedgerNotFoundError(`Ledger ${ledgerId} is not found`);
     }
 
-    return ledger.currencyCode;
+    return {
+      currencyCode: ledger.currencyCode,
+      minimumFractionDigits: ledger.minimumFractionDigits,
+    };
   }
 
   public async findAccount(

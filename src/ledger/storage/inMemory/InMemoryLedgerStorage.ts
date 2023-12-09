@@ -13,11 +13,13 @@ import { Unit, UnitCode } from '@/ledger/units/Unit.js';
 import {
   DB_ID,
   InputLedgerAccount,
+  InputLedgerCurrency,
   LedgerInput,
   PersistedEntry,
   PersistedLedger,
   PersistedLedgerAccount,
   PersistedLedgerAccountType,
+  PersistedLedgerCurrency,
   PersistedTransaction,
 } from '@/types.js';
 
@@ -27,6 +29,8 @@ import {
  */
 export class InMemoryLedgerStorage implements LedgerStorage {
   public ledgers: PersistedLedger[] = [];
+
+  public currencies: PersistedLedgerCurrency[] = [];
 
   public accountTypes: PersistedLedgerAccountType[] = [];
 
@@ -43,8 +47,8 @@ export class InMemoryLedgerStorage implements LedgerStorage {
    * Inserts a new ledger.
    */
   public async insertLedger({
-    currencyCode,
     description,
+    ledgerCurrencyId,
     name,
     slug,
   }: LedgerInput) {
@@ -54,9 +58,9 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     }
 
     const persistedLedger = {
-      currencyCode,
       description,
       id: this.idGenerator.generateId(),
+      ledgerCurrencyId,
       name,
       slug,
     };
@@ -148,6 +152,17 @@ export class InMemoryLedgerStorage implements LedgerStorage {
 
   public async findLedgerIdBySlug(slug: string) {
     return this.ledgers.find((ledger) => ledger.slug === slug);
+  }
+
+  public async insertCurrency(parameters: InputLedgerCurrency) {
+    const persistedCurrency = {
+      code: parameters.code,
+      id: this.idGenerator.generateId(),
+      minimumFractionDigits: parameters.minimumFractionDigits,
+      symbol: parameters.symbol,
+    };
+    this.currencies.push(persistedCurrency);
+    return persistedCurrency;
   }
 
   public async insertTransaction(transaction: Transaction) {
@@ -296,7 +311,9 @@ export class InMemoryLedgerStorage implements LedgerStorage {
         );
       }
 
-      return new Unit(0, ledger.currencyCode, 2);
+      const currency = await this.getLedgerCurrency(ledger.ledgerCurrencyId);
+
+      return new Unit(0, currency.currencyCode, currency.minimumFractionDigits);
     }
 
     if (normalBalance === 'DEBIT') {
@@ -403,5 +420,23 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     }
 
     return transaction;
+  }
+
+  private async getLedgerCurrency(
+    ledgerCurrencyId: DB_ID,
+  ): Promise<{ currencyCode: UnitCode; minimumFractionDigits: number }> {
+    const foundCurrency = this.currencies.find(
+      (currency) => currency.id === ledgerCurrencyId,
+    );
+    if (!foundCurrency) {
+      throw new LedgerError(
+        `Ledger ${ledgerCurrencyId} does not have a currency`,
+      );
+    }
+
+    return {
+      currencyCode: foundCurrency.code,
+      minimumFractionDigits: foundCurrency.minimumFractionDigits,
+    };
   }
 }

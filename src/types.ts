@@ -16,6 +16,12 @@ export type InputLedgerAccount = {
   slug: string;
 };
 
+export type InputLedgerCurrency = {
+  code: string;
+  minimumFractionDigits: number;
+  symbol: string;
+};
+
 export type InputLedgerAccountType = {
   description: string;
   isEntityLedgerAccount: boolean;
@@ -26,8 +32,8 @@ export type InputLedgerAccountType = {
 };
 
 export type LedgerInput = {
-  currencyCode: UnitCode;
   description: string;
+  ledgerCurrencyId: DB_ID;
   name: string;
   slug: string;
 };
@@ -52,6 +58,7 @@ export type PersistedLedger = Persisted<LedgerInput>;
 export type PersistedLedgerAccount = Persisted<InputLedgerAccount>;
 export type PersistedTransaction = Persisted<TransactionInput>;
 export type PersistedEntry = Persisted<EntryInput>;
+export type PersistedLedgerCurrency = Persisted<InputLedgerCurrency>;
 
 export type LedgerSpecification = {
   entityAccountTypes: readonly string[];

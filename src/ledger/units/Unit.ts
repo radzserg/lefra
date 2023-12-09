@@ -32,7 +32,7 @@ export class Unit<C extends UnitCode> {
   public constructor(
     amount: BigNumber | number | string,
     public readonly code: C,
-    private readonly numberOfDigits: number,
+    private readonly minimumFractionDigits: number,
   ) {
     this.amount = new BigNumber(amount);
     this.internalValue = this.format();
@@ -63,7 +63,7 @@ export class Unit<C extends UnitCode> {
   }
 
   public zeroValue(): Unit<C> {
-    return new Unit(0, this.code, this.numberOfDigits);
+    return new Unit(0, this.code, this.minimumFractionDigits);
   }
 
   public isSameCurrency(other: Unit<UnitCode>): other is Unit<C> {
@@ -90,7 +90,7 @@ export class Unit<C extends UnitCode> {
     return new Unit(
       this.amount.plus(this.toUnit(argument).amount),
       this.code,
-      this.numberOfDigits,
+      this.minimumFractionDigits,
     );
   }
 
@@ -98,7 +98,7 @@ export class Unit<C extends UnitCode> {
     return new Unit(
       this.amount.minus(this.toUnit(argument).amount),
       this.code,
-      this.numberOfDigits,
+      this.minimumFractionDigits,
     );
   }
 
@@ -106,7 +106,7 @@ export class Unit<C extends UnitCode> {
     return new Unit(
       this.amount.dividedBy(this.toUnit(argument).amount),
       this.code,
-      this.numberOfDigits,
+      this.minimumFractionDigits,
     );
   }
 
@@ -114,7 +114,7 @@ export class Unit<C extends UnitCode> {
     return new Unit(
       this.amount.multipliedBy(this.toUnit(argument).amount),
       this.code,
-      this.numberOfDigits,
+      this.minimumFractionDigits,
     );
   }
 
@@ -136,11 +136,11 @@ export class Unit<C extends UnitCode> {
    */
   public format(): string {
     const currencyFormatter = new Intl.NumberFormat('en', {
-      minimumFractionDigits: this.numberOfDigits,
+      minimumFractionDigits: this.minimumFractionDigits,
     });
 
     const value = currencyFormatter.format(
-      this.amount.decimalPlaces(this.numberOfDigits).toNumber(),
+      this.amount.decimalPlaces(this.minimumFractionDigits).toNumber(),
     );
     return `${this.code}:${value}`;
   }
@@ -162,7 +162,7 @@ export class Unit<C extends UnitCode> {
       return new Unit<C>(
         this.amount.dividedBy(value),
         this.code,
-        this.numberOfDigits,
+        this.minimumFractionDigits,
       );
     }
 

@@ -13,28 +13,49 @@ CREATE TYPE credit_or_debit as ENUM (
 
 CREATE DOMAIN slug_text AS TEXT;
 
+create table ledger_currency
+(
+  id integer generated always as identity primary key,
+  code text not null constraint currency_code_check check (code = upper(code)),
+  symbol text not null,
+  minimum_fraction_digits integer not null constraint minimum_fraction_digits_check check (minimum_fraction_digits > 0 AND minimum_fraction_digits < 21),
+  created_at timestamp with time zone default now() not null,
+  updated_at timestamp with time zone default now() not null
+);
+
+CREATE TRIGGER update_user_task_updated_on
+  BEFORE UPDATE ON ledger_currency FOR EACH ROW
+EXECUTE PROCEDURE update_updated_at();
+
+comment on table ledger_currency is 'Stores the currencies available in the ledger system. This can be fiat or crypto currencies, points or other types of currency.';
+comment on column ledger_currency.code is 'Currency code. Should be in ISO 4217 format for fiat currencies. For crypto currencies, it should be the ticker symbol';
+comment on column ledger_currency.symbol is 'Currency symbol. For fiat currencies, this should be the symbol used in the locale. For crypto currencies, this should be the ticker symbol';
+comment on column ledger_currency.minimum_fraction_digits is 'Minimum number of digits to display after the decimal point. For fiat currencies, this should be the number of digits used in the locale. For crypto currencies, this should be the number of digits used in the ticker symbol';
+
 -- create ledger
-create table if not exists ledger
+create table ledger
 (
   id integer generated always as identity primary key,
   slug slug_text not null,
   name text not null,
   description text not null,
-  currency_code text not null,
+  ledger_currency_id  integer references ledger_currency on delete restrict,
   created_at timestamp with time zone default now() not null,
   updated_at timestamp with time zone default now() not null
 );
 
-create unique index if not exists ledger_slug_idx on ledger (slug);
+create index ledger_ledger_currency_id_idx
+  on ledger (ledger_currency_id);
+
+create unique index ledger_slug_idx on ledger (slug);
 comment on table ledger is 'Stores the double entry ledgers available in the system';
 
 CREATE TRIGGER update_user_task_updated_on
   BEFORE UPDATE ON ledger FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at();
 
--- create ledger ledger_account_type
 
-create table if not exists ledger_account_type
+create table ledger_account_type
 (
   id integer generated always as identity primary key,
   slug slug_text not null,
@@ -52,10 +73,10 @@ comment on column ledger_account_type.name is 'Human readable account name for d
 comment on column ledger_account_type.is_entity_ledger_account is 'Whether or not this ledger account should be attached to a entity record(user, organization, team, etc.)';
 comment on column ledger_account_type.parent_ledger_account_type_id is 'If this value is set, it means the account type is a sub-type of the associated type';
 
-create index if not exists ledger_account_type_parent_ledger_account_type_id_idx
+create index ledger_account_type_parent_ledger_account_type_id_idx
   on ledger_account_type (parent_ledger_account_type_id);
 
-create unique index if not exists ledger_account_type_slug_idx on ledger_account_type (slug);
+create unique index ledger_account_type_slug_idx on ledger_account_type (slug);
 
 CREATE TRIGGER update_user_task_updated_on
   BEFORE UPDATE ON ledger_account_type FOR EACH ROW
@@ -77,8 +98,8 @@ create table ledger_account
 comment on table ledger_account is 'Represents an account on a given ledger. These accounts are used for ledger transactions';
 comment on column ledger_account.description is 'Human readable account name for debugging purposes and for use in external accounting software';
 
-create unique index if not exists ledger_account_slug_idx on ledger_account (ledger_id, slug);
-create index if not exists ledger_account_ledger_id_fkey on ledger_account (ledger_id);
+create unique index ledger_account_slug_idx on ledger_account (ledger_id, slug);
+create index ledger_account_ledger_id_fkey on ledger_account (ledger_id);
 
 CREATE TRIGGER update_user_task_updated_on
   BEFORE UPDATE ON ledger_account FOR EACH ROW
@@ -86,7 +107,7 @@ EXECUTE PROCEDURE update_updated_at();
 
 -- create ledger_transaction
 
-create table if not exists ledger_transaction
+create table ledger_transaction
 (
   id integer generated always as identity primary key,
   ledger_id integer not null references ledger on delete restrict,
@@ -99,8 +120,8 @@ create table if not exists ledger_transaction
 comment on table ledger_transaction is 'High level transaction on the ledger. It holds a collection of individual ledger_transaction_entry records';
 comment on column ledger_transaction.description is 'Human readable description/memo for debugging purposes and for use in external accounting software';
 
-create index if not exists ledger_transaction_ledger_id_idx on ledger_transaction (ledger_id);
-create index if not exists ledger_transaction_posted_at_idx on ledger_transaction (posted_at);
+create index ledger_transaction_ledger_id_idx on ledger_transaction (ledger_id);
+create index ledger_transaction_posted_at_idx on ledger_transaction (posted_at);
 
 CREATE TRIGGER update_user_task_updated_on
   BEFORE UPDATE ON ledger_transaction FOR EACH ROW
@@ -108,7 +129,7 @@ EXECUTE PROCEDURE update_updated_at();
 
 -- crete ledger_transaction_entry
 
-create table if not exists ledger_transaction_entry
+create table ledger_transaction_entry
 (
   id integer generated always as identity primary key,
   ledger_transaction_id integer not null references ledger_transaction on delete cascade,
@@ -122,11 +143,11 @@ create table if not exists ledger_transaction_entry
 
 comment on table ledger_transaction_entry is 'Individual debit/credit entries for a ledger transaction';
 
-create index if not exists ledger_transaction_entry_ledger_transaction_id_idx
+create index ledger_transaction_entry_ledger_transaction_id_idx
   on ledger_transaction_entry (ledger_transaction_id);
-create index if not exists ledger_transaction_entry_ledger_account_id_idx
+create index ledger_transaction_entry_ledger_account_id_idx
   on ledger_transaction_entry (ledger_account_id);
-create index if not exists ledger_transaction_entry_ledger_account_id_with_action_idx
+create index ledger_transaction_entry_ledger_account_id_with_action_idx
   on ledger_transaction_entry (ledger_account_id, action);
 
 CREATE TRIGGER update_user_task_updated_on

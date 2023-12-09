@@ -5,11 +5,13 @@ import {
   DB_ID,
   InputLedgerAccount,
   InputLedgerAccountType,
+  InputLedgerCurrency,
   LedgerInput,
   PersistedEntry,
   PersistedLedger,
   PersistedLedgerAccount,
   PersistedLedgerAccountType,
+  PersistedLedgerCurrency,
   PersistedTransaction,
 } from '@/types.js';
 
@@ -60,6 +62,13 @@ export type LedgerStorage = {
   insertAccountType: (
     parameters: InputLedgerAccountType,
   ) => Promise<PersistedLedgerAccountType>;
+
+  /**
+   * Insert ledger currency.
+   */
+  insertCurrency: (
+    parameters: InputLedgerCurrency,
+  ) => Promise<PersistedLedgerCurrency>;
 
   /**
    * Inserts a new ledger.

@@ -45,9 +45,14 @@ const createStorage = async (
 };
 
 const saveLedger = async (storage: LedgerStorage) => {
+  const ledgerCurrency = await storage.insertCurrency({
+    code: 'USD',
+    minimumFractionDigits: 2,
+    symbol: '$',
+  });
   return await storage.insertLedger({
-    currencyCode: 'USD',
     description: 'test ledger',
+    ledgerCurrencyId: ledgerCurrency.id,
     name: 'Test ledger',
     slug: ledgerSlug,
   });
@@ -96,8 +101,6 @@ const saveTestLedgerAccounts = async (storage: LedgerStorage) => {
 describe.each<'IN_MEMORY' | 'POSTGRES'>(['IN_MEMORY', 'POSTGRES'])(
   'Ledger storage: %s',
   (storageType) => {
-    // const storageType = 'IN_MEMORY';
-
     describe('ledger account types', () => {
       test('insert new account type', async () => {
         await createStorage(storageType, async (storage) => {
