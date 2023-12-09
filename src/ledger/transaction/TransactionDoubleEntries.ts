@@ -12,7 +12,7 @@ export class TransactionDoubleEntries<U extends UnitCode> {
 
   public ledgerSlug: string | null = null;
 
-  private constructor(entries: Array<DoubleEntry<U>>) {
+  public constructor(entries: Array<DoubleEntry<U>>) {
     if (isNonEmptyArray(entries)) {
       this.push(...entries);
     }

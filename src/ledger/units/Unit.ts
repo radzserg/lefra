@@ -9,9 +9,25 @@ BigNumber.config({
 });
 
 export type UnitCode = string;
+type OperationArgument<C extends UnitCode> = Unit<C> | number | BigNumber;
+
+export class UnitError extends Error {}
+
+export class DifferentCurrencyError extends UnitError {
+  public constructor(code1: Unit<UnitCode>, code2: Unit<UnitCode>) {
+    super(
+      `Cannot compare Unit amounts if not the same currency! ${code1} != ${code2}`,
+    );
+  }
+}
 
 export class Unit<C extends UnitCode> {
   private readonly amount: BigNumber;
+
+  /**
+   * Stringified version of the amount including the currency symbol. Keep it for easier debugging.
+   */
+  private readonly internalValue: string;
 
   public constructor(
     amount: BigNumber | number | string,
@@ -19,15 +35,94 @@ export class Unit<C extends UnitCode> {
     private readonly numberOfDigits: number,
   ) {
     this.amount = new BigNumber(amount);
-    // this.internalValue = this.format();
+    this.internalValue = this.format();
 
     if (this.amount.isNaN()) {
-      throw new Error(`Invalid money amount: ${amount}`);
+      throw new UnitError(`Invalid money amount: ${amount}`);
     }
 
     if (this.amount.isLessThan(0)) {
-      throw new Error(`Invalid unit amount: ${amount}. Must be positive.`);
+      throw new UnitError(`Invalid unit amount: ${amount}. Must be positive.`);
     }
+  }
+
+  public equals(other: Unit<UnitCode>): boolean {
+    if (!this.isSameCurrency(other)) {
+      throw new DifferentCurrencyError(this, other);
+    }
+
+    return this.amount.isEqualTo(other.amount);
+  }
+
+  public isZero(): boolean {
+    return this.amount.isZero();
+  }
+
+  public isPositive(): boolean {
+    return this.amount.isGreaterThan(0);
+  }
+
+  public zeroValue(): Unit<C> {
+    return new Unit(0, this.code, this.numberOfDigits);
+  }
+
+  public isSameCurrency(other: Unit<UnitCode>): other is Unit<C> {
+    return this.code === other.code;
+  }
+
+  public isLessThan(argument: OperationArgument<C>): boolean {
+    return this.amount.isLessThan(this.toUnit(argument).amount);
+  }
+
+  public isLessThanOrEqualTo(argument: OperationArgument<C>): boolean {
+    return this.amount.isLessThanOrEqualTo(this.toUnit(argument).amount);
+  }
+
+  public isGreaterThan(argument: OperationArgument<C>): boolean {
+    return this.amount.isGreaterThan(this.toUnit(argument).amount);
+  }
+
+  public isGreaterThanOrEqualTo(argument: OperationArgument<C>): boolean {
+    return this.amount.isGreaterThanOrEqualTo(this.toUnit(argument).amount);
+  }
+
+  public plus(argument: OperationArgument<C>): Unit<C> {
+    return new Unit(
+      this.amount.plus(this.toUnit(argument).amount),
+      this.code,
+      this.numberOfDigits,
+    );
+  }
+
+  public minus(argument: OperationArgument<C>): Unit<C> {
+    return new Unit(
+      this.amount.minus(this.toUnit(argument).amount),
+      this.code,
+      this.numberOfDigits,
+    );
+  }
+
+  public dividedBy(argument: OperationArgument<C>): Unit<C> {
+    return new Unit(
+      this.amount.dividedBy(this.toUnit(argument).amount),
+      this.code,
+      this.numberOfDigits,
+    );
+  }
+
+  public multipliedBy(argument: OperationArgument<C>): Unit<C> {
+    return new Unit(
+      this.amount.multipliedBy(this.toUnit(argument).amount),
+      this.code,
+      this.numberOfDigits,
+    );
+  }
+
+  /**
+   * Stringified version of the amount with 8 decimal places of precision.
+   */
+  public toFullPrecision(): string {
+    return this.amount.toFixed(NUM_DECIMAL_PLACES);
   }
 
   /**
@@ -36,13 +131,7 @@ export class Unit<C extends UnitCode> {
    *
    * E.g.
    *
-   *  $1,000.99
-   *
-   *  €1,000.99
-   *
-   *  ¥123,456 (0 decimal currency)
-   *
-   *  KWD 1,234.567 (3 decimal currency)
+   *  USD:1000.99
    *
    */
   public format(): string {
@@ -56,95 +145,32 @@ export class Unit<C extends UnitCode> {
     return `${this.code}:${value}`;
   }
 
-  public equals(other: Unit<UnitCode>): boolean {
-    if (!this.isSameCurrency(other)) {
-      throw new Error(
-        `Cannot compare Money amounts if not the same currency! ${this.code} != ${other.code}`,
-      );
-    }
-
-    return this.amount.isEqualTo(other.amount);
-  }
-
-  public isZero(): boolean {
-    return this.amount.isZero();
-  }
-
-  public zeroValue(): Unit<C> {
-    return new Unit(0, this.code, this.numberOfDigits);
-  }
-
-  public isSameCurrency(other: Unit<UnitCode>): other is Unit<C> {
-    return this.code === other.code;
-  }
-
-  public isLessThan(other: Unit<C>): boolean {
-    if (this.code !== other.code) {
-      throw new Error(
-        `Cannot compare Unit amounts if not the same currency! ${this.code} != ${other.code}`,
-      );
-    }
-
-    return this.amount.isLessThan(other.amount);
-  }
-
-  public isGreaterThan(other: Unit<C>): boolean {
-    if (this.code !== other.code) {
-      throw new Error(
-        `Cannot compare Unit amounts if not the same currency! ${this.code} != ${other.code}`,
-      );
-    }
-
-    return this.amount.isGreaterThan(other.amount);
-  }
-
-  public isGreaterThanOrEqualTo(other: Unit<C>): boolean {
-    if (this.code !== other.code) {
-      throw new Error(
-        `Cannot compare Unit amounts if not the same currency! ${this.code} != ${other.code}`,
-      );
-    }
-
-    return this.amount.isGreaterThanOrEqualTo(other.amount);
-  }
-
-  public plus(other: Unit<UnitCode>): Unit<C> {
-    if (!this.isSameCurrency(other)) {
-      throw new Error(
-        `Cannot plus Money amounts if not the same currency! ${this.code} != ${other.code}`,
-      );
-    }
-
-    return new Unit(
-      this.amount.plus(other.amount),
-      this.code,
-      this.numberOfDigits,
-    );
-  }
-
-  public minus(other: Unit<UnitCode>): Unit<C> {
-    if (!this.isSameCurrency(other)) {
-      throw new Error(
-        `Cannot compare Money amounts if not the same currency! ${this.code} != ${other.code}`,
-      );
-    }
-
-    return new Unit(
-      this.amount.minus(other.amount),
-      this.code,
-      this.numberOfDigits,
-    );
-  }
-
   /**
-   * Stringified version of the amount with 8 decimal places of precision.
    *
-   * E.g.
-   *
-   * $100.12345678 outputs '100.12345678'
+   * Improves the output of `console.log` and `util.inspect` for Money objects
+   * for debugging purposes.
    */
-  public toFullPrecision(): string {
-    return this.amount.toFixed(NUM_DECIMAL_PLACES);
+  private [Symbol.for('nodejs.util.inspect.custom')](_depth, options) {
+    return `Unit {
+  amount: ${options.stylize("'" + this.toFullPrecision() + "'", 'string')},
+  currencyCode: ${options.stylize("'" + this.code + "'", 'string')},
+}`;
+  }
+
+  private toUnit(value: OperationArgument<C>): Unit<C> {
+    if (typeof value === 'number' || value instanceof BigNumber) {
+      return new Unit<C>(
+        this.amount.dividedBy(value),
+        this.code,
+        this.numberOfDigits,
+      );
+    }
+
+    if (this.code !== value.code) {
+      throw new DifferentCurrencyError(this, value);
+    }
+
+    return value;
   }
 }
 
