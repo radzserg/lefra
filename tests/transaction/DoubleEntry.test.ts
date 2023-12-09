@@ -4,7 +4,7 @@ import { SystemAccountRef } from '@/ledger/accounts/SystemAccountRef.js';
 import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
 import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
-import { usd } from '#/helpers/units.js';
+import { cad, usd } from '#/helpers/units.js';
 import { describe, expect, test } from 'vitest';
 
 const ledgerId = new UuidDatabaseIdGenerator().generateId();
@@ -17,6 +17,17 @@ describe('Ledger entry', () => {
         credit(new SystemAccountRef(ledgerId, 'EXPENSES'), usd(100)),
       );
     }).not.toThrow();
+  });
+
+  test('throw an error if operations have different units', () => {
+    expect(() => {
+      doubleEntry(
+        debit(new EntityAccountRef(ledgerId, 'RECEIVABLES', 1), cad(100)),
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        credit(new SystemAccountRef(ledgerId, 'EXPENSES'), usd(100)),
+      );
+    }).toThrow('sad');
   });
 
   test('throw an error if debit and credit operations amount are not equal', () => {

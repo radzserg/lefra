@@ -3,7 +3,7 @@ import { SystemAccountRef } from '@/ledger/accounts/SystemAccountRef.js';
 import { DoubleEntry, doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { TransactionDoubleEntries } from '@/ledger/transaction/TransactionDoubleEntries.js';
-import { usd } from '@/money/Money.js';
+import { cad, usd } from '#/helpers/units.js';
 import { describe, expect, test } from 'vitest';
 
 const ledgerSlug = 'TEST_LEDGER';
@@ -18,7 +18,7 @@ const incomePaymentFee = new SystemAccountRef(
 );
 describe('TransactionDoubleEntries', () => {
   test('can push entries', () => {
-    const newEntries: DoubleEntry[] = [
+    const newEntries = [
       doubleEntry(
         debit(userReceivables, usd(100)),
         credit(incomePaidProjects, usd(100)),
@@ -38,6 +38,24 @@ describe('TransactionDoubleEntries', () => {
       ...newEntries,
     ]);
     expect(transactionDoubleEntries.ledgerSlug).toEqual(ledgerSlug);
+  });
+
+  test('can not push entries with different unit', () => {
+    const transactionDoubleEntries = new TransactionDoubleEntries<'USD'>();
+    transactionDoubleEntries.push(
+      doubleEntry(
+        debit(userReceivables, usd(100)),
+        credit(incomePaidProjects, usd(100)),
+        'User owes money for goods',
+      ),
+    );
+    transactionDoubleEntries.push(
+      doubleEntry(
+        debit(userReceivables, cad(100)),
+        credit(incomePaidProjects, cad(100)),
+        'User owes money for goods',
+      ),
+    );
   });
 
   test('can append TransactionDoubleEntries', () => {

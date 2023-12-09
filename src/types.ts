@@ -1,3 +1,4 @@
+import { CreditEntry, DebitEntry } from '@/ledger/transaction/Entry.js';
 import { CurrencyCode } from '@/money/currencies.js';
 import { Money } from '@/money/Money.js';
 
@@ -6,8 +7,6 @@ export type EntryAction = 'DEBIT' | 'CREDIT';
 export type NonEmptyArray<T> = [T, ...T[]];
 
 export type DB_ID = string | number;
-
-export type ArrayType<T> = T extends Array<infer U> ? U : never;
 
 export type NormalBalance = 'DEBIT' | 'CREDIT';
 
@@ -60,3 +59,11 @@ export type LedgerSpecification = {
   slug: string;
   systemAccounts: readonly string[];
 };
+
+export type ArrayType<T> = T extends Array<infer U> ? U : T;
+type ExtractUnitFromEntry<T> = T extends DebitEntry<infer C>
+  ? C
+  : T extends CreditEntry<infer C>
+    ? C
+    : never;
+export type ExtractUnitCode<T> = ExtractUnitFromEntry<ArrayType<T>>;

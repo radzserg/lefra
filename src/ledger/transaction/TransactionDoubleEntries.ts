@@ -1,16 +1,22 @@
 import { LedgerError } from '@/errors.js';
 import { DoubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { Entry } from '@/ledger/transaction/Entry.js';
+import { UnitCode } from '@/ledger/units/Unit.js';
+import { NonEmptyArray } from '@/types.js';
 
 /**
  * Guarantees that all entries are of the same ledger.
  */
-export class TransactionDoubleEntries {
-  public entries: DoubleEntry[] = [];
+export class TransactionDoubleEntries<U extends UnitCode> {
+  public entries: Array<DoubleEntry<U>> = [];
 
   public ledgerSlug: string | null = null;
 
-  public push(...entries: DoubleEntry[]): TransactionDoubleEntries {
+  // public constructor(entries: NonEmptyArray<DoubleEntry<U>>) {}
+
+  public push(
+    ...entries: NonEmptyArray<DoubleEntry<U>>
+  ): TransactionDoubleEntries<U> {
     if (entries.length === 0) {
       return this;
     }
@@ -39,13 +45,13 @@ export class TransactionDoubleEntries {
   }
 
   public append(
-    transactionDoubleEntries: TransactionDoubleEntries,
-  ): TransactionDoubleEntries {
+    transactionDoubleEntries: TransactionDoubleEntries<U>,
+  ): TransactionDoubleEntries<U> {
     return this.push(...transactionDoubleEntries.entries);
   }
 
-  public flatEntries(): Entry[] {
-    const flatEntries: Entry[] = [];
+  public flatEntries(): Array<Entry<U>> {
+    const flatEntries: Array<Entry<U>> = [];
     for (const entry of this.entries) {
       flatEntries.push(...entry.debitEntries, ...entry.creditEntries);
     }

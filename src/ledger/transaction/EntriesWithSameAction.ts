@@ -1,19 +1,18 @@
 import { LedgerError } from '@/errors.js';
 import { CreditEntry, DebitEntry } from '@/ledger/transaction/Entry.js';
 import { Unit, UnitCode } from '@/ledger/units/Unit.js';
-import { ArrayType, EntryAction, NonEmptyArray } from '@/types.js';
+import { EntryAction, ExtractUnitCode, NonEmptyArray } from '@/types.js';
 
 /**
  * List of operations of the same type. Either all debit or all credit.
  * All money amounts must be of the same currency.
  */
 export class EntriesWithSameAction<
-  C extends UnitCode,
-  O extends DebitEntry<C> | CreditEntry<C>,
+  O extends DebitEntry<UnitCode> | CreditEntry<UnitCode>,
 > {
   private readonly action: EntryAction;
 
-  private readonly operationsSum: Unit<C>;
+  private readonly operationsSum: Unit<ExtractUnitCode<O>>;
 
   private constructor(private readonly _entries: NonEmptyArray<O>) {
     if (Array.isArray(this._entries) && this._entries.length === 0) {
@@ -31,6 +30,10 @@ export class EntriesWithSameAction<
         throw new LedgerError('All operations must be of the same currency');
       }
 
+      if (!sum.isSameCurrency(operation.amount)) {
+        throw new LedgerError('All operations must be of the same currency');
+      }
+
       sum = sum.plus(operation.amount);
     }
 
@@ -38,7 +41,7 @@ export class EntriesWithSameAction<
       throw new LedgerError('Operations must not sum to zero');
     }
 
-    this.operationsSum = sum;
+    this.operationsSum = sum as Unit<ExtractUnitCode<O>>;
   }
 
   public static build<
@@ -48,22 +51,19 @@ export class EntriesWithSameAction<
       | NonEmptyArray<DebitEntry<C>>
       | CreditEntry<C>
       | NonEmptyArray<CreditEntry<C>>,
-  >(entries: E): EntriesWithSameAction<C, ArrayType<E>> {
+  >(entries: E) {
     if (Array.isArray(entries)) {
       return new EntriesWithSameAction(entries);
     }
 
-    return new EntriesWithSameAction([entries]) as EntriesWithSameAction<
-      C,
-      ArrayType<E>
-    >;
+    return new EntriesWithSameAction([entries]);
   }
 
   public entries(): NonEmptyArray<O> {
     return this._entries;
   }
 
-  public sum(): Unit<C> {
+  public sum(): Unit<ExtractUnitCode<O>> {
     return this.operationsSum;
   }
 }

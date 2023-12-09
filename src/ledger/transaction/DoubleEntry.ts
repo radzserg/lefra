@@ -3,23 +3,28 @@ import { LedgerError } from '@/errors.js';
 import { EntriesRenderer } from '@/ledger/renderer/EntriesRenderer.js';
 import { EntriesWithSameAction } from '@/ledger/transaction/EntriesWithSameAction.js';
 import { UnitCode } from '@/ledger/units/Unit.js';
-import { NonEmptyArray } from '@/types.js';
+import { ExtractUnitCode, NonEmptyArray } from '@/types.js';
 
 /**
  * Represents double-entry bookkeeping entry. This means that the sum of all
  * debit entries must be equal to the sum of all credit entries.
  */
-export type DoubleEntry<C extends UnitCode> = {
+export type DoubleEntry<U extends UnitCode> = {
   readonly comment: string | null;
-  readonly creditEntries: NonEmptyArray<CreditEntry<C>>;
-  readonly debitEntries: NonEmptyArray<DebitEntry<C>>;
+  readonly creditEntries: NonEmptyArray<CreditEntry<U>>;
+  readonly debitEntries: NonEmptyArray<DebitEntry<U>>;
 };
 
-export const doubleEntry = <C extends UnitCode>(
-  debitEntries: DebitEntry<C> | NonEmptyArray<DebitEntry<C>>,
-  creditEntries: CreditEntry<C> | NonEmptyArray<CreditEntry<C>>,
+export const doubleEntry = <
+  D extends DebitEntry<UnitCode> | NonEmptyArray<DebitEntry<UnitCode>>,
+  C extends
+    | CreditEntry<ExtractUnitCode<D>>
+    | NonEmptyArray<CreditEntry<ExtractUnitCode<D>>>,
+>(
+  debitEntries: D,
+  creditEntries: C,
   comment: string | null = null,
-): DoubleEntry<C> => {
+): DoubleEntry<ExtractUnitCode<D>> => {
   const debitEntriesSet = EntriesWithSameAction.build(debitEntries);
   const creditEntriesSet = EntriesWithSameAction.build(creditEntries);
 

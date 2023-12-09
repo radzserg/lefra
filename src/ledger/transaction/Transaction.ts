@@ -1,6 +1,7 @@
 import { Entry } from './Entry.js';
 import { LedgerUnexpectedError } from '@/errors.js';
 import { TransactionDoubleEntries } from '@/ledger/transaction/TransactionDoubleEntries.js';
+import { UnitCode } from '@/ledger/units/Unit.js';
 import { NonEmptyArray } from '@/types.js';
 import { isNonEmptyArray } from '@/utils.js';
 
@@ -8,13 +9,13 @@ import { isNonEmptyArray } from '@/utils.js';
  * Represents a transaction in the ledger.
  * Transaction is a set of entries that are applied atomically.
  */
-export class Transaction {
-  public readonly entries: NonEmptyArray<Entry>;
+export class Transaction<U extends UnitCode> {
+  public readonly entries: NonEmptyArray<Entry<U>>;
 
   public readonly ledgerSlug: string;
 
   public constructor(
-    public readonly transactionDoubleEntries: TransactionDoubleEntries,
+    public readonly transactionDoubleEntries: TransactionDoubleEntries<U>,
     public readonly description: string | null = null,
     public readonly postedAt: Date | null = new Date(),
   ) {
