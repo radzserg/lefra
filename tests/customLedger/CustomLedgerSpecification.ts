@@ -4,6 +4,7 @@
  *
  */
 export const CustomLedgerSpecification = {
+  currencyCode: 'USD',
   entityAccountTypes: [
     'USER_PAYABLES',
     'USER_PAYABLES_LOCKED',

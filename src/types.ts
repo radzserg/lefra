@@ -61,6 +61,7 @@ export type PersistedEntry = Persisted<EntryInput>;
 export type PersistedLedgerCurrency = Persisted<InputLedgerCurrency>;
 
 export type LedgerSpecification = {
+  currencyCode: string;
   entityAccountTypes: readonly string[];
   slug: string;
   systemAccounts: readonly string[];
