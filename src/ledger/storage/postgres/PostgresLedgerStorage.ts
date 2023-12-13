@@ -14,12 +14,23 @@ import {
   InputLedgerCurrency,
   LedgerInput,
   PersistedEntry,
+  PersistedLedger,
   PersistedLedgerAccount,
   PersistedLedgerAccountType,
   PersistedTransaction,
 } from '@/types.js';
 import { DatabaseConnection, sql } from 'slonik';
 import { z } from 'zod';
+
+const LedgerShape = z
+  .object({
+    description: z.string(),
+    id: databaseIdSchema,
+    ledgerCurrencyId: databaseIdSchema,
+    name: z.string(),
+    slug: z.string(),
+  })
+  .strict();
 
 const LedgerAccountTypeShape = z
   .object({
@@ -302,7 +313,7 @@ export class PostgresLedgerStorage implements LedgerStorage {
         SELECT calculate_balance_for_ledger_account(${id}) amount;
       `,
     );
-    const ledgerId = await this.getLedgerIdBySlug(account.ledgerSlug);
+    const { id: ledgerId } = await this.getLedgerIdBySlug(account.ledgerSlug);
     const currency = await this.getLedgerCurrency(ledgerId);
 
     return new Unit(
@@ -313,7 +324,7 @@ export class PostgresLedgerStorage implements LedgerStorage {
   }
 
   private async getLedgerAccountId(account: LedgerAccountRef): Promise<number> {
-    const ledgerId = await this.getLedgerIdBySlug(account.ledgerSlug);
+    const { id: ledgerId } = await this.getLedgerIdBySlug(account.ledgerSlug);
     const ledgerAccount = await this.connection.maybeOne(
       sql.type(
         z
@@ -393,18 +404,15 @@ export class PostgresLedgerStorage implements LedgerStorage {
     );
   }
 
-  public async getLedgerIdBySlug(slug: string): Promise<DB_ID> {
+  public async getLedgerIdBySlug(slug: string): Promise<PersistedLedger> {
     const ledger = await this.connection.maybeOne(
-      sql.type(
-        z
-          .object({
-            id: databaseIdSchema,
-          })
-          .strict(),
-      )`
-        
+      sql.type(LedgerShape)`      
         SELECT 
-          l.id
+          l.id,
+          l.name,
+          l.description,
+          l.slug,
+          l.ledger_currency_id
         FROM ledger l
         WHERE
           l.slug = ${slug}
@@ -414,7 +422,7 @@ export class PostgresLedgerStorage implements LedgerStorage {
       throw new LedgerNotFoundError(`Ledger ${slug} is not found`);
     }
 
-    return ledger.id;
+    return ledger;
   }
 
   public async upsertAccount({
@@ -463,7 +471,9 @@ export class PostgresLedgerStorage implements LedgerStorage {
   public async insertTransaction(
     ledgerTransaction: Transaction,
   ): Promise<PersistedTransaction> {
-    const ledgerId = await this.getLedgerIdBySlug(ledgerTransaction.ledgerSlug);
+    const { id: ledgerId } = await this.getLedgerIdBySlug(
+      ledgerTransaction.ledgerSlug,
+    );
     const postedAt = ledgerTransaction.postedAt ?? new Date();
 
     return await this.connection.transaction(async (transaction) => {

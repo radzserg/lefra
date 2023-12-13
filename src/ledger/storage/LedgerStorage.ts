@@ -71,7 +71,7 @@ export type LedgerStorage = {
   /**
    * Return the ledger id for the given slug.
    */
-  getLedgerIdBySlug: (slug: string) => Promise<DB_ID>;
+  getLedgerIdBySlug: (slug: string) => Promise<PersistedLedger>;
 
   /**
    * Returns transaction by given ID.

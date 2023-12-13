@@ -165,7 +165,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
       throw new LedgerNotFoundError(`Ledger ${slug} not found`);
     }
 
-    return existingLedger.id;
+    return existingLedger;
   }
 
   public async findLedgerIdBySlug(slug: string) {
@@ -184,7 +184,9 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   }
 
   public async insertTransaction(transaction: Transaction) {
-    const ledgerId = await this.getLedgerIdBySlug(transaction.ledgerSlug);
+    const { id: ledgerId } = await this.getLedgerIdBySlug(
+      transaction.ledgerSlug,
+    );
     const savedTransaction: PersistedTransaction = {
       description: transaction.description,
       id: this.idGenerator.generateId(),
@@ -263,7 +265,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
         throw new LedgerError(`Account type ${account.accountSlug} not found`);
       }
 
-      const ledgerId = await this.getLedgerIdBySlug(account.ledgerSlug);
+      const { id: ledgerId } = await this.getLedgerIdBySlug(account.ledgerSlug);
       const accountTypesBelongsToLedger = this.ledgerLedgerAccountTypes.find(
         (ledgerLedgerAccountType) =>
           ledgerLedgerAccountType.ledgerId === ledgerId,
@@ -377,7 +379,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   public async findAccount(
     account: LedgerAccountRef,
   ): Promise<PersistedLedgerAccount | null> {
-    const ledgerId = await this.getLedgerIdBySlug(account.ledgerSlug);
+    const { id: ledgerId } = await this.getLedgerIdBySlug(account.ledgerSlug);
     const foundAccount = this.accounts.find((savedAccount) => {
       return (
         savedAccount.slug === account.accountSlug &&
