@@ -17,6 +17,15 @@ import {
 
 export type LedgerStorage = {
   /**
+   * Assigns ledger account type to the ledger account.
+   * @param parameters
+   */
+  assignAccountTypeToLedger: (parameters: {
+    accountTypeId: DB_ID;
+    ledgerId: DB_ID;
+  }) => Promise<void>;
+
+  /**
    * Fetches the current balance of the account.
    */
   fetchAccountBalance: (
@@ -37,6 +46,27 @@ export type LedgerStorage = {
   findAccountTypeBySlug: (
     slug: string,
   ) => Promise<PersistedLedgerAccountType | null>;
+
+  /**
+   * Return entity account types.
+   */
+  findEntityAccountTypes: (
+    ledgerId: DB_ID,
+  ) => Promise<readonly PersistedLedgerAccountType[]>;
+
+  /**
+   * Return entity account types.
+   */
+  findSystemAccounts: (
+    ledgerId: DB_ID,
+  ) => Promise<readonly PersistedLedgerAccount[]>;
+
+  /**
+   * Returns ledger currency
+   */
+  getLedgerCurrency: (
+    ledgerId: DB_ID,
+  ) => Promise<{ currencyCode: UnitCode; minimumFractionDigits: number }>;
 
   /**
    * Return the ledger id for the given slug.

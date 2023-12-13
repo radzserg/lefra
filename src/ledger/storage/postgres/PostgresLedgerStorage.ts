@@ -263,6 +263,30 @@ export class PostgresLedgerStorage implements LedgerStorage {
     };
   }
 
+  /**
+   * Assigns ledger account type to the ledger account
+   */
+  public async assignAccountTypeToLedger({
+    accountTypeId,
+    ledgerId,
+  }: {
+    accountTypeId: DB_ID;
+    ledgerId: DB_ID;
+  }) {
+    await this.connection.query(
+      sql.type(z.object({}))`
+        INSERT INTO ledger_ledger_account_type (       
+          ledger_id, 
+          ledger_account_type_id
+        ) 
+        VALUES (
+          ${ledgerId}, 
+          ${accountTypeId}
+        )      
+      `,
+    );
+  }
+
   public async fetchAccountBalance(
     account: LedgerAccountRef,
   ): Promise<Unit<UnitCode> | null> {
@@ -313,7 +337,7 @@ export class PostgresLedgerStorage implements LedgerStorage {
     return ledgerAccount.id;
   }
 
-  private async getLedgerCurrency(
+  public async getLedgerCurrency(
     ledgerId: DB_ID,
   ): Promise<{ currencyCode: UnitCode; minimumFractionDigits: number }> {
     const ledger = await this.connection.maybeOne(
@@ -534,7 +558,7 @@ export class PostgresLedgerStorage implements LedgerStorage {
         parent_ledger_account_type_id
       FROM ledger_account_type lat
       WHERE
-          lat.id = ${id}
+        lat.id = ${id}
     `);
 
     if (!foundAccountType) {
@@ -546,16 +570,55 @@ export class PostgresLedgerStorage implements LedgerStorage {
 
   private async findSavedAccount(ledgerId: DB_ID, accountSlug: string) {
     return await this.connection.maybeOne(sql.type(LedgerAccountShape)`
-        SELECT
-          id,
-          ledger_id,
-          ledger_account_type_id,
-          slug,
-          description
-        FROM ledger_account la
-        WHERE
-          la.ledger_id = ${ledgerId} AND
-          la.slug = ${accountSlug}
+      SELECT
+        id,
+        ledger_id,
+        ledger_account_type_id,
+        slug,
+        description
+      FROM ledger_account la
+      WHERE
+        la.ledger_id = ${ledgerId} AND
+        la.slug = ${accountSlug}
+    `);
+  }
+
+  public async findEntityAccountTypes(
+    ledgerId: DB_ID,
+  ): Promise<readonly PersistedLedgerAccountType[]> {
+    return await this.connection.any(sql.type(LedgerAccountTypeShape)`
+      SELECT
+        lat.id,
+        lat.slug,
+        lat.name,
+        lat.description,
+        lat.normal_balance,
+        lat.is_entity_ledger_account,
+        lat.parent_ledger_account_type_id
+      FROM ledger_account_type lat
+      INNER JOIN ledger_ledger_account_type llat
+        ON lat.id = llat.ledger_account_type_id
+      WHERE
+        llat.ledger_id = ${ledgerId}
+        AND lat.is_entity_ledger_account = true
+    `);
+  }
+
+  public async findSystemAccounts(
+    ledgerId: DB_ID,
+  ): Promise<readonly PersistedLedgerAccount[]> {
+    return await this.connection.any(sql.type(LedgerAccountShape)`
+      SELECT
+        la.id,
+        la.ledger_id,
+        la.ledger_account_type_id,
+        la.slug,
+        la.description
+      FROM ledger_account la
+      INNER JOIN ledger_account_type lat ON lat.id = la.ledger_account_type_id
+      WHERE
+        la.ledger_id = ${ledgerId}
+        AND lat.is_entity_ledger_account = false
     `);
   }
 }

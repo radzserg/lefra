@@ -105,6 +105,25 @@ CREATE TRIGGER update_user_task_updated_on
   BEFORE UPDATE ON ledger_account FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at();
 
+-- create ledger_ledger_account_type
+
+create table ledger_ledger_account_type
+(
+  id integer generated always as identity primary key,
+  ledger_id int not null references ledger,
+  ledger_account_type_id int not null references ledger_account_type,
+  created_at timestamp with time zone default now() not null,
+  updated_at timestamp with time zone default now() not null
+);
+
+comment on table ledger_ledger_account_type is 'This table is used to specify which ledger account types are available on a given ledger. This is used to restrict which account types can be used on a given ledger.';
+comment on column ledger_ledger_account_type.ledger_id is 'ID of the ledger';
+comment on column ledger_ledger_account_type.ledger_account_type_id is 'ID of the ledger account type';
+
+create unique index ledger_ledger_account_type_unique_idx
+  on ledger_ledger_account_type (ledger_id, ledger_account_type_id);
+
+
 -- create ledger_transaction
 
 create table ledger_transaction
@@ -330,8 +349,12 @@ BEGIN
   END IF;
 
   SELECT *
-  FROM ledger_account_type
-  WHERE slug = input_ledger_account_type_slug
+  FROM ledger_account_type lat
+  INNER JOIN ledger_ledger_account_type llat
+    ON lat.id = llat.ledger_account_type_id
+  WHERE
+    slug = input_ledger_account_type_slug
+    AND llat.ledger_id = input_ledger_id
   INTO account_type;
 
   IF account_type.id IS NULL THEN
@@ -364,14 +387,22 @@ $$;
 
 
 
--- INSERT INTO ledger (currency_code, slug, name, description, created_at, updated_at)
--- VALUES (1, 'PLATFORM_USD', 'Platform USD', 'The main ledger used for the platform', '2022-09-06 17:25:46.210416 +00:00', '2022-09-06 17:25:46.210416 +00:00');
---
---
--- INSERT INTO ledger_account_type (slug, name, normal_balance, is_entity_ledger_account)
--- VALUES
---   ('ASSETS', 'Assets', 'DEBIT', false),
---   ('LIABILITIES', 'Liabilities', 'CREDIT', false),
---   ('EQUITY', 'Equity', 'CREDIT', false),
---   ('INCOME', 'Income', 'CREDIT', false),
---   ('EXPENSES', 'Expenses', 'DEBIT', false);
+/*
+INSERT INTO ledger_currency(code, symbol, minimum_fraction_digits)
+VALUES ('USD', '$', 2);
+
+INSERT INTO ledger (ledger_currency_id, slug, name, description, created_at, updated_at)
+VALUES (1, 'PLATFORM_USD', 'Platform USD', 'The main ledger used for the platform', '2022-09-06 17:25:46.210416 +00:00', '2022-09-06 17:25:46.210416 +00:00');
+
+
+INSERT INTO ledger_account_type (slug, name, normal_balance, is_entity_ledger_account)
+VALUES
+  ('ASSETS', 'Assets', 'DEBIT', false),
+  ('LIABILITIES', 'Liabilities', 'CREDIT', false),
+  ('EQUITY', 'Equity', 'CREDIT', false),
+  ('INCOME', 'Income', 'CREDIT', false),
+  ('EXPENSES', 'Expenses', 'DEBIT', false);
+
+  
+
+*/

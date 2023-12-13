@@ -54,7 +54,7 @@ export const buildCustomLedger = async (storage: LedgerStorage) => {
   });
 
   for (const [name, [normalBalance]] of Object.entries(systemAccountTypes)) {
-    await storage.insertAccountType({
+    const accountType = await storage.insertAccountType({
       description: '',
       isEntityLedgerAccount: false,
       name,
@@ -62,16 +62,24 @@ export const buildCustomLedger = async (storage: LedgerStorage) => {
       parentLedgerAccountTypeId: null,
       slug: name,
     });
+    await storage.assignAccountTypeToLedger({
+      accountTypeId: accountType.id,
+      ledgerId,
+    });
   }
 
   for (const [name, [normalBalance]] of Object.entries(userAccountTypes)) {
-    await storage.insertAccountType({
+    const accountType = await storage.insertAccountType({
       description: '',
       isEntityLedgerAccount: true,
       name,
       normalBalance: normalBalance as NormalBalance,
       parentLedgerAccountTypeId: null,
       slug: name,
+    });
+    await storage.assignAccountTypeToLedger({
+      accountTypeId: accountType.id,
+      ledgerId,
     });
   }
 

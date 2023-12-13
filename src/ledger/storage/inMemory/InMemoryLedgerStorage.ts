@@ -40,6 +40,11 @@ export class InMemoryLedgerStorage implements LedgerStorage {
 
   public entries: PersistedEntry[] = [];
 
+  public ledgerLedgerAccountTypes: Array<{
+    ledgerAccountTypeId: DB_ID;
+    ledgerId: DB_ID;
+  }> = [];
+
   private readonly idGenerator: UuidDatabaseIdGenerator =
     new UuidDatabaseIdGenerator();
 
@@ -114,6 +119,19 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     };
     this.accountTypes.push(persistedLedgerAccountType);
     return persistedLedgerAccountType;
+  }
+
+  public async assignAccountTypeToLedger({
+    accountTypeId,
+    ledgerId,
+  }: {
+    accountTypeId: DB_ID;
+    ledgerId: DB_ID;
+  }) {
+    this.ledgerLedgerAccountTypes.push({
+      ledgerAccountTypeId: accountTypeId,
+      ledgerId,
+    });
   }
 
   public async upsertAccount({
@@ -245,13 +263,22 @@ export class InMemoryLedgerStorage implements LedgerStorage {
         throw new LedgerError(`Account type ${account.accountSlug} not found`);
       }
 
+      const ledgerId = await this.getLedgerIdBySlug(account.ledgerSlug);
+      const accountTypesBelongsToLedger = this.ledgerLedgerAccountTypes.find(
+        (ledgerLedgerAccountType) =>
+          ledgerLedgerAccountType.ledgerId === ledgerId,
+      );
+      if (!accountTypesBelongsToLedger) {
+        throw new LedgerError(
+          `Account type ${account.accountSlug} not found for ledger ${account.ledgerSlug}`,
+        );
+      }
+
       if (!accountType.isEntityLedgerAccount) {
         throw new LedgerError(
           `Account ${account.accountSlug} cannot be inserted. Only entity accounts can be inserted`,
         );
       }
-
-      const ledgerId = await this.getLedgerIdBySlug(account.ledgerSlug);
 
       await this.upsertAccount({
         description: accountType.description
@@ -311,7 +338,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
         );
       }
 
-      const currency = await this.getLedgerCurrency(ledger.ledgerCurrencyId);
+      const currency = await this.getLedgerCurrency(ledger.id);
 
       return new Unit(0, currency.currencyCode, currency.minimumFractionDigits);
     }
@@ -422,9 +449,52 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     return transaction;
   }
 
-  private async getLedgerCurrency(
-    ledgerCurrencyId: DB_ID,
+  /**
+   * Return entity account types.
+   */
+  public async findEntityAccountTypes(
+    ledgerId: DB_ID,
+  ): Promise<PersistedLedgerAccountType[]> {
+    const ledgerAccountTypeIds = this.ledgerLedgerAccountTypes
+      .filter(
+        (ledgerLedgerAccountType) =>
+          ledgerLedgerAccountType.ledgerId === ledgerId,
+      )
+      .map(
+        (ledgerLedgerAccountType) =>
+          ledgerLedgerAccountType.ledgerAccountTypeId,
+      );
+    return this.accountTypes.filter(
+      (accountType) =>
+        accountType.isEntityLedgerAccount &&
+        ledgerAccountTypeIds.includes(accountType.id),
+    );
+  }
+
+  /**
+   * Return entity account types.
+   */
+  public async findSystemAccounts(
+    ledgerId: DB_ID,
+  ): Promise<PersistedLedgerAccount[]> {
+    return this.accounts.filter((account) => account.ledgerId === ledgerId);
+  }
+
+  /**
+   * Returns ledger currency
+   */
+  public async getLedgerCurrency(
+    ledgerId: DB_ID,
   ): Promise<{ currencyCode: UnitCode; minimumFractionDigits: number }> {
+    const ledger = this.ledgers.find((savedLedger) => {
+      return savedLedger.id === ledgerId;
+    });
+    if (!ledger) {
+      throw new LedgerNotFoundError(`Ledger ${ledgerId} not found`);
+    }
+
+    const ledgerCurrencyId = ledger.ledgerCurrencyId;
+
     const foundCurrency = this.currencies.find(
       (currency) => currency.id === ledgerCurrencyId,
     );
