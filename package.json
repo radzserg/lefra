@@ -39,7 +39,7 @@
   "license": "ISC",
   "name": "ledger",
   "scripts": {
-    "generate": "tsx ./src/bin/generateLedger.ts",
+    "generate": "tsx ./src/application/bin/generateLedgerSpecification.ts",
     "lint:eslint": "eslint .",
     "lint:format": "eslint --fix $FILES",
     "test": "vitest",

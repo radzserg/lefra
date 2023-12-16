@@ -20,6 +20,7 @@ describe('CustomLedgerSpecGenerator', () => {
     const spec = await generator.generate({
       className: 'MyCompanyLedgerSpecification',
       ledgerSlug: 'PLATFORM_USD',
+      mode: 'output',
     });
     expect(spec).toEqual(`
 export const MyCompanyLedgerSpecification = {

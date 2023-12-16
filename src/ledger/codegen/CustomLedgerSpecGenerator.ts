@@ -1,9 +1,18 @@
 import { LedgerStorage } from '@/ledger/storage/LedgerStorage.js';
+import * as fs from 'node:fs';
 
+type SaveMode =
+  | {
+      mode: 'file';
+      path: string;
+    }
+  | {
+      mode: 'output';
+    };
 type GenerateCustomLedgerSpecOptions = {
   className: string;
   ledgerSlug: string;
-};
+} & SaveMode;
 
 export class CustomLedgerSpecGenerator {
   public constructor(private readonly storage: LedgerStorage) {}
@@ -11,7 +20,8 @@ export class CustomLedgerSpecGenerator {
   public async generate({
     className,
     ledgerSlug,
-  }: GenerateCustomLedgerSpecOptions) {
+    ...props
+  }: GenerateCustomLedgerSpecOptions): Promise<string | null> {
     const { id: ledgerId, slug } =
       await this.storage.getLedgerIdBySlug(ledgerSlug);
     const currency = await this.storage.getLedgerCurrency(ledgerId);
@@ -28,8 +38,7 @@ export class CustomLedgerSpecGenerator {
       .map((systemAccount) => `    '${systemAccount.slug}'`)
       .join(',\n');
 
-    const spec = `
-export const ${className} = {
+    const spec = `export const ${className} = {
   currencyCode: '${currency.currencyCode}',
   entityAccountTypes: [
 ${entityAccountTypesString}
@@ -40,6 +49,11 @@ ${systemAccountsString}
   ] as const,
 };
 `;
-    return spec;
+    if (props.mode === 'file') {
+      fs.writeFileSync(props.path, spec);
+      return null;
+    } else {
+      return spec;
+    }
   }
 }
