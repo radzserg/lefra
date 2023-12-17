@@ -3,6 +3,7 @@
   "compilerOptions": {
     "allowJs": false,
     "allowSyntheticDefaultImports": true,
+    "rootDir": "./src",
     "checkJs": false,
     "declaration": true,
     "declarationMap": true,
@@ -11,7 +12,7 @@
     "isolatedModules": true,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "noEmit": true,
+    "noEmit": false,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": false,
     "noImplicitReturns": true,
@@ -20,9 +21,10 @@
     "noUncheckedIndexedAccess": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
+    "outDir": "./dist",
     "paths": {
       "#/*": [
-        "./tests/*"
+        "./src/tests/*"
       ],
       "@/*": [
         "./src/*"

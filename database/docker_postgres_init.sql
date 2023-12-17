@@ -383,26 +383,3 @@ BEGIN
   RETURN ledger_account_id;
 END;
 $$;
-
-
-
-
-/*
-INSERT INTO ledger_currency(code, symbol, minimum_fraction_digits)
-VALUES ('USD', '$', 2);
-
-INSERT INTO ledger (ledger_currency_id, slug, name, description, created_at, updated_at)
-VALUES (1, 'PLATFORM_USD', 'Platform USD', 'The main ledger used for the platform', '2022-09-06 17:25:46.210416 +00:00', '2022-09-06 17:25:46.210416 +00:00');
-
-
-INSERT INTO ledger_account_type (slug, name, normal_balance, is_entity_ledger_account)
-VALUES
-  ('ASSETS', 'Assets', 'DEBIT', false),
-  ('LIABILITIES', 'Liabilities', 'CREDIT', false),
-  ('EQUITY', 'Equity', 'CREDIT', false),
-  ('INCOME', 'Income', 'CREDIT', false),
-  ('EXPENSES', 'Expenses', 'DEBIT', false);
-
-  
-
-*/

@@ -22,8 +22,8 @@ describe('CustomLedgerSpecGenerator', () => {
       ledgerSlug: 'PLATFORM_USD',
       mode: 'output',
     });
-    expect(spec).toEqual(`
-export const MyCompanyLedgerSpecification = {
+    expect(spec).toEqual(
+      `export const MyCompanyLedgerSpecification = {
   currencyCode: 'USD',
   entityAccountTypes: [
     'USER_PAYABLES',
@@ -44,6 +44,7 @@ export const MyCompanyLedgerSpecification = {
     'SYSTEM_INCOME_STRIPE_PAY_IN_FEES'
   ] as const,
 };
-`);
+`,
+    );
   });
 });
