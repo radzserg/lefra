@@ -1,5 +1,6 @@
+import { LedgerOperationError } from '@/errors.js';
 import { LedgerAccountsRefBuilder } from '@/ledger/accounts/LedgerAccountsRefBuilder.js';
-import { LedgerOperation } from '@/ledger/operation/LedgerOperation.js';
+import { ILedgerOperation } from '@/ledger/operation/LedgerOperation.js';
 import { databaseIdSchema } from '@/ledger/storage/validation.js';
 import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
@@ -29,15 +30,22 @@ export type ProjectStartedOperationData = z.infer<OperationSchema>;
  * Part of money is locked for the customer. Another part is immediately
  * available for the customer to payout.
  */
-export class ProjectStartedOperation extends LedgerOperation<typeof schema> {
-  protected declare payload: ProjectStartedOperationData;
-
+export class ProjectStartedOperation implements ILedgerOperation {
   private readonly ledgerAccountsRefBuilder = new LedgerAccountsRefBuilder(
     CustomLedgerSpecification,
   );
 
-  public constructor(payload: ProjectStartedOperationData) {
-    super(schema, payload);
+  public constructor(protected readonly payload: ProjectStartedOperationData) {
+    const result = schema.safeParse(this.payload);
+
+    // If validation of the payload fails we throw an error.
+    if (!result.success) {
+      const issues = result.error.issues;
+      const errorDetails = issues.map((issue) => issue.toString).join(', ');
+      throw new LedgerOperationError(
+        `Invalid operation data. Details: ${errorDetails}`,
+      );
+    }
   }
 
   public async createTransaction() {
