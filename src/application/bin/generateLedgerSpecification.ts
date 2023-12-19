@@ -7,7 +7,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
 const argv = yargs(hideBin(process.argv))
-  .env('RSL')
+  .env('LFR')
   .usage('Usage: $0 -l [string]')
   .example(
     'generate -l PLATFORM_USD -p ./MyLedger.ts',
