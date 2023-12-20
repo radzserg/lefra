@@ -174,6 +174,31 @@ CREATE TRIGGER update_user_task_updated_on
 EXECUTE PROCEDURE update_updated_at();
 
 
+create function ledger_transaction_entry_after_insert_trigger() returns trigger
+  language plpgsql
+as
+$$
+BEGIN
+  -- Ensure total debits == total credits
+  IF
+    (SELECT COALESCE(sum(amount), 0) FROM ledger_transaction_entry WHERE ledger_transaction_id = NEW.ledger_transaction_id AND action = 'DEBIT')
+      !=
+    (SELECT COALESCE(sum(amount), 0) FROM ledger_transaction_entry WHERE ledger_transaction_id = NEW.ledger_transaction_id AND action = 'CREDIT')
+  THEN
+    RAISE EXCEPTION 'Debits != Credits for Ledger Transaction Entries';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+create constraint trigger ledger_transaction_entry_after_insert_trigger
+  after insert or update
+  on ledger_transaction_entry
+  deferrable initially deferred
+  for each row
+execute procedure ledger_transaction_entry_after_insert_trigger();
+
 CREATE OR REPLACE FUNCTION sum_up_ledger_account_balance(
   input_ledger_account_id int,
   input_sum_debits NUMERIC(18,8),

@@ -1,7 +1,7 @@
 {
   "author": "Sergey Radzishevskii <radzserg@gmail.com>",
   "bin": {
-    "lefra": "./dist/application/bin/generateLedgerSpecification.js"
+    "lefra": "./dist/application/bin/lefra.js"
   },
   "dependencies": {
     "bignumber.js": "^9.1.2",
@@ -44,7 +44,7 @@
   "name": "lefra",
   "scripts": {
     "build": "tsc && tsc-alias",
-    "generate": "tsx ./src/application/bin/generateLedgerSpecification.ts",
+    "lefra": "tsx ./src/application/bin/lefra.ts",
     "lint:eslint": "eslint .",
     "lint:format": "eslint --fix $FILES",
     "test": "vitest",
