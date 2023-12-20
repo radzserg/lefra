@@ -1,219 +1,266 @@
 CREATE FUNCTION update_updated_at()
-  RETURNS TRIGGER AS $$
+  RETURNS trigger AS
+$$
 BEGIN
-  NEW.updated_at = now();
-  RETURN NEW;
+  new.updated_at = NOW();
+  RETURN new;
 END;
-$$ language 'plpgsql';
+$$ LANGUAGE 'plpgsql';
 
-CREATE TYPE credit_or_debit as ENUM (
+CREATE TYPE credit_or_debit AS enum (
   'CREDIT',
   'DEBIT'
   );
 
-CREATE DOMAIN slug_text AS TEXT;
+CREATE DOMAIN slug_text AS text;
 
-create table ledger_currency
+CREATE TABLE ledger_currency
 (
-  id integer generated always as identity primary key,
-  code text not null constraint currency_code_check check (code = upper(code)),
-  symbol text not null,
-  minimum_fraction_digits integer not null constraint minimum_fraction_digits_check check (minimum_fraction_digits > 0 AND minimum_fraction_digits < 21),
-  created_at timestamp with time zone default now() not null,
-  updated_at timestamp with time zone default now() not null
+  id integer GENERATED ALWAYS AS IDENTITY
+    PRIMARY KEY,
+  code text NOT NULL
+    CONSTRAINT currency_code_check
+      CHECK (code = UPPER(code)),
+  symbol text NOT NULL,
+  minimum_fraction_digits integer NOT NULL
+    CONSTRAINT minimum_fraction_digits_check
+      CHECK (minimum_fraction_digits > 0 AND minimum_fraction_digits < 21),
+  created_at timestamp WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  updated_at timestamp WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
 
 CREATE TRIGGER update_user_task_updated_on
-  BEFORE UPDATE ON ledger_currency FOR EACH ROW
+  BEFORE UPDATE
+  ON ledger_currency
+  FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at();
 
-comment on table ledger_currency is 'Stores the currencies available in the ledger system. This can be fiat or crypto currencies, points or other types of currency.';
-comment on column ledger_currency.code is 'Currency code. Should be in ISO 4217 format for fiat currencies. For crypto currencies, it should be the ticker symbol';
-comment on column ledger_currency.symbol is 'Currency symbol. For fiat currencies, this should be the symbol used in the locale. For crypto currencies, this should be the ticker symbol';
-comment on column ledger_currency.minimum_fraction_digits is 'Minimum number of digits to display after the decimal point. For fiat currencies, this should be the number of digits used in the locale. For crypto currencies, this should be the number of digits used in the ticker symbol';
+COMMENT ON TABLE ledger_currency IS 'Stores the currencies available in the ledger system. This can be fiat or crypto currencies, points or other types of currency.';
+COMMENT ON COLUMN ledger_currency.code IS 'Currency code. Should be in ISO 4217 format for fiat currencies. For crypto currencies, it should be the ticker symbol';
+COMMENT ON COLUMN ledger_currency.symbol IS 'Currency symbol. For fiat currencies, this should be the symbol used in the locale. For crypto currencies, this should be the ticker symbol';
+COMMENT ON COLUMN ledger_currency.minimum_fraction_digits IS 'Minimum number of digits to display after the decimal point. For fiat currencies, this should be the number of digits used in the locale. For crypto currencies, this should be the number of digits used in the ticker symbol';
 
 -- create ledger
-create table ledger
+CREATE TABLE ledger
 (
-  id integer generated always as identity primary key,
-  slug slug_text not null,
-  name text not null,
-  description text not null,
-  ledger_currency_id  integer references ledger_currency on delete restrict,
-  created_at timestamp with time zone default now() not null,
-  updated_at timestamp with time zone default now() not null
+  id integer GENERATED ALWAYS AS IDENTITY
+    PRIMARY KEY,
+  slug slug_text NOT NULL,
+  name text NOT NULL,
+  description text NOT NULL,
+  ledger_currency_id integer
+    REFERENCES ledger_currency
+      ON DELETE RESTRICT,
+  created_at timestamp WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  updated_at timestamp WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
 
-create index ledger_ledger_currency_id_idx
-  on ledger (ledger_currency_id);
+CREATE INDEX ledger_ledger_currency_id_idx
+  ON ledger (ledger_currency_id);
 
-create unique index ledger_slug_idx on ledger (slug);
-comment on table ledger is 'Stores the double entry ledgers available in the system';
+CREATE UNIQUE INDEX ledger_slug_idx ON ledger (slug);
+COMMENT ON TABLE ledger IS 'Stores the double entry ledgers available in the system';
 
 CREATE TRIGGER update_user_task_updated_on
-  BEFORE UPDATE ON ledger FOR EACH ROW
+  BEFORE UPDATE
+  ON ledger
+  FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at();
 
 
-create table ledger_account_type
+CREATE TABLE ledger_account_type
 (
-  id integer generated always as identity primary key,
-  slug slug_text not null,
-  name text not null,
-  normal_balance credit_or_debit not null,
-  is_entity_ledger_account boolean not null,
+  id integer GENERATED ALWAYS AS IDENTITY
+    PRIMARY KEY,
+  slug slug_text NOT NULL,
+  name text NOT NULL,
+  normal_balance credit_or_debit NOT NULL,
+  is_entity_ledger_account boolean NOT NULL,
   description text,
-  parent_ledger_account_type_id  integer references ledger_account_type on delete restrict,
-  created_at timestamp with time zone default now() not null,
-  updated_at timestamp with time zone default now() not null
+  parent_ledger_account_type_id integer
+    REFERENCES ledger_account_type
+      ON DELETE RESTRICT,
+  created_at timestamp WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  updated_at timestamp WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
 
-comment on table ledger_account_type is 'Each account on the ledger must specify it''s type. This table contains all of the available types. Account types can be nested via parent_ledger_account_type_id';
-comment on column ledger_account_type.name is 'Human readable account name for debugging purposes and for use in external accounting software';
-comment on column ledger_account_type.is_entity_ledger_account is 'Whether or not this ledger account should be attached to a entity record(user, organization, team, etc.)';
-comment on column ledger_account_type.parent_ledger_account_type_id is 'If this value is set, it means the account type is a sub-type of the associated type';
+COMMENT ON TABLE ledger_account_type IS 'Each account on the ledger must specify it''s type. This table contains all of the available types. Account types can be nested via parent_ledger_account_type_id';
+COMMENT ON COLUMN ledger_account_type.name IS 'Human readable account name for debugging purposes and for use in external accounting software';
+COMMENT ON COLUMN ledger_account_type.is_entity_ledger_account IS 'Whether or not this ledger account should be attached to a entity record(user, organization, team, etc.)';
+COMMENT ON COLUMN ledger_account_type.parent_ledger_account_type_id IS 'If this value is set, it means the account type is a sub-type of the associated type';
 
-create index ledger_account_type_parent_ledger_account_type_id_idx
-  on ledger_account_type (parent_ledger_account_type_id);
+CREATE INDEX ledger_account_type_parent_ledger_account_type_id_idx
+  ON ledger_account_type (parent_ledger_account_type_id);
 
-create unique index ledger_account_type_slug_idx on ledger_account_type (slug);
+CREATE UNIQUE INDEX ledger_account_type_slug_idx ON ledger_account_type (slug);
 
 CREATE TRIGGER update_user_task_updated_on
-  BEFORE UPDATE ON ledger_account_type FOR EACH ROW
+  BEFORE UPDATE
+  ON ledger_account_type
+  FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at();
 
 
 -- create ledger_account
-create table ledger_account
+CREATE TABLE ledger_account
 (
-  id integer generated always as identity primary key,
-  ledger_id integer not null references ledger on delete restrict,
-  ledger_account_type_id integer not null references ledger_account_type on delete restrict,
+  id integer GENERATED ALWAYS AS IDENTITY
+    PRIMARY KEY,
+  ledger_id integer NOT NULL
+    REFERENCES ledger
+      ON DELETE RESTRICT,
+  ledger_account_type_id integer NOT NULL
+    REFERENCES ledger_account_type
+      ON DELETE RESTRICT,
   slug slug_text NOT NULL,
   description text,
-  created_at timestamp with time zone default now() not null,
-  updated_at timestamp with time zone default now() not null
+  created_at timestamp WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  updated_at timestamp WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
 
-comment on table ledger_account is 'Represents an account on a given ledger. These accounts are used for ledger transactions';
-comment on column ledger_account.description is 'Human readable account name for debugging purposes and for use in external accounting software';
+COMMENT ON TABLE ledger_account IS 'Represents an account on a given ledger. These accounts are used for ledger transactions';
+COMMENT ON COLUMN ledger_account.description IS 'Human readable account name for debugging purposes and for use in external accounting software';
 
-create unique index ledger_account_slug_idx on ledger_account (ledger_id, slug);
-create index ledger_account_ledger_id_fkey on ledger_account (ledger_id);
+CREATE UNIQUE INDEX ledger_account_slug_idx ON ledger_account (ledger_id, slug);
+CREATE INDEX ledger_account_ledger_id_fkey ON ledger_account (ledger_id);
 
 CREATE TRIGGER update_user_task_updated_on
-  BEFORE UPDATE ON ledger_account FOR EACH ROW
+  BEFORE UPDATE
+  ON ledger_account
+  FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at();
 
 -- create ledger_ledger_account_type
 
-create table ledger_ledger_account_type
+CREATE TABLE ledger_ledger_account_type
 (
-  id integer generated always as identity primary key,
-  ledger_id int not null references ledger,
-  ledger_account_type_id int not null references ledger_account_type,
-  created_at timestamp with time zone default now() not null,
-  updated_at timestamp with time zone default now() not null
+  id integer GENERATED ALWAYS AS IDENTITY
+    PRIMARY KEY,
+  ledger_id int NOT NULL
+    REFERENCES ledger,
+  ledger_account_type_id int NOT NULL
+    REFERENCES ledger_account_type,
+  created_at timestamp WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  updated_at timestamp WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
 
-comment on table ledger_ledger_account_type is 'This table is used to specify which ledger account types are available on a given ledger. This is used to restrict which account types can be used on a given ledger.';
-comment on column ledger_ledger_account_type.ledger_id is 'ID of the ledger';
-comment on column ledger_ledger_account_type.ledger_account_type_id is 'ID of the ledger account type';
+COMMENT ON TABLE ledger_ledger_account_type IS 'This table is used to specify which ledger account types are available on a given ledger. This is used to restrict which account types can be used on a given ledger.';
+COMMENT ON COLUMN ledger_ledger_account_type.ledger_id IS 'ID of the ledger';
+COMMENT ON COLUMN ledger_ledger_account_type.ledger_account_type_id IS 'ID of the ledger account type';
 
-create unique index ledger_ledger_account_type_unique_idx
-  on ledger_ledger_account_type (ledger_id, ledger_account_type_id);
+CREATE UNIQUE INDEX ledger_ledger_account_type_unique_idx
+  ON ledger_ledger_account_type (ledger_id, ledger_account_type_id);
 
 
 -- create ledger_transaction
 
-create table ledger_transaction
+CREATE TABLE ledger_transaction
 (
-  id integer generated always as identity primary key,
-  ledger_id integer not null references ledger on delete restrict,
-  posted_at timestamp with time zone default now() not null,
+  id integer GENERATED ALWAYS AS IDENTITY
+    PRIMARY KEY,
+  ledger_id integer NOT NULL
+    REFERENCES ledger
+      ON DELETE RESTRICT,
+  posted_at timestamp WITH TIME ZONE DEFAULT NOW() NOT NULL,
   description text,
-  created_at timestamp with time zone default now() not null,
-  updated_at timestamp with time zone default now() not null
+  created_at timestamp WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  updated_at timestamp WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
 
-comment on table ledger_transaction is 'High level transaction on the ledger. It holds a collection of individual ledger_transaction_entry records';
-comment on column ledger_transaction.description is 'Human readable description/memo for debugging purposes and for use in external accounting software';
+COMMENT ON TABLE ledger_transaction IS 'High level transaction on the ledger. It holds a collection of individual ledger_transaction_entry records';
+COMMENT ON COLUMN ledger_transaction.description IS 'Human readable description/memo for debugging purposes and for use in external accounting software';
 
-create index ledger_transaction_ledger_id_idx on ledger_transaction (ledger_id);
-create index ledger_transaction_posted_at_idx on ledger_transaction (posted_at);
+CREATE INDEX ledger_transaction_ledger_id_idx ON ledger_transaction (ledger_id);
+CREATE INDEX ledger_transaction_posted_at_idx ON ledger_transaction (posted_at);
 
 CREATE TRIGGER update_user_task_updated_on
-  BEFORE UPDATE ON ledger_transaction FOR EACH ROW
+  BEFORE UPDATE
+  ON ledger_transaction
+  FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at();
 
 -- crete ledger_transaction_entry
 
-create table ledger_transaction_entry
+CREATE TABLE ledger_transaction_entry
 (
-  id integer generated always as identity primary key,
-  ledger_transaction_id integer not null references ledger_transaction on delete cascade,
-  ledger_account_id integer not null references ledger_account on delete cascade,
-  action credit_or_debit not null,
-  amount numeric(18, 8) not null
-    constraint ledger_transaction_entry_amount_positive check (amount > (0)::numeric),
-  created_at timestamp with time zone default now() not null,
-  updated_at timestamp with time zone default now() not null
+  id integer GENERATED ALWAYS AS IDENTITY
+    PRIMARY KEY,
+  ledger_transaction_id integer NOT NULL
+    REFERENCES ledger_transaction
+      ON DELETE CASCADE,
+  ledger_account_id integer NOT NULL
+    REFERENCES ledger_account
+      ON DELETE CASCADE,
+  action credit_or_debit NOT NULL,
+  amount numeric(18, 8) NOT NULL
+    CONSTRAINT ledger_transaction_entry_amount_positive
+      CHECK (amount > (0)::numeric),
+  created_at timestamp WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  updated_at timestamp WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
 
-comment on table ledger_transaction_entry is 'Individual debit/credit entries for a ledger transaction';
+COMMENT ON TABLE ledger_transaction_entry IS 'Individual debit/credit entries for a ledger transaction';
 
-create index ledger_transaction_entry_ledger_transaction_id_idx
-  on ledger_transaction_entry (ledger_transaction_id);
-create index ledger_transaction_entry_ledger_account_id_idx
-  on ledger_transaction_entry (ledger_account_id);
-create index ledger_transaction_entry_ledger_account_id_with_action_idx
-  on ledger_transaction_entry (ledger_account_id, action);
+CREATE INDEX ledger_transaction_entry_ledger_transaction_id_idx
+  ON ledger_transaction_entry (ledger_transaction_id);
+CREATE INDEX ledger_transaction_entry_ledger_account_id_idx
+  ON ledger_transaction_entry (ledger_account_id);
+CREATE INDEX ledger_transaction_entry_ledger_account_id_with_action_idx
+  ON ledger_transaction_entry (ledger_account_id, action);
 
 CREATE TRIGGER update_user_task_updated_on
-  BEFORE UPDATE ON ledger_transaction_entry FOR EACH ROW
+  BEFORE UPDATE
+  ON ledger_transaction_entry
+  FOR EACH ROW
 EXECUTE PROCEDURE update_updated_at();
 
 
-create function ledger_transaction_entry_after_insert_trigger() returns trigger
-  language plpgsql
-as
+CREATE FUNCTION ledger_transaction_entry_after_insert_trigger() RETURNS trigger
+  LANGUAGE plpgsql
+AS
 $$
 BEGIN
   -- Ensure total debits == total credits
   IF
-    (SELECT COALESCE(sum(amount), 0) FROM ledger_transaction_entry WHERE ledger_transaction_id = NEW.ledger_transaction_id AND action = 'DEBIT')
+    (SELECT COALESCE(SUM(amount), 0)
+    FROM ledger_transaction_entry
+    WHERE ledger_transaction_id = new.ledger_transaction_id AND action = 'DEBIT')
       !=
-    (SELECT COALESCE(sum(amount), 0) FROM ledger_transaction_entry WHERE ledger_transaction_id = NEW.ledger_transaction_id AND action = 'CREDIT')
+    (SELECT COALESCE(SUM(amount), 0)
+    FROM ledger_transaction_entry
+    WHERE ledger_transaction_id = new.ledger_transaction_id AND action = 'CREDIT')
   THEN
     RAISE EXCEPTION 'Debits != Credits for Ledger Transaction Entries';
   END IF;
 
-  RETURN NEW;
+  RETURN new;
 END;
 $$;
 
-create constraint trigger ledger_transaction_entry_after_insert_trigger
-  after insert or update
-  on ledger_transaction_entry
-  deferrable initially deferred
-  for each row
-execute procedure ledger_transaction_entry_after_insert_trigger();
+CREATE CONSTRAINT TRIGGER ledger_transaction_entry_after_insert_trigger
+  AFTER INSERT OR UPDATE
+  ON ledger_transaction_entry
+  DEFERRABLE INITIALLY DEFERRED
+  FOR EACH ROW
+EXECUTE PROCEDURE ledger_transaction_entry_after_insert_trigger();
 
 CREATE OR REPLACE FUNCTION sum_up_ledger_account_balance(
   input_ledger_account_id int,
-  input_sum_debits NUMERIC(18,8),
-  input_sum_credits NUMERIC(18,8)
-) RETURNS NUMERIC(18, 8) LANGUAGE plpgsql
-AS $$
+  input_sum_debits numeric(18, 8),
+  input_sum_credits numeric(18, 8)
+) RETURNS numeric(18, 8)
+  LANGUAGE plpgsql
+AS
+$$
 DECLARE
   account_balance_type credit_or_debit;
-  balance NUMERIC(18,8);
+  balance              numeric(18, 8);
 BEGIN
   -- Determine normal balance type for account ('DEBIT' | 'CREDIT')
   SELECT normal_balance
   FROM ledger_account la
   INNER JOIN ledger_account_type lat ON
-    la.ledger_account_type_id = lat.id
+      la.ledger_account_type_id = lat.id
   WHERE la.id = input_ledger_account_id
   INTO account_balance_type;
 
@@ -235,14 +282,16 @@ $$;
 
 CREATE OR REPLACE FUNCTION calculate_balance_for_ledger_account(
   input_ledger_account_id int
-) RETURNS NUMERIC(18, 8) language plpgsql
-AS $$
+) RETURNS numeric(18, 8)
+  LANGUAGE plpgsql
+AS
+$$
 DECLARE
-  sum_debits NUMERIC(18,8);
-  sum_credits NUMERIC(18,8);
+  sum_debits  numeric(18, 8);
+  sum_credits numeric(18, 8);
 BEGIN
   -- Sum up all debit entries for this account
-  SELECT COALESCE(sum(amount), 0)
+  SELECT COALESCE(SUM(amount), 0)
   FROM ledger_transaction_entry lte
   LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
   WHERE
@@ -251,7 +300,7 @@ BEGIN
   INTO sum_debits;
 
   -- Sum up all credit entries for this account
-  SELECT COALESCE(sum(amount), 0)
+  SELECT COALESCE(SUM(amount), 0)
   FROM ledger_transaction_entry lte
   LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
   WHERE
@@ -260,19 +309,22 @@ BEGIN
   INTO sum_credits;
 
   RETURN sum_up_ledger_account_balance(input_ledger_account_id, sum_debits, sum_credits);
-END $$;
+END
+$$;
 
 CREATE OR REPLACE FUNCTION calculate_balance_for_ledger_account(
   input_ledger_account_id int,
-  before_date DATE
-) RETURNS NUMERIC(18, 8) language plpgsql
-AS $$
+  before_date date
+) RETURNS numeric(18, 8)
+  LANGUAGE plpgsql
+AS
+$$
 DECLARE
-  sum_debits NUMERIC(18,8);
-  sum_credits NUMERIC(18,8);
+  sum_debits  numeric(18, 8);
+  sum_credits numeric(18, 8);
 BEGIN
   -- Sum up all debit entries for this account
-  SELECT COALESCE(sum(amount), 0)
+  SELECT COALESCE(SUM(amount), 0)
   FROM ledger_transaction_entry lte
   LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
   WHERE
@@ -282,7 +334,7 @@ BEGIN
   INTO sum_debits;
 
   -- Sum up all credit entries for this account
-  SELECT COALESCE(sum(amount), 0)
+  SELECT COALESCE(SUM(amount), 0)
   FROM ledger_transaction_entry lte
   LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
   WHERE
@@ -292,27 +344,29 @@ BEGIN
   INTO sum_credits;
 
   RETURN sum_up_ledger_account_balance(input_ledger_account_id, sum_debits, sum_credits);
-END $$;
+END
+$$;
 
 CREATE OR REPLACE FUNCTION calculate_balance_for_ledger_account(
   input_ledger_account_id int,
-  before_date DATE,
-  after_date DATE
-) RETURNS NUMERIC(18, 8)
-  language plpgsql
-AS $$
+  before_date date,
+  after_date date
+) RETURNS numeric(18, 8)
+  LANGUAGE plpgsql
+AS
+$$
 DECLARE
-  sum_debits NUMERIC(18,8);
-  sum_credits NUMERIC(18,8);
+  sum_debits  numeric(18, 8);
+  sum_credits numeric(18, 8);
 BEGIN
   IF before_date < after_date THEN
     RAISE EXCEPTION 'Before date is greater than after date';
   END IF;
 
   -- Sum up all debit entries for this account
-  SELECT COALESCE(sum(amount), 0)
+  SELECT COALESCE(SUM(amount), 0)
   FROM ledger_transaction_entry lte
-    LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
+  LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
   WHERE
     ledger_account_id = input_ledger_account_id AND
     action = 'DEBIT' AND
@@ -321,9 +375,9 @@ BEGIN
   INTO sum_debits;
 
   -- Sum up all credit entries for this account
-  SELECT COALESCE(sum(amount), 0)
+  SELECT COALESCE(SUM(amount), 0)
   FROM ledger_transaction_entry lte
-    LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
+  LEFT JOIN ledger_transaction lt ON lte.ledger_transaction_id = lt.id
   WHERE
     ledger_account_id = input_ledger_account_id AND
     action = 'CREDIT' AND
@@ -332,12 +386,13 @@ BEGIN
   INTO sum_credits;
 
   RETURN sum_up_ledger_account_balance(input_ledger_account_id, sum_debits, sum_credits);
-END $$;
+END
+$$;
 
 
-create function ledger_account_id(input_ledger_id int, input_ledger_account_slug text) returns integer
-  language plpgsql
-as
+CREATE FUNCTION ledger_account_id(input_ledger_id int, input_ledger_account_slug text) RETURNS integer
+  LANGUAGE plpgsql
+AS
 $$
 DECLARE
   ledger_account_id int;
@@ -353,14 +408,15 @@ BEGIN
 END;
 $$;
 
-create function ledger_account_id(input_ledger_id int, input_ledger_account_type_slug text, input_external_id text) returns integer
-  language plpgsql
-as
+CREATE FUNCTION ledger_account_id(input_ledger_id int, input_ledger_account_type_slug text,
+                                  input_external_id text) RETURNS integer
+  LANGUAGE plpgsql
+AS
 $$
 DECLARE
   ledger_account_id int;
-  account_type ledger_account_type;
-  new_description text;
+  account_type      ledger_account_type;
+  new_description   text;
 BEGIN
   SELECT id
   FROM ledger_account
@@ -378,32 +434,34 @@ BEGIN
   INNER JOIN ledger_ledger_account_type llat
     ON lat.id = llat.ledger_account_type_id
   WHERE
-    slug = input_ledger_account_type_slug
-    AND llat.ledger_id = input_ledger_id
+    slug = input_ledger_account_type_slug AND llat.ledger_id = input_ledger_id
   INTO account_type;
 
   IF account_type.id IS NULL THEN
     RAISE NOTICE 'Account type % not found', input_ledger_account_type_slug;
   END IF;
 
-  SELECT
-    CASE WHEN account_type.description IS NOT NULL
-      THEN account_type.description || '. Account created for entity ID:' || input_external_id || '.'
-    ELSE null
-  END INTO new_description;
+  SELECT CASE
+           WHEN account_type.description IS NOT NULL
+             THEN account_type.description || '. Account created for entity ID:' || input_external_id || '.'
+           ELSE NULL
+         END
+  INTO new_description;
 
   INSERT INTO ledger_account (
     description,
     ledger_account_type_id,
     ledger_id,
     slug
-  ) VALUES (
+  )
+  VALUES (
     new_description,
     account_type.id,
     input_ledger_id,
     input_ledger_account_type_slug || ':' || input_external_id
-  ) RETURNING id
-  INTO ledger_account_id;
+  )
+  RETURNING id
+    INTO ledger_account_id;
 
   RETURN ledger_account_id;
 END;
