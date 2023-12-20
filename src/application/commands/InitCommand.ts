@@ -9,13 +9,14 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 type CommandOptions = CommonCliOptions & {};
 
 export const InitCommand = async ({ dryRun, pool }: CommandOptions) => {
-  const data = await fs.readFile(__dirname + '/../database/schema.sql', {
+  const data = await fs.readFile(__dirname + '/../../../database/schema.sql', {
     encoding: 'utf8',
   });
 
   if (dryRun) {
     // eslint-disable-next-line no-console
-    console.log('Dry run, not executing SQL:\n' + data);
+    console.log('Dry run, not executing SQL:\n\n' + data);
+    return;
   }
 
   const query = {

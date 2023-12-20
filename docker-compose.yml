@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: ledger
       POSTGRES_DB: ledger
 #    volumes:
-#      - ./src/application/database/schema.sql:/docker-entrypoint-initdb.d/init.sql
+#      - ./database/schema.sql:/docker-entrypoint-initdb.d/init.sql
 
 #
 #volumes:

@@ -47,15 +47,18 @@ const mainCommand = yargs(hideBin(process.argv))
     (ya) => {
       return ya
         .options({
-          ledger: {
-            alias: 'l',
+          className: {
+            demandOption: true,
+            description: 'Class name for the ledger specification',
+            type: 'string',
+          },
+          ledgerSlug: {
             demandOption: true,
             description: 'Unique ledger slug',
             type: 'string',
           },
           path: {
-            alias: 'p',
-            demandOption: true,
+            default: '.',
             description: 'Path to save file',
             type: 'string',
           },

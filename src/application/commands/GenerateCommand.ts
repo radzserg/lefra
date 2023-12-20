@@ -5,12 +5,14 @@ import * as nodePath from 'node:path';
 import { DatabasePool } from 'slonik';
 
 type CommandOptions = CommonCliOptions & {
-  ledger: string;
+  className: string;
+  ledgerSlug: string;
   path: string;
   pool: DatabasePool;
 };
 export const GenerateCommand = async ({
-  ledger,
+  className,
+  ledgerSlug,
   path,
   pool,
 }: CommandOptions) => {
@@ -18,8 +20,8 @@ export const GenerateCommand = async ({
   const realPath: string = nodePath.resolve(path);
   const generator = new CustomLedgerSpecGenerator(storage);
   await generator.generate({
-    className: 'MyCompanyLedgerSpecification',
-    ledgerSlug: ledger,
+    className,
+    ledgerSlug,
     mode: 'file',
     path: realPath,
   });
