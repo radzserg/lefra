@@ -7,8 +7,15 @@ import { z } from 'zod';
 
 const DATABASE_URL = 'postgresql://ledger:ledger@localhost:5473/ledger';
 
+type TestDatabase = {
+  destroy: () => Promise<void>;
+  getConnectionUri: () => string;
+  name: () => string;
+};
+
 type RunWithDatabaseConnectionPoolRoutine = (environment: {
   pool: DatabasePool;
+  testDatabase: TestDatabase;
 }) => Promise<void>;
 
 const uid = () => {
@@ -30,12 +37,6 @@ const createTestDatabasePooler = async () => {
     connectionTimeout: 5_000,
     maximumPoolSize: 1,
   });
-
-  type TestDatabase = {
-    destroy: () => Promise<void>;
-    getConnectionUri: () => string;
-    name: () => string;
-  };
 
   const createTestDatabase = async (
     templateName: string,
@@ -81,6 +82,7 @@ export const runWithDatabaseConnectionPool = async (
   try {
     await routine({
       pool: testPool,
+      testDatabase,
     });
   } catch (error) {
     caughtError = error;

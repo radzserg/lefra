@@ -19,7 +19,17 @@ import {
   PersistedLedgerAccountType,
   PersistedTransaction,
 } from '@/types.js';
-import { DatabaseConnection, sql } from 'slonik';
+import {
+  createBigintTypeParser,
+  createDateTypeParser,
+  createIntervalTypeParser,
+  createNumericTypeParser,
+  createPool,
+  DatabasePool,
+  Field,
+  sql,
+} from 'slonik';
+import { createFieldNameTransformationInterceptor } from 'slonik-interceptor-field-name-transformation';
 import { z } from 'zod';
 
 const LedgerShape = z
@@ -73,13 +83,21 @@ const LedgerTransactionEntryShape = z
   })
   .strict();
 
+const isString = (value: unknown): value is string => {
+  return typeof value === 'string';
+};
+
 export class PostgresLedgerStorage implements LedgerStorage {
-  public constructor(private readonly connection: DatabaseConnection) {}
+  private establishedConnection: DatabasePool | null = null;
+
+  public constructor(
+    private readonly connectionString: DatabasePool | string,
+  ) {}
 
   public async findAccountTypeBySlug(
     slug: string,
   ): Promise<PersistedLedgerAccountType | null> {
-    return await this.connection.maybeOne(sql.type(LedgerAccountTypeShape)`
+    return this.connection.maybeOne(sql.type(LedgerAccountTypeShape)`
       SELECT
         id,
         slug,
@@ -630,5 +648,64 @@ export class PostgresLedgerStorage implements LedgerStorage {
         la.ledger_id = ${ledgerId}
         AND lat.is_entity_ledger_account = false
     `);
+  }
+
+  public async end() {
+    if (this.establishedConnection) {
+      await this.establishedConnection.end();
+    }
+  }
+
+  public get connection(): DatabasePool {
+    if (this.establishedConnection) {
+      return this.establishedConnection;
+    }
+
+    const establishConnection = this.establishConnection.bind(this);
+    return new Proxy(
+      {},
+      {
+        get(_target, property) {
+          return async () => {
+            const connection = await establishConnection();
+            return connection[property as keyof DatabasePool];
+          };
+        },
+      },
+    ) as DatabasePool;
+  }
+
+  private async establishConnection() {
+    if (this.establishedConnection) {
+      return this.establishedConnection;
+    }
+
+    if (!isString(this.connectionString)) {
+      this.establishedConnection = this.connectionString;
+      return this.establishedConnection;
+    }
+
+    this.establishedConnection = await createPool(this.connectionString, {
+      connectionTimeout: 5_000,
+      interceptors: [
+        createFieldNameTransformationInterceptor({
+          format: 'CAMEL_CASE',
+          test: (field: Field) => {
+            return (
+              field.name !== '__typename' && /^[\d_a-z]+$/u.test(field.name)
+            );
+          },
+        }),
+      ],
+      maximumPoolSize: 1,
+      typeParsers: [
+        createDateTypeParser(),
+        createBigintTypeParser(),
+        createIntervalTypeParser(),
+        createNumericTypeParser(),
+      ],
+    });
+
+    return this.establishedConnection;
   }
 }
