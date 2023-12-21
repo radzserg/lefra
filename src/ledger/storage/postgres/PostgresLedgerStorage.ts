@@ -662,13 +662,25 @@ export class PostgresLedgerStorage implements LedgerStorage {
     }
 
     const establishConnection = this.establishConnection.bind(this);
+
     return new Proxy(
       {},
       {
         get(_target, property) {
-          return async () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return async (input: any) => {
             const connection = await establishConnection();
-            return connection[property as keyof DatabasePool];
+            const maybeMethod = connection[property as keyof DatabasePool];
+            // const maybeMethod =
+            //   target[property as keyof typeof stripe].bind(stripe);
+            if (typeof maybeMethod === 'function') {
+              maybeMethod.bind(connection);
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-expect-error
+              return maybeMethod(input);
+            } else {
+              throw new LedgerError('Unexpected method');
+            }
           };
         },
       },

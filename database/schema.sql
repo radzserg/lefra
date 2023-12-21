@@ -29,6 +29,8 @@ CREATE TABLE ledger_currency
   updated_at timestamp WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
 
+CREATE UNIQUE INDEX ledger_currency_code_idx ON ledger_currency (code);
+
 CREATE TRIGGER update_user_task_updated_on
   BEFORE UPDATE
   ON ledger_currency

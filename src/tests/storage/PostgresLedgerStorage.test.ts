@@ -38,6 +38,7 @@ describe('PostgresLedgerStorage', () => {
       });
       expect(currencyUsd).toMatchObject({
         code: 'USD',
+        id: expect.any(Number),
         minimumFractionDigits: 2,
         symbol: '$',
       });
@@ -57,6 +58,7 @@ describe('PostgresLedgerStorage', () => {
       });
       expect(currencyUsd).toMatchObject({
         code: 'USD',
+        id: expect.any(Number),
         minimumFractionDigits: 2,
         symbol: '$',
       });

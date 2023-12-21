@@ -9,8 +9,8 @@ services:
       POSTGRES_USER: ledger
       POSTGRES_PASSWORD: ledger
       POSTGRES_DB: ledger
-#    volumes:
-#      - ./database/schema.sql:/docker-entrypoint-initdb.d/init.sql
+    volumes:
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/init.sql
 
 #
 #volumes:

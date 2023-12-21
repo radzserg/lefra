@@ -173,6 +173,10 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   }
 
   public async insertCurrency(parameters: InputLedgerCurrency) {
+    if (this.currencies.some((currency) => currency.code === parameters.code)) {
+      throw new LedgerError(`Currency ${parameters.code} already exists`);
+    }
+
     const persistedCurrency = {
       code: parameters.code,
       id: this.idGenerator.generateId(),
