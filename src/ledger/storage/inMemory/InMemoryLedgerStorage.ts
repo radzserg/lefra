@@ -134,7 +134,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     });
   }
 
-  public async upsertAccount({
+  public async insertAccount({
     description,
     ledgerAccountTypeId,
     ledgerId,
@@ -142,7 +142,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
   }: InputLedgerAccount) {
     const existingAccount = await this.findSavedAccount(ledgerId, slug);
     if (existingAccount) {
-      return existingAccount;
+      throw new LedgerUnexpectedError(`Account ${slug} already exists`);
     }
 
     const accountType = await this.getSavedAccountTypeById(ledgerAccountTypeId);
@@ -286,7 +286,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
         );
       }
 
-      await this.upsertAccount({
+      await this.insertAccount({
         description: accountType.description
           ? `${accountType.description}. Account created for entity ID:${account.externalId}.`
           : null,

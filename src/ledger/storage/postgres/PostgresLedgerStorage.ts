@@ -443,47 +443,54 @@ export class PostgresLedgerStorage implements LedgerStorage {
     return ledger;
   }
 
-  public async upsertAccount({
+  public async insertAccount({
     description,
     ledgerAccountTypeId,
     ledgerId,
     slug,
   }: InputLedgerAccount): Promise<PersistedLedgerAccount> {
-    const existingAccount = await this.findSavedAccount(ledgerId, slug);
-    if (existingAccount) {
-      return existingAccount;
-    }
-
     const accountType = await this.getSavedAccountTypeById(ledgerAccountTypeId);
 
-    const ledgerAccountId = await this.connection.oneFirst(
-      sql.type(
-        z.object({
-          id: z.number(),
-        }),
-      )`
-        INSERT INTO ledger_account (                 
-          description, 
-          ledger_account_type_id, 
-          ledger_id, 
-          slug
-        ) 
-        VALUES (
-          ${description}, 
-          ${accountType.id},
-          ${ledgerId},
-          ${slug}
-        )
-        RETURNING id
-      `,
-    );
-    return {
-      description,
-      id: ledgerAccountId,
-      ledgerAccountTypeId,
-      ledgerId,
-      slug,
-    };
+    try {
+      const ledgerAccountId = await this.connection.oneFirst(
+        sql.type(
+          z.object({
+            id: z.number(),
+          }),
+        )`
+            INSERT INTO ledger_account (
+                description,
+                ledger_account_type_id,
+                ledger_id,
+                slug
+            )
+            VALUES (
+                ${description},
+                ${accountType.id},
+                ${ledgerId},
+                ${slug}
+            )
+            RETURNING id
+        `,
+      );
+      return {
+        description,
+        id: ledgerAccountId,
+        ledgerAccountTypeId,
+        ledgerId,
+        slug,
+      };
+    } catch (error) {
+      if (
+        error.cause &&
+        error.cause.code === '23505' && // unique_violation
+        error.cause.detail.includes('Key (ledger_id, slug)')
+      ) {
+        throw new LedgerError(`Account ${slug} already exists`);
+      }
+
+      throw error;
+    }
   }
 
   public async insertTransaction(

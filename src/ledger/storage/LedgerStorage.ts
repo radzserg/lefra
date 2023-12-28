@@ -86,6 +86,13 @@ export type LedgerStorage = {
   ) => Promise<readonly PersistedEntry[]>;
 
   /**
+   * Insert ledger account.
+   */
+  insertAccount: (
+    parameters: InputLedgerAccount,
+  ) => Promise<PersistedLedgerAccount>;
+
+  /**
    * Inserts a new ledger account type.
    * @param parameters
    */
@@ -114,11 +121,4 @@ export type LedgerStorage = {
   insertTransaction: (
     transaction: Transaction,
   ) => Promise<PersistedTransaction>;
-
-  /**
-   * Insert ledger account.
-   */
-  upsertAccount: (
-    parameters: InputLedgerAccount,
-  ) => Promise<PersistedLedgerAccount>;
 };

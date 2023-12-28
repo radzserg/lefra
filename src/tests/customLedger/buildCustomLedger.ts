@@ -91,7 +91,7 @@ export const buildCustomLedger = async (storage: LedgerStorage) => {
       );
     }
 
-    await storage.upsertAccount({
+    await storage.insertAccount({
       description: '',
       ledgerAccountTypeId: accountType.id,
       ledgerId,

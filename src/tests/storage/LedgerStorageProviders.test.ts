@@ -85,13 +85,13 @@ const saveTestLedgerAccounts = async (storage: LedgerStorage) => {
     ledgerId,
   });
 
-  const incomePaidProjectAccount = await storage.upsertAccount({
+  const incomePaidProjectAccount = await storage.insertAccount({
     description: 'Income from paid projects',
     ledgerAccountTypeId: incomeAccountType.id,
     ledgerId,
     slug: 'SYSTEM_INCOME_PAID_PROJECTS',
   });
-  const incomePaymentFeeAccount = await storage.upsertAccount({
+  const incomePaymentFeeAccount = await storage.insertAccount({
     description: 'Income from payment fees',
     ledgerAccountTypeId: incomeAccountType.id,
     ledgerId,
@@ -303,7 +303,7 @@ describe.each<'IN_MEMORY' | 'POSTGRES'>(['IN_MEMORY', 'POSTGRES'])(
             slug: 'SYSTEM_INCOME',
           });
 
-          await storage.upsertAccount({
+          await storage.insertAccount({
             description: 'Income from paid projects',
             ledgerAccountTypeId: ledgerAccountType.id,
             ledgerId,
@@ -336,7 +336,7 @@ describe.each<'IN_MEMORY' | 'POSTGRES'>(['IN_MEMORY', 'POSTGRES'])(
             slug: 'RECEIVABLES',
           });
 
-          await storage.upsertAccount({
+          await storage.insertAccount({
             description: 'Income from paid projects',
             ledgerAccountTypeId: ledgerAccountType.id,
             ledgerId,
@@ -361,7 +361,7 @@ describe.each<'IN_MEMORY' | 'POSTGRES'>(['IN_MEMORY', 'POSTGRES'])(
         await createStorage(storageType, async (storage) => {
           const { id: ledgerId } = await saveLedger(storage);
           await expect(
-            storage.upsertAccount({
+            storage.insertAccount({
               description: 'Income from paid projects',
               ledgerAccountTypeId: 123_213,
               ledgerId,
@@ -371,7 +371,7 @@ describe.each<'IN_MEMORY' | 'POSTGRES'>(['IN_MEMORY', 'POSTGRES'])(
         });
       });
 
-      test('upsert system account', async () => {
+      test('cannot insert the same system account', async () => {
         await createStorage(storageType, async (storage) => {
           const { id: ledgerId } = await saveLedger(storage);
           const ledgerAccountType = await storage.insertAccountType({
@@ -383,7 +383,7 @@ describe.each<'IN_MEMORY' | 'POSTGRES'>(['IN_MEMORY', 'POSTGRES'])(
             slug: 'INCOME',
           });
 
-          await storage.upsertAccount({
+          await storage.insertAccount({
             description: 'Income from paid projects',
             ledgerAccountTypeId: ledgerAccountType.id,
             ledgerId,
@@ -402,17 +402,20 @@ describe.each<'IN_MEMORY' | 'POSTGRES'>(['IN_MEMORY', 'POSTGRES'])(
             slug: 'SYSTEM_INCOME_PAID_PROJECTS',
           });
 
-          const upsertedAccount = await storage.upsertAccount({
-            description: 'Income from paid projects',
-            ledgerAccountTypeId: ledgerAccountType.id,
-            ledgerId,
-            slug: 'SYSTEM_INCOME_PAID_PROJECTS',
-          });
-          expect(upsertedAccount).toEqual(incomeProjectAccount);
+          await expect(
+            storage.insertAccount({
+              description: 'Income from paid projects',
+              ledgerAccountTypeId: ledgerAccountType.id,
+              ledgerId,
+              slug: 'SYSTEM_INCOME_PAID_PROJECTS',
+            }),
+          ).rejects.toThrow(
+            'Account SYSTEM_INCOME_PAID_PROJECTS already exists',
+          );
         });
       });
 
-      test('upsert entity account', async () => {
+      test('cannot insert the same entity account', async () => {
         await createStorage(storageType, async (storage) => {
           const { id: ledgerId } = await saveLedger(storage);
           const ledgerAccountType = await storage.insertAccountType({
@@ -424,7 +427,7 @@ describe.each<'IN_MEMORY' | 'POSTGRES'>(['IN_MEMORY', 'POSTGRES'])(
             slug: 'RECEIVABLES',
           });
 
-          await storage.upsertAccount({
+          await storage.insertAccount({
             description: 'Income from paid projects',
             ledgerAccountTypeId: ledgerAccountType.id,
             ledgerId,
@@ -443,13 +446,14 @@ describe.each<'IN_MEMORY' | 'POSTGRES'>(['IN_MEMORY', 'POSTGRES'])(
             slug: 'USER_RECEIVABLES:1',
           });
 
-          const upsertedAccount = await storage.upsertAccount({
-            description: 'Income from paid projects',
-            ledgerAccountTypeId: ledgerAccountType.id,
-            ledgerId,
-            slug: 'USER_RECEIVABLES:1',
-          });
-          expect(upsertedAccount).toEqual(receivables);
+          await expect(
+            storage.insertAccount({
+              description: 'Income from paid projects',
+              ledgerAccountTypeId: ledgerAccountType.id,
+              ledgerId,
+              slug: 'USER_RECEIVABLES:1',
+            }),
+          ).rejects.toThrow('Account USER_RECEIVABLES:1 already exists');
         });
       });
     });
