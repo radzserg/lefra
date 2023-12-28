@@ -1,5 +1,5 @@
 export { EntityAccountRef } from '@/ledger/accounts/EntityAccountRef.js';
-export { LedgerAccountsRefBuilder } from '@/ledger/accounts/LedgerAccountsRefBuilder.js';
+export { ledgerAccountsRefBuilder } from '@/ledger/accounts/ledgerAccountsRefBuilder.js';
 export { SystemAccountRef } from '@/ledger/accounts/SystemAccountRef.js';
 export { Ledger } from '@/ledger/Ledger.js';
 export { type ILedgerOperation } from '@/ledger/operation/LedgerOperation.js';

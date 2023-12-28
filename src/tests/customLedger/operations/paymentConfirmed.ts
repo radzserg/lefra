@@ -1,4 +1,4 @@
-import { LedgerAccountsRefBuilder } from '@/ledger/accounts/LedgerAccountsRefBuilder.js';
+import { ledgerAccountsRefBuilder } from '@/ledger/accounts/ledgerAccountsRefBuilder.js';
 import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { TransactionDoubleEntries } from '@/ledger/transaction/TransactionDoubleEntries.js';
@@ -12,7 +12,7 @@ export const entriesForPaymentConfirmed = ({
   clientUserId: number;
   payment: ConfirmedPayment;
 }): TransactionDoubleEntries<'USD'> => {
-  const { account } = new LedgerAccountsRefBuilder(CustomLedgerSpecification);
+  const account = ledgerAccountsRefBuilder(CustomLedgerSpecification);
   const platformFee = payment.platformFee;
   const stripePayInFeeAmountMinusPlatformProcessingFee = platformFee
     ? payment.estimatedStripeProcessingFee.minus(

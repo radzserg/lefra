@@ -1,5 +1,5 @@
 import { LedgerAccountRef } from '@/ledger/accounts/LedgerAccountRef.js';
-import { LedgerAccountsRefBuilder } from '@/ledger/accounts/LedgerAccountsRefBuilder.js';
+import { ledgerAccountsRefBuilder } from '@/ledger/accounts/ledgerAccountsRefBuilder.js';
 import { Ledger } from '@/ledger/Ledger.js';
 import { InMemoryLedgerStorage } from '@/ledger/storage/inMemory/InMemoryLedgerStorage.js';
 import { Unit } from '@/ledger/units/Unit.js';
@@ -17,7 +17,7 @@ const createServices = async () => {
 
   const ledger = new Ledger(ledgerId, storage);
 
-  const { account } = new LedgerAccountsRefBuilder(CustomLedgerSpecification);
+  const account = ledgerAccountsRefBuilder(CustomLedgerSpecification);
 
   return {
     account,

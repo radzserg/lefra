@@ -1,5 +1,5 @@
 import { LedgerOperationError } from '@/errors.js';
-import { LedgerAccountsRefBuilder } from '@/ledger/accounts/LedgerAccountsRefBuilder.js';
+import { ledgerAccountsRefBuilder } from '@/ledger/accounts/ledgerAccountsRefBuilder.js';
 import { ILedgerOperation } from '@/ledger/operation/LedgerOperation.js';
 import { databaseIdSchema } from '@/ledger/storage/validation.js';
 import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
@@ -31,10 +31,6 @@ export type ProjectStartedOperationData = z.infer<OperationSchema>;
  * available for the customer to payout.
  */
 export class ProjectStartedOperation implements ILedgerOperation {
-  private readonly ledgerAccountsRefBuilder = new LedgerAccountsRefBuilder(
-    CustomLedgerSpecification,
-  );
-
   public constructor(protected readonly payload: ProjectStartedOperationData) {
     const result = schema.safeParse(this.payload);
 
@@ -56,7 +52,7 @@ export class ProjectStartedOperation implements ILedgerOperation {
       payment,
     } = this.payload;
 
-    const { account } = this.ledgerAccountsRefBuilder;
+    const account = ledgerAccountsRefBuilder(CustomLedgerSpecification);
 
     const { platformFee } = payment;
     const entries = TransactionDoubleEntries.empty<'USD'>();
