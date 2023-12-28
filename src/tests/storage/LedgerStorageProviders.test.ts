@@ -12,13 +12,13 @@ import { runWithDatabaseConnectionPool } from '#/helpers/createTestConnection.js
 import { usd } from '#/helpers/units.js';
 import { describe, expect, test } from 'vitest';
 
-const UUID_REGEX = /^[\dA-Fa-f]{8}(?:-[\dA-Fa-f]{4}){3}-[\dA-Fa-f]{12}$/u;
+// const UUID_REGEX = /^[\dA-Fa-f]{8}(?:-[\dA-Fa-f]{4}){3}-[\dA-Fa-f]{12}$/u;
 
 const ledgerSlug = 'TEST_LEDGER';
 
 const expectDatabaseId = (storageType: 'IN_MEMORY' | 'POSTGRES') => {
   if (storageType === 'IN_MEMORY') {
-    return expect.stringMatching(UUID_REGEX);
+    return expect.any(Number);
   } else if (storageType === 'POSTGRES') {
     return expect.any(Number);
   } else {
@@ -125,10 +125,9 @@ describe.each<'IN_MEMORY' | 'POSTGRES'>(['IN_MEMORY', 'POSTGRES'])(
             minimumFractionDigits: 2,
             symbol: 'GBP',
           }),
-        ).rejects.toThrowError();
+        ).rejects.toThrowError('Currency GBP already exists');
       });
     });
-
     describe('ledger account types', () => {
       test('insert new account type', async () => {
         await createStorage(storageType, async (storage) => {
@@ -213,7 +212,7 @@ describe.each<'IN_MEMORY' | 'POSTGRES'>(['IN_MEMORY', 'POSTGRES'])(
               isEntityLedgerAccount: false,
               name: 'RECEIVABLES',
               normalBalance: 'CREDIT',
-              parentLedgerAccountTypeId: '123',
+              parentLedgerAccountTypeId: 123,
               slug: 'RECEIVABLES',
             }),
           ).rejects.toThrow(`Account type ID: 123 not found`);

@@ -1,22 +1,22 @@
 import { EntityAccountRef } from '@/ledger/accounts/EntityAccountRef.js';
 import { SystemAccountRef } from '@/ledger/accounts/SystemAccountRef.js';
 import { TransactionFlowRenderer } from '@/ledger/renderer/TransactionFlowRenderer.js';
-import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
 import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { Transaction } from '@/ledger/transaction/Transaction.js';
 import { TransactionDoubleEntries } from '@/ledger/transaction/TransactionDoubleEntries.js';
+import { randomString } from '#/helpers/chance.js';
 import { usd } from '#/helpers/units.js';
 import { describe, expect, test } from 'vitest';
 
-const ledgerId = new UuidDatabaseIdGenerator().generateId();
-const userReceivables = new EntityAccountRef(ledgerId, 'USER_RECEIVABLES', 1);
+const ledgerSlug = randomString();
+const userReceivables = new EntityAccountRef(ledgerSlug, 'USER_RECEIVABLES', 1);
 const incomePaidProjects = new SystemAccountRef(
-  ledgerId,
+  ledgerSlug,
   'SYSTEM_INCOME_PAID_PROJECTS',
 );
 const incomePaymentFee = new SystemAccountRef(
-  ledgerId,
+  ledgerSlug,
   'SYSTEM_INCOME_PAYMENT_FEE',
 );
 

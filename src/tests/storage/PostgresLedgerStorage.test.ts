@@ -29,6 +29,9 @@ describe('PostgresLedgerStorage', () => {
     await runWithDatabaseConnectionPool(async ({ testDatabase }) => {
       const storage = new PostgresLedgerStorage(
         testDatabase.getConnectionUri(),
+        {
+          maximumPoolSize: 1,
+        },
       );
 
       const currencyUsd = await storage.insertCurrency({
@@ -42,6 +45,7 @@ describe('PostgresLedgerStorage', () => {
         minimumFractionDigits: 2,
         symbol: '$',
       });
+      await storage.end();
     });
   });
 
@@ -49,6 +53,9 @@ describe('PostgresLedgerStorage', () => {
     await runWithDatabaseConnectionPool(async ({ testDatabase }) => {
       const storage = new PostgresLedgerStorage(
         testDatabase.getConnectionUri(),
+        {
+          maximumPoolSize: 1,
+        },
       );
 
       const currencyUsd = await storage.insertCurrency({

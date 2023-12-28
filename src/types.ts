@@ -5,7 +5,7 @@ export type EntryAction = 'DEBIT' | 'CREDIT';
 
 export type NonEmptyArray<T> = [T, ...T[]];
 
-export type DB_ID = string | number;
+export type DB_ID = number; // for now support only integer ids but in the future we might want to support string ids as well
 
 export type NormalBalance = 'DEBIT' | 'CREDIT';
 

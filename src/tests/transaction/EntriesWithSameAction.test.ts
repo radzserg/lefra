@@ -1,19 +1,23 @@
 import { LedgerError } from '@/errors.js';
 import { EntityAccountRef } from '@/ledger/accounts/EntityAccountRef.js';
 import { SystemAccountRef } from '@/ledger/accounts/SystemAccountRef.js';
-import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
 import { EntriesWithSameAction } from '@/ledger/transaction/EntriesWithSameAction.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { Unit } from '@/ledger/units/Unit.js';
+import { randomString } from '#/helpers/chance.js';
 import { cad, usd } from '#/helpers/units.js';
 import { describe, expect, test } from 'vitest';
 
-const ledgerId = new UuidDatabaseIdGenerator().generateId();
+const ledgerSlug = randomString();
 
 describe('EntriesWithSameAction', () => {
-  const userReceivables = new EntityAccountRef(ledgerId, 'USER_RECEIVABLES', 1);
+  const userReceivables = new EntityAccountRef(
+    ledgerSlug,
+    'USER_RECEIVABLES',
+    1,
+  );
   const expensesPayouts = new SystemAccountRef(
-    ledgerId,
+    ledgerSlug,
     'SYSTEM_EXPENSES_PAYOUTS',
   );
   test('cannot create EntriesWithSameAction with different operation types', () => {

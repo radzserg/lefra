@@ -1,12 +1,12 @@
 import { EntityAccountRef } from '@/ledger/accounts/EntityAccountRef.js';
-import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
+import { randomString } from '#/helpers/chance.js';
 import { usd } from '#/helpers/units.js';
 import { describe, expect, test } from 'vitest';
 
 describe('Entry', () => {
-  const ledgerId = new UuidDatabaseIdGenerator().generateId();
-  const account = new EntityAccountRef(ledgerId, 'RECEIVABLES', 1);
+  const ledgerSlug = randomString();
+  const account = new EntityAccountRef(ledgerSlug, 'RECEIVABLES', 1);
 
   test('cannot create debit entry', () => {
     const amount = usd(100);

@@ -7,7 +7,6 @@ import {
   LedgerUnexpectedError,
 } from '@/errors.js';
 import { EntityAccountRef } from '@/ledger/accounts/EntityAccountRef.js';
-import { UuidDatabaseIdGenerator } from '@/ledger/storage/DatabaseIdGenerator.js';
 import { Entry } from '@/ledger/transaction/Entry.js';
 import { Unit, UnitCode } from '@/ledger/units/Unit.js';
 import {
@@ -22,6 +21,16 @@ import {
   PersistedLedgerCurrency,
   PersistedTransaction,
 } from '@/types.js';
+
+const intGenerator = () => {
+  let id = 0;
+  return {
+    generateId: () => {
+      id += 1;
+      return id;
+    },
+  };
+};
 
 /**
  * In memory implementation of the ledger storage.
@@ -45,8 +54,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     ledgerId: DB_ID;
   }> = [];
 
-  private readonly idGenerator: UuidDatabaseIdGenerator =
-    new UuidDatabaseIdGenerator();
+  private readonly idGenerator = intGenerator();
 
   /**
    * Inserts a new ledger.

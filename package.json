@@ -7,7 +7,6 @@
     "bignumber.js": "^9.1.2",
     "slonik": "^37.2.0",
     "slonik-interceptor-field-name-transformation": "^1.6.5",
-    "uuid": "^9.0.1",
     "yargs": "^17.7.2",
     "zod": "^3.22.4"
   },
@@ -16,6 +15,7 @@
     "@types/node": "^20.9.2",
     "@types/uuid": "^9.0.7",
     "@types/yargs": "^17.0.32",
+    "chance": "^1.1.11",
     "eslint": "^8.54.0",
     "eslint-config-canonical": "^42.8.0",
     "husky": "^8.0.3",
@@ -47,7 +47,7 @@
     "lefra": "tsx ./src/application/bin/lefra.ts",
     "lint:eslint": "eslint .",
     "lint:format": "eslint --fix $FILES",
-    "test": "vitest",
+    "test": "vitest --no-threads --no-coverage --no-watch",
     "prepare": "husky install"
   },
   "files": [

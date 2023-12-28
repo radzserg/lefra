@@ -20,6 +20,7 @@ import {
   PersistedTransaction,
 } from '@/types.js';
 import {
+  type ClientConfigurationInput,
   createBigintTypeParser,
   createDateTypeParser,
   createIntervalTypeParser,
@@ -92,6 +93,7 @@ export class PostgresLedgerStorage implements LedgerStorage {
 
   public constructor(
     private readonly connectionString: DatabasePool | string,
+    private readonly connectionOptions: ClientConfigurationInput = {},
   ) {}
 
   public async findAccountTypeBySlug(
@@ -192,21 +194,33 @@ export class PostgresLedgerStorage implements LedgerStorage {
 
   public async insertCurrency(parameters: InputLedgerCurrency) {
     const { code, minimumFractionDigits, symbol } = parameters;
-    const currencyId = await this.connection.oneFirst(
-      sql.type(
-        z.object({
-          id: z.number(),
-        }),
-      )`
+    try {
+      const currencyId = await this.connection.oneFirst(
+        sql.type(
+          z.object({
+            id: z.number(),
+          }),
+        )`
         INSERT INTO ledger_currency (code, minimum_fraction_digits, symbol)
         VALUES (${code}, ${minimumFractionDigits}, ${symbol})
         RETURNING id
       `,
-    );
-    return {
-      ...parameters,
-      id: currencyId,
-    };
+      );
+      return {
+        ...parameters,
+        id: currencyId,
+      };
+    } catch (error) {
+      if (
+        error.cause &&
+        error.cause.code === '23505' && // unique_violation
+        error.cause.constraint === 'ledger_currency_code_idx'
+      ) {
+        throw new LedgerError(`Currency ${code} already exists`);
+      }
+
+      throw error;
+    }
   }
 
   public async insertLedger(input: LedgerInput) {
@@ -484,7 +498,7 @@ export class PostgresLedgerStorage implements LedgerStorage {
       if (
         error.cause &&
         error.cause.code === '23505' && // unique_violation
-        error.cause.detail.includes('Key (ledger_id, slug)')
+        error.cause.constraint === 'ledger_account_slug_idx'
       ) {
         throw new LedgerError(`Account ${slug} already exists`);
       }
@@ -705,7 +719,7 @@ export class PostgresLedgerStorage implements LedgerStorage {
     }
 
     this.establishedConnection = await createPool(this.connectionString, {
-      connectionTimeout: 5_000,
+      connectionTimeout: 1_000,
       interceptors: [
         createFieldNameTransformationInterceptor({
           format: 'CAMEL_CASE',
@@ -716,13 +730,13 @@ export class PostgresLedgerStorage implements LedgerStorage {
           },
         }),
       ],
-      maximumPoolSize: 1,
       typeParsers: [
         createDateTypeParser(),
         createBigintTypeParser(),
         createIntervalTypeParser(),
         createNumericTypeParser(),
       ],
+      ...this.connectionOptions,
     });
 
     return this.establishedConnection;

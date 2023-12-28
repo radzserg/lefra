@@ -17,7 +17,6 @@ type RunWithDatabaseConnectionPoolRoutine = (environment: {
   pool: DatabasePool;
   testDatabase: TestDatabase;
 }) => Promise<void>;
-
 const uid = () => {
   const databaseUid = randomUUID().split('-').pop();
 
@@ -50,7 +49,7 @@ const createTestDatabasePooler = async () => {
 
     return {
       destroy: async () => {
-        void pool.query(sql.type(z.object({}))`
+        await pool.query(sql.type(z.object({}))`
           DROP DATABASE ${sql.identifier([database])}
         `);
       },
