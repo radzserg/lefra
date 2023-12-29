@@ -15,6 +15,7 @@ export default defineConfig({
     mockReset: true,
     outputFile: './src/__generated__/vitest/results.xml',
     reporters: 'verbose',
+    setupFiles: path.resolve(__dirname, './src/tests/vitest.setup.ts'),
     testTimeout: 10_000,
   },
 });

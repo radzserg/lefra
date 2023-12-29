@@ -46,7 +46,7 @@
     "lefra": "tsx ./src/application/bin/lefra.ts",
     "lint:eslint": "eslint .",
     "lint:format": "eslint --fix $FILES",
-    "test": "vitest --no-threads --no-coverage --no-watch",
+    "test": "vitest --single-thread --no-coverage --no-watch",
     "prepare": "husky install"
   },
   "files": [

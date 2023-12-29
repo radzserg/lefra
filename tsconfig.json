@@ -40,7 +40,9 @@
     "useUnknownInCatchVariables": false
   },
   "include": [
-    "src",
-    "tests"
+    "src"
+  ],
+  "exclude": [
+    "src/tests/test.d.ts"
   ]
 }

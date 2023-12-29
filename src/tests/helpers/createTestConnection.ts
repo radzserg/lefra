@@ -2,10 +2,8 @@
 
 import { createDatabasePool } from '@/application/database.js';
 import { randomUUID } from 'node:crypto';
-import { createPool, DatabasePool, sql } from 'slonik';
+import { DatabasePool, sql } from 'slonik';
 import { z } from 'zod';
-
-const DATABASE_URL = 'postgresql://ledger:ledger@localhost:5473/ledger';
 
 type TestDatabase = {
   destroy: () => Promise<void>;
@@ -27,16 +25,7 @@ const uid = () => {
   return databaseUid.replaceAll(/[^\da-z]/gu, '');
 };
 
-const createTestDatabasePooler = async () => {
-  if (!DATABASE_URL) {
-    throw new Error('Must configure DATABASE_URL to run tests.');
-  }
-
-  const pool = await createPool(DATABASE_URL, {
-    connectionTimeout: 5_000,
-    maximumPoolSize: 1,
-  });
-
+const createTestDatabasePooler = async (pool: DatabasePool) => {
   const createTestDatabase = async (
     templateName: string,
   ): Promise<TestDatabase> => {
@@ -67,11 +56,11 @@ const createTestDatabasePooler = async () => {
   };
 };
 
-const getTestDatabase = await createTestDatabasePooler();
-
 export const runWithDatabaseConnectionPool = async (
   routine: RunWithDatabaseConnectionPoolRoutine,
 ): Promise<void> => {
+  const pool = await globalThis.createTestPool();
+  const getTestDatabase = await createTestDatabasePooler(pool);
   const testDatabase = await getTestDatabase();
 
   const testPool = await createDatabasePool(testDatabase.getConnectionUri());
