@@ -307,7 +307,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
 
   public async fetchAccountBalance(
     account: LedgerAccountRef,
-  ): Promise<Unit<UnitCode> | null> {
+  ): Promise<Unit<UnitCode>> {
     const savedAccount = await this.findAccount(account);
     if (!savedAccount) {
       throw new LedgerNotFoundError(`Account ${account.accountSlug} not found`);

@@ -28,9 +28,7 @@ export type LedgerStorage = {
   /**
    * Fetches the current balance of the account.
    */
-  fetchAccountBalance: (
-    account: LedgerAccountRef,
-  ) => Promise<Unit<UnitCode> | null>;
+  fetchAccountBalance: (account: LedgerAccountRef) => Promise<Unit<UnitCode>>;
 
   /**
    * Return the ledger account by ledger account reference.

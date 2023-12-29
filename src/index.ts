@@ -8,7 +8,7 @@ export {
 export { EntityAccountRef } from '@/ledger/accounts/EntityAccountRef.js';
 export { ledgerAccountsRefBuilder } from '@/ledger/accounts/ledgerAccountsRefBuilder.js';
 export { SystemAccountRef } from '@/ledger/accounts/SystemAccountRef.js';
-export { Ledger } from '@/ledger/Ledger.js';
+export { type ILedger, Ledger } from '@/ledger/Ledger.js';
 export { type ILedgerOperation } from '@/ledger/operation/LedgerOperation.js';
 export { TransactionFlowRenderer } from '@/ledger/renderer/TransactionFlowRenderer.js';
 export { type LedgerStorage } from '@/ledger/storage/LedgerStorage.js';

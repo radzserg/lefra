@@ -332,7 +332,7 @@ export class PostgresLedgerStorage implements LedgerStorage {
 
   public async fetchAccountBalance(
     account: LedgerAccountRef,
-  ): Promise<Unit<UnitCode> | null> {
+  ): Promise<Unit<UnitCode>> {
     const id = await this.getLedgerAccountId(account);
     const { amount } = await this.connection.one(
       sql.type(
