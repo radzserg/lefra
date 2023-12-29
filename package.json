@@ -15,7 +15,6 @@
     "@types/node": "^20.9.2",
     "@types/uuid": "^9.0.7",
     "@types/yargs": "^17.0.32",
-    "chance": "^1.1.11",
     "eslint": "^8.54.0",
     "eslint-config-canonical": "^42.8.0",
     "husky": "^8.0.3",

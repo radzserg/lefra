@@ -31,7 +31,7 @@ export type ProjectStartedOperationData = z.infer<OperationSchema>;
  * available for the customer to payout.
  */
 export class ProjectStartedOperation implements ILedgerOperation {
-  public constructor(protected readonly payload: ProjectStartedOperationData) {
+  public constructor(private readonly payload: ProjectStartedOperationData) {
     const result = schema.safeParse(this.payload);
 
     // If validation of the payload fails we throw an error.

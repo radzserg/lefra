@@ -31,9 +31,6 @@ devDependencies:
   '@types/yargs':
     specifier: ^17.0.32
     version: 17.0.32
-  chance:
-    specifier: ^1.1.11
-    version: 1.1.11
   eslint:
     specifier: ^8.54.0
     version: 8.54.0
