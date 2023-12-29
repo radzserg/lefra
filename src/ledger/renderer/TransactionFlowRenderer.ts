@@ -54,7 +54,9 @@ export class TransactionFlowRenderer implements Renderer {
             SEPARATOR +
             ''.padStart(maxAmountLength, SPACE) +
             SEPARATOR +
-            accountsBalances[debitEntry.account.accountSlug].format() +
+            accountsBalances[debitEntry.account.accountSlug]
+              .format()
+              .padStart(maxAccountBalanceLength, SPACE) +
             SEPARATOR +
             comment,
         );
