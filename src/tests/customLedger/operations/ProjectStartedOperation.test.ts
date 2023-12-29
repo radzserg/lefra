@@ -13,9 +13,9 @@ import { describe, expect, test } from 'vitest';
 
 const createServices = async () => {
   const storage = new InMemoryLedgerStorage();
-  const { ledgerId } = await buildCustomLedger(storage);
+  await buildCustomLedger(storage);
 
-  const ledger = new Ledger(ledgerId, storage);
+  const ledger = new Ledger(storage);
 
   const account = ledgerAccountsRefBuilder(CustomLedgerSpecification);
 
@@ -40,7 +40,6 @@ describe('ProjectStartedOperation', () => {
           // @ts-expect-error
           clientUserId: 'string',
           contractorUserId,
-          ledgerId: ledger.id,
           paymentProcessingFee: usd(5),
           platformFee: usd(10),
           targetNetAmount: usd(100),
@@ -56,7 +55,6 @@ describe('ProjectStartedOperation', () => {
         amountLockedForContractor: usd(50),
         clientUserId,
         contractorUserId,
-        ledgerId: ledger.id,
         payment: {
           chargeAmount: usd(105),
           estimatedStripeProcessingFee: usd(5),
@@ -108,7 +106,6 @@ describe('ProjectStartedOperation', () => {
         amountLockedForContractor: usd(50),
         clientUserId,
         contractorUserId,
-        ledgerId: ledger.id,
         payment: {
           actualAmountReceived: usd(121.3),
           actualNetAmount: usd(117.44),
@@ -194,7 +191,6 @@ describe('ProjectStartedOperation', () => {
       amountLockedForContractor: usd(50),
       clientUserId,
       contractorUserId,
-      ledgerId: ledger.id,
       payment: {
         actualAmountReceived: usd(122.3),
         actualNetAmount: usd(118.45),

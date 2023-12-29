@@ -1,7 +1,6 @@
 import { LedgerOperationError } from '@/errors.js';
 import { ledgerAccountsRefBuilder } from '@/ledger/accounts/ledgerAccountsRefBuilder.js';
 import { ILedgerOperation } from '@/ledger/operation/LedgerOperation.js';
-import { databaseIdSchema } from '@/ledger/storage/validation.js';
 import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { Transaction } from '@/ledger/transaction/Transaction.js';
@@ -17,7 +16,6 @@ const schema = z
     amountLockedForContractor: usdSchema,
     clientUserId: z.number(),
     contractorUserId: z.number(),
-    ledgerId: databaseIdSchema,
     payment: paymentSchema,
   })
   .strict();
