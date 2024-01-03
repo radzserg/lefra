@@ -72,4 +72,17 @@ describe('PostgresLedgerStorage', () => {
       await storage.end();
     });
   });
+
+  test('ensure correct connection string is provided', async () => {
+    const connection = null;
+    await expect(async () => {
+      // eslint-disable-next-line no-new, @typescript-eslint/no-non-null-assertion
+      new PostgresLedgerStorage(connection!);
+    }).rejects.toThrow('Connection string is required');
+
+    await expect(async () => {
+      // eslint-disable-next-line no-new
+      new PostgresLedgerStorage('');
+    }).rejects.toThrow('Connection string is required');
+  });
 });

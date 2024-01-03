@@ -94,7 +94,11 @@ export class PostgresLedgerStorage implements LedgerStorage {
   public constructor(
     private readonly connectionString: DatabasePool | string,
     private readonly connectionOptions: ClientConfigurationInput = {},
-  ) {}
+  ) {
+    if (!connectionString) {
+      throw new LedgerError('Connection string is required');
+    }
+  }
 
   public async findAccountTypeBySlug(
     slug: string,
@@ -692,8 +696,6 @@ export class PostgresLedgerStorage implements LedgerStorage {
           return async (input: any) => {
             const connection = await establishConnection();
             const maybeMethod = connection[property as keyof DatabasePool];
-            // const maybeMethod =
-            //   target[property as keyof typeof stripe].bind(stripe);
             if (typeof maybeMethod === 'function') {
               maybeMethod.bind(connection);
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
