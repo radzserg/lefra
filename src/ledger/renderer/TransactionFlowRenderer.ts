@@ -13,11 +13,22 @@ type AccountBalances = {
   [account: string]: Unit<UnitCode>;
 };
 
+type RenderOptions = {
+  showFinalBalances?: boolean;
+  showInlineBalance?: boolean;
+};
+
 const SEPARATOR = '    ';
 const SPACE = ' ';
 
 export class TransactionFlowRenderer implements Renderer {
-  public render(transaction: Transaction): string {
+  public render(
+    transaction: Transaction,
+    {
+      showFinalBalances = false,
+      showInlineBalance = false,
+    }: RenderOptions = {},
+  ): string {
     const transactionDoubleEntries = transaction.transactionDoubleEntries;
     const doubleEntries = transactionDoubleEntries.entries;
 
@@ -25,14 +36,20 @@ export class TransactionFlowRenderer implements Renderer {
       this.defineRenderSettings(transaction);
 
     const lines: string[] = [];
+    if (transaction.description) {
+      lines.push('Description: ' + transaction.description + '\n');
+    }
+
+    const inlineBalanceHeader = showInlineBalance
+      ? SEPARATOR + 'BALANCE'.padStart(maxAccountBalanceLength, SPACE)
+      : '';
     lines.push(
       'Account'.padEnd(maxAccountNameLength + 1, SPACE) +
         SEPARATOR +
         'DEBIT'.padStart(maxAmountLength, SPACE) +
         SEPARATOR +
         'CREDIT'.padStart(maxAmountLength, SPACE) +
-        SEPARATOR +
-        'BALANCE'.padStart(maxAccountBalanceLength, SPACE),
+        inlineBalanceHeader,
     );
 
     let accountsBalances: AccountBalances = {};
@@ -43,7 +60,12 @@ export class TransactionFlowRenderer implements Renderer {
           accountsBalances,
           debitEntry,
         );
-        const comment = index === 0 ? doubleEntry.comment : '';
+        const comment = index === 0 ? doubleEntry.comment ?? '' : '';
+        const balanceItem = showInlineBalance
+          ? accountsBalances[debitEntry.account.accountSlug]
+              .format()
+              .padStart(maxAccountBalanceLength, SPACE) + SEPARATOR
+          : '';
         lines.push(
           debitEntry.account.accountSlug.padEnd(
             maxAccountNameLength + 1,
@@ -54,10 +76,7 @@ export class TransactionFlowRenderer implements Renderer {
             SEPARATOR +
             ''.padStart(maxAmountLength, SPACE) +
             SEPARATOR +
-            accountsBalances[debitEntry.account.accountSlug]
-              .format()
-              .padStart(maxAccountBalanceLength, SPACE) +
-            SEPARATOR +
+            balanceItem +
             comment,
         );
       }
@@ -67,6 +86,12 @@ export class TransactionFlowRenderer implements Renderer {
           accountsBalances,
           creditEntry,
         );
+        const balanceItem = showInlineBalance
+          ? SEPARATOR +
+            accountsBalances[creditEntry.account.accountSlug]
+              .format()
+              .padStart(maxAccountBalanceLength, SPACE)
+          : '';
         lines.push(
           creditEntry.account.accountSlug.padEnd(
             maxAccountNameLength + 1,
@@ -76,14 +101,20 @@ export class TransactionFlowRenderer implements Renderer {
             ''.padEnd(maxAmountLength, SPACE) +
             SEPARATOR +
             creditEntry.amount.format().padStart(maxAmountLength, SPACE) +
-            SEPARATOR +
-            accountsBalances[creditEntry.account.accountSlug]
-              .format()
-              .padStart(maxAccountBalanceLength, SPACE),
+            balanceItem,
         );
       }
 
       lines.push('');
+    }
+
+    if (showFinalBalances) {
+      lines.push('Final balances:');
+      for (const [account, balance] of Object.entries(accountsBalances)) {
+        lines.push(
+          `${account.padEnd(maxAccountNameLength, SPACE)} ${balance.format()}`,
+        );
+      }
     }
 
     return lines.join('\n');

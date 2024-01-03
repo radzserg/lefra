@@ -23,7 +23,33 @@ const incomePaymentFee = new SystemAccountRef(
 describe('TransactionFlowRenderer', () => {
   const renderer = new TransactionFlowRenderer();
 
-  test('render detailed transaction information', () => {
+  test('render transaction', () => {
+    const transaction = new Transaction(
+      TransactionDoubleEntries.empty<'USD'>().push(
+        doubleEntry(
+          debit(userReceivables, usd(100)),
+          credit(incomePaidProjects, usd(100)),
+          'User owes money for goods',
+        ),
+        doubleEntry(
+          debit(userReceivables, usd(3)),
+          credit(incomePaymentFee, usd(3)),
+        ),
+      ),
+    );
+
+    const formatterValue = renderer.render(transaction);
+    expect(formatterValue)
+      .toEqual(`Account                              DEBIT        CREDIT
+USER_RECEIVABLES:1              USD:100.00                  User owes money for goods
+SYSTEM_INCOME_PAID_PROJECTS                   USD:100.00
+
+USER_RECEIVABLES:1                USD:3.00                  
+SYSTEM_INCOME_PAYMENT_FEE                       USD:3.00
+`);
+  });
+
+  test('render transaction with inline balances', () => {
     const transaction = new Transaction(
       TransactionDoubleEntries.empty<'USD'>().push(
         doubleEntry(
@@ -37,17 +63,59 @@ describe('TransactionFlowRenderer', () => {
           'User owes payment processing fee',
         ),
       ),
+      'User makes payment',
     );
 
-    const formatterValue = renderer.render(transaction);
+    const formatterValue = renderer.render(transaction, {
+      showInlineBalance: true,
+    });
     expect(formatterValue).toEqual(
-      `Account                              DEBIT        CREDIT       BALANCE
+      `Description: User makes payment
+
+Account                              DEBIT        CREDIT       BALANCE
 USER_RECEIVABLES:1              USD:100.00                  USD:100.00    User owes money for goods
 SYSTEM_INCOME_PAID_PROJECTS                   USD:100.00    USD:100.00
 
 USER_RECEIVABLES:1                USD:3.00                  USD:103.00    User owes payment processing fee
 SYSTEM_INCOME_PAYMENT_FEE                       USD:3.00      USD:3.00
 `,
+    );
+  });
+
+  test('render transaction with final balances', () => {
+    const transaction = new Transaction(
+      TransactionDoubleEntries.empty<'USD'>().push(
+        doubleEntry(
+          debit(userReceivables, usd(100)),
+          credit(incomePaidProjects, usd(100)),
+          'User owes money for goods',
+        ),
+        doubleEntry(
+          debit(userReceivables, usd(3)),
+          credit(incomePaymentFee, usd(3)),
+          'User owes payment processing fee',
+        ),
+      ),
+      'User makes payment',
+    );
+
+    const formatterValue = renderer.render(transaction, {
+      showFinalBalances: true,
+    });
+    expect(formatterValue).toEqual(
+      `Description: User makes payment
+
+Account                              DEBIT        CREDIT
+USER_RECEIVABLES:1              USD:100.00                  User owes money for goods
+SYSTEM_INCOME_PAID_PROJECTS                   USD:100.00
+
+USER_RECEIVABLES:1                USD:3.00                  User owes payment processing fee
+SYSTEM_INCOME_PAYMENT_FEE                       USD:3.00
+
+Final balances:
+USER_RECEIVABLES:1          USD:103.00
+SYSTEM_INCOME_PAID_PROJECTS USD:100.00
+SYSTEM_INCOME_PAYMENT_FEE   USD:3.00`,
     );
   });
 });
