@@ -102,8 +102,11 @@ export class ProjectStartedOperation implements ILedgerOperation {
           credit(
             account('USER_PAYABLES_LOCKED', contractorUserId),
             amountLockedForContractor,
-          ),
-          credit(account('USER_PAYABLES', contractorUserId), amountAvailable),
+          ).nullable(),
+          credit(
+            account('USER_PAYABLES', contractorUserId),
+            amountAvailable,
+          ).nullable(),
         ],
         'Part of funds are locked for the customer and part of funds are available for the customer',
       ),

@@ -81,4 +81,22 @@ describe('TransactionDoubleEntries', () => {
     ]);
     expect(transactionDoubleEntries.ledgerSlug).toEqual(ledgerSlug);
   });
+
+  test('validate entries', () => {
+    expect(() => {
+      doubleEntry(
+        debit(userReceivables, usd(0)),
+        credit(incomePaidProjects, usd(0)),
+      );
+    }).toThrow('Cannot create entry with zero amount');
+  });
+
+  test('filter zero entries', () => {
+    const entry = doubleEntry(debit(userReceivables, usd(50)), [
+      credit(incomePaidProjects, usd(50)),
+      credit(incomePaidProjects, usd(0)).nullable(),
+    ]);
+
+    expect(entry.creditEntries).toEqual([credit(incomePaidProjects, usd(50))]);
+  });
 });

@@ -25,8 +25,13 @@ describe('Entry', () => {
   });
 
   test('cannot have entry with zero amount', () => {
-    expect(() => debit(account, usd(0))).toThrow(
+    expect(() => debit(account, usd(0)).validate()).toThrow(
       'Cannot create entry with zero amount',
     );
+  });
+
+  test('can have entry with zero amount if it was marked as nullable', () => {
+    const entry = debit(account, usd(0)).nullable();
+    expect(() => entry.validate()).not.toThrow();
   });
 });

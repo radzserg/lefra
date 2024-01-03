@@ -1,7 +1,8 @@
-import { LedgerError } from '@/errors.js';
+import { LedgerError, LedgerUnexpectedError } from '@/errors.js';
 import { CreditEntry, DebitEntry } from '@/ledger/transaction/Entry.js';
 import { Unit, UnitCode } from '@/ledger/units/Unit.js';
 import { EntryAction, ExtractUnitCode, NonEmptyArray } from '@/types.js';
+import { isNonEmptyArray } from '@/utils.js';
 
 /**
  * List of operations of the same type. Either all debit or all credit.
@@ -14,14 +15,27 @@ export class EntriesWithSameAction<
 
   private readonly operationsSum: Unit<ExtractUnitCode<O>>;
 
-  private constructor(private readonly _entries: NonEmptyArray<O>) {
-    if (Array.isArray(this._entries) && this._entries.length === 0) {
+  public readonly entries: NonEmptyArray<O>;
+
+  private constructor(entries: NonEmptyArray<O>) {
+    // validate all entries
+    for (const entry of entries) {
+      entry.validate();
+    }
+
+    const notNullEntries = entries.filter((entry) => !entry.amount.isZero());
+
+    if (Array.isArray(notNullEntries) && notNullEntries.length === 0) {
       throw new LedgerError('Operations array must not be empty');
     }
 
-    this.action = this._entries[0].action;
-    let sum = this._entries[0].amount.zeroValue();
-    for (const operation of this._entries) {
+    if (!isNonEmptyArray(notNullEntries)) {
+      throw new LedgerUnexpectedError('Double entries is empty array');
+    }
+
+    this.action = notNullEntries[0].action;
+    let sum = notNullEntries[0].amount.zeroValue();
+    for (const operation of notNullEntries) {
       if (operation.action !== this.action) {
         throw new LedgerError('All operations must be of the same type');
       }
@@ -37,6 +51,7 @@ export class EntriesWithSameAction<
       throw new LedgerError('Operations must not sum to zero');
     }
 
+    this.entries = notNullEntries;
     this.operationsSum = sum as Unit<ExtractUnitCode<O>>;
   }
 
@@ -53,10 +68,6 @@ export class EntriesWithSameAction<
     }
 
     return new EntriesWithSameAction([entries]);
-  }
-
-  public entries(): NonEmptyArray<O> {
-    return this._entries;
   }
 
   public sum(): Unit<ExtractUnitCode<O>> {

@@ -62,12 +62,12 @@ describe('EntriesWithSameAction', () => {
   test('create EntriesWithSameAction from one debit operation', () => {
     const entry = debit(userReceivables, usd(100));
     const entries = EntriesWithSameAction.build(entry);
-    expect(entries.entries()).toEqual([entry]);
+    expect(entries.entries).toEqual([entry]);
   });
 
   test('create EntriesWithSameAction from one credit operation', () => {
     const entry = credit(userReceivables, usd(100));
     const entries = EntriesWithSameAction.build(entry);
-    expect(entries.entries()).toEqual([entry]);
+    expect(entries.entries).toEqual([entry]);
   });
 });
