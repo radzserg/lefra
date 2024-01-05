@@ -5,7 +5,7 @@ type CoreEntry<A extends 'DEBIT' | 'CREDIT', C extends UnitCode> = {
   account: LedgerAccountRef;
   action: A;
   amount: Unit<C>;
-  nullable: () => A extends 'DEBIT' ? DebitEntry<C> : CreditEntry<C>;
+  mayHaveZero: () => A extends 'DEBIT' ? DebitEntry<C> : CreditEntry<C>;
   validate: () => void;
 };
 
@@ -22,7 +22,7 @@ export type Entry<C extends UnitCode = UnitCode> =
   | DebitEntry<C>;
 
 class LedgerEntry<A extends 'DEBIT' | 'CREDIT', C extends UnitCode> {
-  private isNullable = false;
+  private zeroable = false;
 
   public constructor(
     public readonly action: A,
@@ -31,7 +31,7 @@ class LedgerEntry<A extends 'DEBIT' | 'CREDIT', C extends UnitCode> {
   ) {}
 
   public validate() {
-    if (this.isNullable) {
+    if (this.zeroable) {
       return;
     }
 
@@ -40,8 +40,8 @@ class LedgerEntry<A extends 'DEBIT' | 'CREDIT', C extends UnitCode> {
     }
   }
 
-  public nullable(): A extends 'DEBIT' ? DebitEntry<C> : CreditEntry<C> {
-    this.isNullable = true;
+  public mayHaveZero(): A extends 'DEBIT' ? DebitEntry<C> : CreditEntry<C> {
+    this.zeroable = true;
     return this as unknown as A extends 'DEBIT'
       ? DebitEntry<C>
       : CreditEntry<C>;

@@ -31,7 +31,7 @@ describe('Entry', () => {
   });
 
   test('can have entry with zero amount if it was marked as nullable', () => {
-    const entry = debit(account, usd(0)).nullable();
+    const entry = debit(account, usd(0)).mayHaveZero();
     expect(() => entry.validate()).not.toThrow();
   });
 });

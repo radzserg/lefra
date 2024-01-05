@@ -94,7 +94,7 @@ describe('TransactionDoubleEntries', () => {
   test('filter zero entries', () => {
     const entry = doubleEntry(debit(userReceivables, usd(50)), [
       credit(incomePaidProjects, usd(50)),
-      credit(incomePaidProjects, usd(0)).nullable(),
+      credit(incomePaidProjects, usd(0)).mayHaveZero(),
     ]);
 
     expect(entry.creditEntries).toEqual([credit(incomePaidProjects, usd(50))]);
