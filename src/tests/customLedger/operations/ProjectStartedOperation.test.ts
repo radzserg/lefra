@@ -240,4 +240,53 @@ describe('ProjectStartedOperation', () => {
       );
     }
   });
+
+  test('records ProjectStartedOperation with 100% upfront payments', async () => {
+    const { account, ledger, storage } = await createServices();
+    const transaction = await ledger.record(
+      new ProjectStartedOperation({
+        amountLockedForContractor: usd(100),
+        clientUserId,
+        contractorUserId,
+        payment: {
+          chargeAmount: usd(105),
+          estimatedStripeProcessingFee: usd(5),
+          platformFee: null,
+          status: 'PROCESSING',
+          targetNetAmount: usd(100),
+        },
+      }),
+    );
+
+    expect(true).toBe(true);
+    expect(transaction).not.toBeNull();
+
+    await assertTransaction(transaction, {
+      entries: [
+        // user owes money for the project
+        ['DEBIT', `USER_RECEIVABLES:${clientUserId}`, usd(100)],
+        ['CREDIT', 'SYSTEM_INCOME_PAID_PROJECTS', usd(100)],
+
+        ['DEBIT', 'SYSTEM_EXPENSES_PAYOUTS', usd(100)],
+        ['CREDIT', `USER_PAYABLES_LOCKED:${contractorUserId}`, usd(100)],
+      ],
+    });
+
+    const expectedBalances: Array<[LedgerAccountRef, Unit<'USD'> | null]> = [
+      [account('USER_RECEIVABLES', clientUserId), usd(100)],
+      [account('USER_PAYABLES_LOCKED', contractorUserId), usd(100)],
+      [account('SYSTEM_INCOME_PAID_PROJECTS'), usd(100)],
+      [account('SYSTEM_INCOME_CONTRACT_FEES'), usd(0)],
+      [account('SYSTEM_EXPENSES_PAYOUTS'), usd(100)],
+    ];
+
+    for (const [accountRef, expectedBalance] of expectedBalances) {
+      const actualBalance = await storage.fetchAccountBalance(accountRef);
+      expectBalanceEqual(
+        actualBalance,
+        expectedBalance,
+        accountRef.accountSlug,
+      );
+    }
+  });
 });
