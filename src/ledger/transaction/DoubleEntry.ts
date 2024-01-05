@@ -41,7 +41,9 @@ export const doubleEntry = <
     const formatter = new EntriesRenderer();
     throw new LedgerError(
       `Debit and credit operations must have the same money amount. Debit sum: ${debitSum.format()}, credit sum: ${creditSum.format()}` +
-        ` Entries:\n${formatter.render(debitEntriesSet.entries)}`,
+        ` Entries:\n${formatter.render(
+          debitEntriesSet.entries,
+        )}\n${formatter.render(creditEntriesSet.entries)}`,
     );
   }
 
