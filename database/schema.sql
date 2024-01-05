@@ -24,7 +24,7 @@ CREATE TABLE ledger_currency
   symbol text NOT NULL,
   minimum_fraction_digits integer NOT NULL
     CONSTRAINT minimum_fraction_digits_check
-      CHECK (minimum_fraction_digits > 0 AND minimum_fraction_digits < 21),
+      CHECK (minimum_fraction_digits >= 0 AND minimum_fraction_digits < 21),
   created_at timestamp WITH TIME ZONE DEFAULT NOW() NOT NULL,
   updated_at timestamp WITH TIME ZONE DEFAULT NOW() NOT NULL
 );

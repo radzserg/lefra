@@ -14,9 +14,17 @@ type OperationArgument<C extends UnitCode> = Unit<C> | number | BigNumber;
 export class UnitError extends Error {}
 
 export class DifferentCurrencyError extends UnitError {
-  public constructor(code1: Unit<UnitCode>, code2: Unit<UnitCode>) {
+  public constructor(unitOne: Unit<UnitCode>, unitTwo: Unit<UnitCode>) {
     super(
-      `Cannot compare Unit amounts if not the same currency! ${code1} != ${code2}`,
+      `Cannot compare Unit amounts if not the same currency! ${unitOne.code} != ${unitTwo.code}`,
+    );
+  }
+}
+
+export class DifferentFractionError extends UnitError {
+  public constructor(unitOne: Unit<UnitCode>) {
+    super(
+      `Cannot compare Unit amounts, operands have the same currency ${unitOne.code} but different number of fraction digits.`,
     );
   }
 }
@@ -119,7 +127,7 @@ export class Unit<C extends UnitCode> {
   }
 
   /**
-   * Stringified version of the amount with 8 decimal places of precision.
+   * Stringifies the amount with 8 decimal places of precision.
    */
   public toFullPrecision(): string {
     return this.amount.toFixed(NUM_DECIMAL_PLACES);
@@ -168,6 +176,10 @@ export class Unit<C extends UnitCode> {
 
     if (this.code !== value.code) {
       throw new DifferentCurrencyError(this, value);
+    }
+
+    if (this.minimumFractionDigits !== value.minimumFractionDigits) {
+      throw new DifferentFractionError(this);
     }
 
     return value;
