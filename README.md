@@ -1,5 +1,9 @@
 # Lefra: Simplifying Bookkeeping with a Double-Entry Ledger Framework
 
+Lefra: Typescript Ledger Framework. 
+
+Revolutionize Your Financial Tracking with Lefra: A Comprehensive Guide to Simplify Double-Entry Ledger Management.
+
 ## Prerequisites
 
 - Lefra is designed to work exclusively with a Postgres database.

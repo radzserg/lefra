@@ -27,9 +27,20 @@
   },
   "keywords": [
     "ledger",
+    "ledger framework",
+    "ledger system",
     "bookkeeping",
     "accounting",
-    "double-entry"
+    "double-entry",
+    "Double-Entry Ledger",
+    "Financial Tracking",
+    "Ledger Transactions",
+    "Accounting System",
+    "Currency Handling",
+    "Financial Management",
+    "Transaction Records",
+    "Ledger Operations",
+    "Financial Transactions"
   ],
   "lint-staged": {
     "src/**/*.ts": [
@@ -40,6 +51,7 @@
     ]
   },
   "license": "ISC",
+  "homepage": "https://github.com/radzserg/lefra",
   "name": "lefra",
   "scripts": {
     "build": "tsc && tsc-alias",
