@@ -73,7 +73,7 @@ To begin using Lefra, you need to set up the necessary ledger structure in your 
 
 1. **Ensure PostgreSQL Database:** Make sure you have a PostgreSQL database set up and ready to use.
 
-2. **Create database tables:** Run the initialization command to generate the required [tables](./docs/ledger.png) for your ledger:
+2. **Create database tables:** Run the initialization command to generate the required [tables](https://github.com/radzserg/lefra/blob/main/docs/ledger.png) for your ledger:
 
 ```sh
 export LFR_DATABASE_URL='postgresql://ledger:ledger@localhost:5432/ledger'
@@ -90,7 +90,7 @@ started, let's delve into the process of creating a ledger structure, using the 
 example. Firecnc facilitates apartment owners in renting their properties to tenants, making it a suitable reference 
 for our demonstration. Below, you'll find a visual representation of a preliminary ledger structure. 
 
-![ledger sample structure](./docs/Ledger_Sample.jpg)
+![ledger sample structure](https://github.com/radzserg/lefra/blob/main/docs/Ledger_Sample.jpg)
 
 ##### Create storage 
 
