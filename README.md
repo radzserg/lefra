@@ -7,7 +7,7 @@ Revolutionize Your Financial Tracking with Lefra: A Comprehensive Guide to Simpl
 ## Prerequisites
 
 - Lefra is designed to work exclusively with a Postgres database.
-- Lefra relies on the slonik library to interact with Postgres.
+- Lefra relies on the [slonik](https://github.com/gajus/slonik) library to interact with Postgres.
 
 ## Understanding the Double-Entry System
 
@@ -91,6 +91,8 @@ example. Firecnc facilitates apartment owners in renting their properties to ten
 for our demonstration. Below, you'll find a visual representation of a preliminary ledger structure. 
 
 ![ledger sample structure](https://github.com/radzserg/lefra/blob/main/docs/Ledger_Sample.jpg)
+
+**You can find a live Firecnc example [here](https://github.com/radzserg/lefra-example/tree/main)**
 
 ##### Create storage 
 
