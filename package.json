@@ -64,6 +64,7 @@
   "files": [
     "README.md",
     "dist/**",
+    "!dist/tests/**",
     "database/schema.sql"
   ],
   "exports": {
