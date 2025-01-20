@@ -99,6 +99,19 @@ export default [
       'vitest/no-disabled-tests': 0,
     },
     files: ['**/*.test.ts', '**/*.test.tsx'],
+  },
+  {
+    ignores: [
+      '**/dist/**',
+      '**/__generated__/**',
+      '**/pnpm-lock.yaml',
+      '**/vite.config.ts.*',
+      // We ignore `package.json` because we have certain keys that MUST be in a specific order.
+      // Namely `exports` always wants `default` to be last or else you get an error.
+      // https://contra-work.slack.com/archives/C016ND05C2Z/p1674520150630079
+      '**/package.json',
+      'src/tests/test.d.ts',
+    ],
   }
 
 ];
