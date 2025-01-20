@@ -5,25 +5,25 @@
   },
   "dependencies": {
     "bignumber.js": "^9.1.2",
-    "slonik": "^37.2.0",
-    "slonik-interceptor-field-name-transformation": "^1.6.5",
+    "slonik": "^46.4.0",
+    "slonik-interceptor-field-name-transformation": "^46.4.0",
     "yargs": "^17.7.2",
-    "zod": "^3.22.4"
+    "zod": "^3.24.1"
   },
   "description": "",
   "devDependencies": {
-    "@types/node": "^20.9.2",
-    "@types/uuid": "^9.0.7",
-    "@types/yargs": "^17.0.32",
-    "eslint": "^8.54.0",
-    "eslint-config-canonical": "^42.8.0",
-    "husky": "^8.0.3",
+    "@types/node": "^22.10.7",
+    "@types/uuid": "^10.0.0",
+    "@types/yargs": "^17.0.33",
+    "eslint": "^9.18.0",
+    "eslint-config-canonical": "^44.3.39",
+    "husky": "^9.1.7",
     "install": "^0.13.0",
-    "lint-staged": "^15.1.0",
-    "tsc-alias": "^1.8.8",
-    "tsx": "^4.1.4",
-    "typescript": "^5.2.2",
-    "vitest": "^0.34.6"
+    "lint-staged": "^15.4.1",
+    "tsc-alias": "^1.8.10",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.2"
   },
   "keywords": [
     "ledger",
@@ -58,8 +58,8 @@
     "lefra": "tsx ./src/application/bin/lefra.ts",
     "lint:eslint": "eslint .",
     "lint:format": "eslint --fix $FILES",
-    "test": "vitest --single-thread --no-coverage --no-watch",
-    "prepare": "husky install"
+    "test": "vitest --no-coverage --no-watch",
+    "prepare": "husky"
   },
   "files": [
     "README.md",
