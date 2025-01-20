@@ -141,14 +141,13 @@ export class PostgresLedgerStorage implements LedgerStorage {
   }) {
     await this.connection.query(
       sql.type(z.object({}))`
-        INSERT INTO ledger_ledger_account_type (       
-          ledger_id, 
-          ledger_account_type_id
-        ) 
-        VALUES (
-          ${ledgerId}, 
-          ${accountTypeId}
-        )      
+        INSERT INTO
+          ledger_ledger_account_type (ledger_id, ledger_account_type_id)
+        VALUES
+          (
+            ${ledgerId},
+            ${accountTypeId}
+          )
       `,
     );
   }
@@ -171,7 +170,8 @@ export class PostgresLedgerStorage implements LedgerStorage {
           })
           .strict(),
       )`
-        SELECT calculate_balance_for_ledger_account(${id}) amount;
+        SELECT
+          calculate_balance_for_ledger_account (${id}) amount;
       `,
     );
     const { id: ledgerId } = await this.getLedgerIdBySlug(account.ledgerSlug);
@@ -189,22 +189,24 @@ export class PostgresLedgerStorage implements LedgerStorage {
   ): Promise<null | PersistedLedgerAccount> {
     return await this.connection.maybeOne(
       sql.type(LedgerAccountShape)`
-        SELECT 
+        SELECT
           la.id,
           la.ledger_id,
           la.ledger_account_type_id,
           la.slug,
           la.description
-        FROM ledger_account la        
+        FROM
+          ledger_account la
         WHERE
           la.slug = ${account.accountSlug}
           AND la.ledger_id = (
-            SELECT 
+            SELECT
               l.id
-            FROM ledger l
+            FROM
+              ledger l
             WHERE
               l.slug = ${account.ledgerSlug}
-        )
+          )
       `,
     );
   }
@@ -221,7 +223,8 @@ export class PostgresLedgerStorage implements LedgerStorage {
         normal_balance,
         is_entity_ledger_account,
         parent_ledger_account_type_id
-      FROM ledger_account_type lat  
+      FROM
+        ledger_account_type lat
       WHERE
         lat.slug = ${slug}
     `);
@@ -239,12 +242,12 @@ export class PostgresLedgerStorage implements LedgerStorage {
         lat.normal_balance,
         lat.is_entity_ledger_account,
         lat.parent_ledger_account_type_id
-      FROM ledger_account_type lat
-      INNER JOIN ledger_ledger_account_type llat
-        ON lat.id = llat.ledger_account_type_id
+      FROM
+        ledger_account_type lat
+        INNER JOIN ledger_ledger_account_type llat ON lat.id = llat.ledger_account_type_id
       WHERE
         llat.ledger_id = ${ledgerId}
-        AND lat.is_entity_ledger_account = true
+        AND lat.is_entity_ledger_account = TRUE
     `);
   }
 
@@ -258,11 +261,12 @@ export class PostgresLedgerStorage implements LedgerStorage {
         la.ledger_account_type_id,
         la.slug,
         la.description
-      FROM ledger_account la
-      INNER JOIN ledger_account_type lat ON lat.id = la.ledger_account_type_id
+      FROM
+        ledger_account la
+        INNER JOIN ledger_account_type lat ON lat.id = la.ledger_account_type_id
       WHERE
         la.ledger_id = ${ledgerId}
-        AND lat.is_entity_ledger_account = false
+        AND lat.is_entity_ledger_account = FALSE
     `);
   }
 
@@ -275,9 +279,10 @@ export class PostgresLedgerStorage implements LedgerStorage {
           })
           .strict(),
       )`
-        SELECT 
+        SELECT
           l.id
-        FROM ledger l        
+        FROM
+          ledger l
         WHERE
           l.slug = ${slug}
       `,
@@ -304,8 +309,9 @@ export class PostgresLedgerStorage implements LedgerStorage {
         SELECT
           lc.code currency_code,
           lc.minimum_fraction_digits
-        FROM ledger l        
-        INNER JOIN ledger_currency lc ON lc.id = l.ledger_currency_id
+        FROM
+          ledger l
+          INNER JOIN ledger_currency lc ON lc.id = l.ledger_currency_id
         WHERE
           l.id = ${ledgerId}
       `,
@@ -322,14 +328,15 @@ export class PostgresLedgerStorage implements LedgerStorage {
 
   public async getLedgerIdBySlug(slug: string): Promise<PersistedLedger> {
     const ledger = await this.connection.maybeOne(
-      sql.type(LedgerShape)`      
-        SELECT 
+      sql.type(LedgerShape)`
+        SELECT
           l.id,
           l.name,
           l.description,
           l.slug,
           l.ledger_currency_id
-        FROM ledger l
+        FROM
+          ledger l
         WHERE
           l.slug = ${slug}
       `,
@@ -352,7 +359,8 @@ export class PostgresLedgerStorage implements LedgerStorage {
         ledger_id,
         posted_at,
         description
-      FROM ledger_transaction lt  
+      FROM
+        ledger_transaction lt
       WHERE
         lt.id = ${transactionId}
     `);
@@ -376,7 +384,8 @@ export class PostgresLedgerStorage implements LedgerStorage {
           lte.ledger_account_id,
           lte.action,
           lte.amount
-        FROM ledger_transaction_entry lte        
+        FROM
+          ledger_transaction_entry lte
         WHERE
           lte.ledger_transaction_id = ${transactionId}
       `,
@@ -411,20 +420,23 @@ export class PostgresLedgerStorage implements LedgerStorage {
             id: z.number(),
           }),
         )`
-            INSERT INTO ledger_account (
+            INSERT INTO
+              ledger_account (
                 description,
                 ledger_account_type_id,
                 ledger_id,
                 slug
-            )
-            VALUES (
+              )
+            VALUES
+              (
                 ${description},
                 ${accountType.id},
                 ${ledgerId},
                 ${slug}
-            )
-            RETURNING id
-        `,
+              )
+            RETURNING
+              id
+          `,
       );
       return {
         description,
@@ -480,23 +492,26 @@ export class PostgresLedgerStorage implements LedgerStorage {
           id: z.number(),
         }),
       )`
-        INSERT INTO ledger_account_type (       
-          slug, 
-          name, 
-          description, 
-          normal_balance, 
-          is_entity_ledger_account, 
-          parent_ledger_account_type_id
-        ) 
-        VALUES (
-          ${slug}, 
-          ${name},
-          ${description},
-          ${normalBalance},           
-          ${isEntityLedgerAccount}, 
-          ${parentLedgerAccountTypeId}
-        )
-        RETURNING id
+        INSERT INTO
+          ledger_account_type (
+            slug,
+            name,
+            description,
+            normal_balance,
+            is_entity_ledger_account,
+            parent_ledger_account_type_id
+          )
+        VALUES
+          (
+            ${slug},
+            ${name},
+            ${description},
+            ${normalBalance},
+            ${isEntityLedgerAccount},
+            ${parentLedgerAccountTypeId}
+          )
+        RETURNING
+          id
       `,
     );
     return {
@@ -519,9 +534,16 @@ export class PostgresLedgerStorage implements LedgerStorage {
             id: z.number(),
           }),
         )`
-        INSERT INTO ledger_currency (code, minimum_fraction_digits, symbol)
-        VALUES (${code}, ${minimumFractionDigits}, ${symbol})
-        RETURNING id
+        INSERT INTO
+          ledger_currency (code, minimum_fraction_digits, symbol)
+        VALUES
+          (
+            ${code},
+            ${minimumFractionDigits},
+            ${symbol}
+          )
+        RETURNING
+          id
       `,
       );
       return {
@@ -549,9 +571,17 @@ export class PostgresLedgerStorage implements LedgerStorage {
           id: z.number(),
         }),
       )`
-        INSERT INTO ledger (slug, name, description, ledger_currency_id)
-        VALUES (${slug}, ${name}, ${description}, ${ledgerCurrencyId})
-        RETURNING id
+        INSERT INTO
+          ledger (slug, name, description, ledger_currency_id)
+        VALUES
+          (
+            ${slug},
+            ${name},
+            ${description},
+            ${ledgerCurrencyId}
+          )
+        RETURNING
+          id
       `,
     );
     return {
@@ -575,11 +605,16 @@ export class PostgresLedgerStorage implements LedgerStorage {
             id: databaseIdSchema,
           }),
         )`
-          INSERT INTO ledger_transaction (ledger_id, posted_at, description)
-          VALUES (${ledgerId}, ${postedAt.toISOString()}, ${
-            ledgerTransaction.description
-          })
-          RETURNING id
+          INSERT INTO
+            ledger_transaction (ledger_id, posted_at, description)
+          VALUES
+            (
+              ${ledgerId},
+              ${postedAt.toISOString()},
+              ${ledgerTransaction.description}
+            )
+          RETURNING
+            id
         `,
       );
 
@@ -619,10 +654,16 @@ export class PostgresLedgerStorage implements LedgerStorage {
       const amountValues = rowsToInsert.map((row) => row[3]) as number[];
 
       await transaction.query(sql.type(z.any())`
-        INSERT INTO ledger_transaction_entry (ledger_transaction_id, ledger_account_id, action, amount)
+        INSERT INTO
+          ledger_transaction_entry (
+            ledger_transaction_id,
+            ledger_account_id,
+            action,
+            amount
+          )
         SELECT
           *
-        FROM      
+        FROM
           unnest(
             ARRAY[${sql.join(
               ledgerTransactionIdValues,
@@ -633,8 +674,8 @@ export class PostgresLedgerStorage implements LedgerStorage {
               actionValues,
               sql.fragment`, `,
             )}]::credit_or_debit[],
-            ARRAY[${sql.join(amountValues, sql.fragment`, `)}]::numeric[]
-          )       
+            ARRAY[${sql.join(amountValues, sql.fragment`, `)}]::NUMERIC[]
+          )
       `);
 
       return {
@@ -688,10 +729,11 @@ export class PostgresLedgerStorage implements LedgerStorage {
         ledger_account_type_id,
         slug,
         description
-      FROM ledger_account la
+      FROM
+        ledger_account la
       WHERE
-        la.ledger_id = ${ledgerId} AND
-        la.slug = ${accountSlug}
+        la.ledger_id = ${ledgerId}
+        AND la.slug = ${accountSlug}
     `);
   }
 
@@ -705,9 +747,10 @@ export class PostgresLedgerStorage implements LedgerStorage {
           })
           .strict(),
       )`
-        SELECT 
+        SELECT
           la.id
-        FROM ledger_account la        
+        FROM
+          ledger_account la
         WHERE
           la.slug = ${account.accountSlug}
           AND la.ledger_id = ${ledgerId}
@@ -732,7 +775,8 @@ export class PostgresLedgerStorage implements LedgerStorage {
         normal_balance,
         is_entity_ledger_account,
         parent_ledger_account_type_id
-      FROM ledger_account_type lat
+      FROM
+        ledger_account_type lat
       WHERE
         lat.id = ${id}
     `);

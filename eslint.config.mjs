@@ -1,5 +1,5 @@
 import  configurations from 'eslint-config-canonical/configurations/index.js';
-// import sql from 'eslint-plugin-sql';
+import sql from 'eslint-plugin-sql';
 
 export default [
   {
@@ -65,22 +65,22 @@ export default [
       },
     },
   },
-  // {
-  //   files: ['**/*.ts', '**/*.tsx'],
-  //   plugins: { sql },
-  //   rules: {
-  //     'sql/format': [
-  //       2,
-  //       {},
-  //       {
-  //         language: 'postgresql',
-  //         keywordCase: 'upper',
-  //         functionCase: 'lower',
-  //         dataTypeCase: 'lower'
-  //       }
-  //     ],
-  //   },
-  // },
+  {
+    files: ['**/*.ts'],
+    plugins: { sql },
+    rules: {
+      'sql/format': [
+        2,
+        {},
+        {
+          language: 'postgresql',
+          keywordCase: 'upper',
+          functionCase: 'lower',
+          dataTypeCase: 'lower'
+        }
+      ],
+    },
+  },
   {
     files: ['**/*.js', '**/*.cjs'],
     rules: {
@@ -105,7 +105,7 @@ export default [
       '**/dist/**',
       '**/__generated__/**',
       '**/pnpm-lock.yaml',
-      '**/vite.config.ts.*',
+      '**/vitest.config.ts',
       // We ignore `package.json` because we have certain keys that MUST be in a specific order.
       // Namely `exports` always wants `default` to be last or else you get an error.
       // https://contra-work.slack.com/archives/C016ND05C2Z/p1674520150630079

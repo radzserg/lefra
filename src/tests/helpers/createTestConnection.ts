@@ -32,8 +32,7 @@ const createTestDatabasePooler = async (pool: DatabasePool) => {
     const database = 'test_' + uid();
 
     await pool.query(sql.type(z.object({}))`
-      CREATE DATABASE ${sql.identifier([database])}
-      TEMPLATE ${sql.identifier([templateName])}
+      CREATE DATABASE ${sql.identifier([database])} TEMPLATE ${sql.identifier([templateName])}
     `);
 
     return {

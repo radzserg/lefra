@@ -17,6 +17,7 @@
     "@types/yargs": "^17.0.33",
     "eslint": "^9.18.0",
     "eslint-config-canonical": "^44.3.39",
+    "eslint-plugin-sql": "^3.2.1",
     "husky": "^9.1.7",
     "install": "^0.13.0",
     "lint-staged": "^15.4.1",
