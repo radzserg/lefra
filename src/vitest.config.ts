@@ -12,14 +12,14 @@ export default defineConfig({
     deps: {
       interopDefault: true,
     },
-    poolOptions: {
-      threads: {
-        singleThread: true,
-        maxThreads: 1,
-      }
-    },
     mockReset: true,
     outputFile: './src/__generated__/vitest/results.xml',
+    poolOptions: {
+      threads: {
+        maxThreads: 1,
+        singleThread: true,
+      },
+    },
     reporters: 'verbose',
     setupFiles: path.resolve(__dirname, './src/tests/vitest.setup.ts'),
     testTimeout: 10_000,

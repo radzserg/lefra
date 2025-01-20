@@ -69,4 +69,4 @@ export const paymentSchema = z.union([
   processingPaymentSchema,
   confirmedPaymentSchema,
 ]);
-export type Payment = ProcessingPayment | ConfirmedPayment;
+export type Payment = ConfirmedPayment | ProcessingPayment;

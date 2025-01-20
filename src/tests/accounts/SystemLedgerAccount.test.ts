@@ -1,5 +1,5 @@
-import { SystemAccountRef } from '@/ledger/accounts/SystemAccountRef.js';
 import { randomString } from '#/helpers/chance.js';
+import { SystemAccountRef } from '@/ledger/accounts/SystemAccountRef.js';
 import { describe, expect, test } from 'vitest';
 
 const ledgerSlug = randomString();

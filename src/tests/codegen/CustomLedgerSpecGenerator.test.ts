@@ -1,6 +1,6 @@
+import { buildCustomLedger } from '#/customLedger/buildCustomLedger.js';
 import { CustomLedgerSpecGenerator } from '@/ledger/codegen/CustomLedgerSpecGenerator.js';
 import { InMemoryLedgerStorage } from '@/ledger/storage/inMemory/InMemoryLedgerStorage.js';
-import { buildCustomLedger } from '#/customLedger/buildCustomLedger.js';
 import { describe, expect, test } from 'vitest';
 
 const createServices = async () => {

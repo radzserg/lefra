@@ -4,7 +4,7 @@ import { Transaction } from '@/ledger/transaction/Transaction.js';
 import { Unit, UnitCode } from '@/ledger/units/Unit.js';
 import { expect } from 'vitest';
 
-type ExpectedEntry = ['DEBIT' | 'CREDIT', string, Unit<UnitCode>];
+type ExpectedEntry = ['CREDIT' | 'DEBIT', string, Unit<UnitCode>];
 
 type ExpectedTransaction = {
   description?: string;

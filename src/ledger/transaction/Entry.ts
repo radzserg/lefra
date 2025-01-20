@@ -1,7 +1,19 @@
 import { LedgerAccountRef } from '../accounts/LedgerAccountRef.js';
 import { Unit, UnitCode } from '@/ledger/units/Unit.js';
 
-type CoreEntry<A extends 'DEBIT' | 'CREDIT', C extends UnitCode> = {
+export type CreditEntry<C extends UnitCode> = CoreEntry<'CREDIT', C> & {
+  action: 'CREDIT';
+};
+
+export type DebitEntry<C extends UnitCode> = CoreEntry<'DEBIT', C> & {
+  action: 'DEBIT';
+};
+
+export type Entry<C extends UnitCode = UnitCode> =
+  | CreditEntry<C>
+  | DebitEntry<C>;
+
+type CoreEntry<A extends 'CREDIT' | 'DEBIT', C extends UnitCode> = {
   account: LedgerAccountRef;
   action: A;
   amount: Unit<C>;
@@ -9,19 +21,7 @@ type CoreEntry<A extends 'DEBIT' | 'CREDIT', C extends UnitCode> = {
   validate: () => void;
 };
 
-export type CreditEntry<C extends UnitCode> = {
-  action: 'CREDIT';
-} & CoreEntry<'CREDIT', C>;
-
-export type DebitEntry<C extends UnitCode> = {
-  action: 'DEBIT';
-} & CoreEntry<'DEBIT', C>;
-
-export type Entry<C extends UnitCode = UnitCode> =
-  | CreditEntry<C>
-  | DebitEntry<C>;
-
-class LedgerEntry<A extends 'DEBIT' | 'CREDIT', C extends UnitCode> {
+class LedgerEntry<A extends 'CREDIT' | 'DEBIT', C extends UnitCode> {
   private zeroable = false;
 
   public constructor(
@@ -29,6 +29,13 @@ class LedgerEntry<A extends 'DEBIT' | 'CREDIT', C extends UnitCode> {
     public readonly account: LedgerAccountRef,
     public readonly amount: Unit<C>,
   ) {}
+
+  public mayHaveZero(): A extends 'DEBIT' ? DebitEntry<C> : CreditEntry<C> {
+    this.zeroable = true;
+    return this as unknown as A extends 'DEBIT'
+      ? DebitEntry<C>
+      : CreditEntry<C>;
+  }
 
   public validate() {
     if (this.zeroable) {
@@ -38,13 +45,6 @@ class LedgerEntry<A extends 'DEBIT' | 'CREDIT', C extends UnitCode> {
     if (this.amount.isZero()) {
       throw new Error('Cannot create entry with zero amount');
     }
-  }
-
-  public mayHaveZero(): A extends 'DEBIT' ? DebitEntry<C> : CreditEntry<C> {
-    this.zeroable = true;
-    return this as unknown as A extends 'DEBIT'
-      ? DebitEntry<C>
-      : CreditEntry<C>;
   }
 }
 

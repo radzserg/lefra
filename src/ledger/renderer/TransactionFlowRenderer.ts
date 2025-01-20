@@ -3,12 +3,6 @@ import { Entry } from '@/ledger/transaction/Entry.js';
 import { Transaction } from '@/ledger/transaction/Transaction.js';
 import { Unit, UnitCode } from '@/ledger/units/Unit.js';
 
-type RenderSettings = {
-  maxAccountBalanceLength: number;
-  maxAccountNameLength: number;
-  maxAmountLength: number;
-};
-
 type AccountBalances = {
   [account: string]: Unit<UnitCode>;
 };
@@ -16,6 +10,12 @@ type AccountBalances = {
 type RenderOptions = {
   showFinalBalances?: boolean;
   showInlineBalance?: boolean;
+};
+
+type RenderSettings = {
+  maxAccountBalanceLength: number;
+  maxAccountNameLength: number;
+  maxAmountLength: number;
 };
 
 const SEPARATOR = '    ';
@@ -60,7 +60,7 @@ export class TransactionFlowRenderer implements Renderer {
           accountsBalances,
           debitEntry,
         );
-        const comment = index === 0 ? doubleEntry.comment ?? '' : '';
+        const comment = index === 0 ? (doubleEntry.comment ?? '') : '';
         const balanceItem = showInlineBalance
           ? accountsBalances[debitEntry.account.accountSlug]
               .format()

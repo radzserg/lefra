@@ -10,7 +10,7 @@ import { ExtractUnitCode, NonEmptyArray } from '@/types.js';
  * debit entries must be equal to the sum of all credit entries.
  */
 export type DoubleEntry<U extends UnitCode> = {
-  readonly comment: string | null;
+  readonly comment: null | string;
   readonly creditEntries: NonEmptyArray<CreditEntry<U>>;
   readonly debitEntries: NonEmptyArray<DebitEntry<U>>;
 };
@@ -23,7 +23,7 @@ export const doubleEntry = <
 >(
   debitEntries: D,
   creditEntries: C,
-  comment: string | null = null,
+  comment: null | string = null,
 ): DoubleEntry<ExtractUnitCode<D>> => {
   const debitEntriesSet = EntriesWithSameAction.build(debitEntries);
   const creditEntriesSet = EntriesWithSameAction.build(creditEntries);

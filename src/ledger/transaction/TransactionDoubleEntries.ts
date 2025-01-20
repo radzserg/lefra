@@ -10,7 +10,7 @@ import { isNonEmptyArray } from '@/utils.js';
 export class TransactionDoubleEntries<U extends UnitCode> {
   public entries: Array<DoubleEntry<U>> = [];
 
-  public ledgerSlug: string | null = null;
+  public ledgerSlug: null | string = null;
 
   public constructor(entries: Array<DoubleEntry<U>>) {
     if (isNonEmptyArray(entries)) {
@@ -20,6 +20,21 @@ export class TransactionDoubleEntries<U extends UnitCode> {
 
   public static empty<C extends UnitCode>(): TransactionDoubleEntries<C> {
     return new TransactionDoubleEntries<C>([]);
+  }
+
+  public append(
+    transactionDoubleEntries: TransactionDoubleEntries<U>,
+  ): TransactionDoubleEntries<U> {
+    return this.push(...transactionDoubleEntries.entries);
+  }
+
+  public flatEntries(): Array<Entry<U>> {
+    const flatEntries: Array<Entry<U>> = [];
+    for (const entry of this.entries) {
+      flatEntries.push(...entry.debitEntries, ...entry.creditEntries);
+    }
+
+    return flatEntries;
   }
 
   public push(...entries: Array<DoubleEntry<U>>): TransactionDoubleEntries<U> {
@@ -48,20 +63,5 @@ export class TransactionDoubleEntries<U extends UnitCode> {
     }
 
     return this;
-  }
-
-  public append(
-    transactionDoubleEntries: TransactionDoubleEntries<U>,
-  ): TransactionDoubleEntries<U> {
-    return this.push(...transactionDoubleEntries.entries);
-  }
-
-  public flatEntries(): Array<Entry<U>> {
-    const flatEntries: Array<Entry<U>> = [];
-    for (const entry of this.entries) {
-      flatEntries.push(...entry.debitEntries, ...entry.creditEntries);
-    }
-
-    return flatEntries;
   }
 }

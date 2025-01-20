@@ -16,7 +16,7 @@ export class Transaction<U extends UnitCode = UnitCode> {
 
   public constructor(
     public readonly transactionDoubleEntries: TransactionDoubleEntries<U>,
-    public readonly description: string | null = null,
+    public readonly description: null | string = null,
     public readonly postedAt: Date | null = new Date(),
   ) {
     const flatEntries = transactionDoubleEntries.flatEntries();

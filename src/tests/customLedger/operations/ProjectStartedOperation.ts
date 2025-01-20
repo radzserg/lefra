@@ -1,3 +1,7 @@
+import { CustomLedgerSpecification } from '#/customLedger/CustomLedgerSpecification.js';
+import { paymentSchema } from '#/customLedger/importedTypes.js';
+import { entriesForPaymentConfirmed } from '#/customLedger/operations/paymentConfirmed.js';
+import { usdSchema } from '#/customLedger/validation.js';
 import { LedgerOperationError } from '@/errors.js';
 import { ledgerAccountsRefBuilder } from '@/ledger/accounts/ledgerAccountsRefBuilder.js';
 import { ILedgerOperation } from '@/ledger/operation/LedgerOperation.js';
@@ -5,10 +9,6 @@ import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { Transaction } from '@/ledger/transaction/Transaction.js';
 import { TransactionDoubleEntries } from '@/ledger/transaction/TransactionDoubleEntries.js';
-import { CustomLedgerSpecification } from '#/customLedger/CustomLedgerSpecification.js';
-import { paymentSchema } from '#/customLedger/importedTypes.js';
-import { entriesForPaymentConfirmed } from '#/customLedger/operations/paymentConfirmed.js';
-import { usdSchema } from '#/customLedger/validation.js';
 import { z } from 'zod';
 
 const schema = z
@@ -20,8 +20,8 @@ const schema = z
   })
   .strict();
 
-type OperationSchema = typeof schema;
 export type ProjectStartedOperationData = z.infer<OperationSchema>;
+type OperationSchema = typeof schema;
 
 /**
  * Test operation -  Project starts, client pays for the project.

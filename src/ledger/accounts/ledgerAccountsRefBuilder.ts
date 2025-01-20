@@ -18,7 +18,7 @@ export const ledgerAccountsRefBuilder = <S extends LedgerSpecification>(
   } = specification;
 
   return ((
-    slug: S['systemAccounts'][number] | S['entityAccountTypes'][number],
+    slug: S['entityAccountTypes'][number] | S['systemAccounts'][number],
     externalId?: DB_ID,
   ) => {
     if (externalId !== undefined) {

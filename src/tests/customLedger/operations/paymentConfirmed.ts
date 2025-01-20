@@ -1,9 +1,9 @@
+import { CustomLedgerSpecification } from '#/customLedger/CustomLedgerSpecification.js';
+import { ConfirmedPayment } from '#/customLedger/importedTypes.js';
 import { ledgerAccountsRefBuilder } from '@/ledger/accounts/ledgerAccountsRefBuilder.js';
 import { doubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { credit, debit } from '@/ledger/transaction/Entry.js';
 import { TransactionDoubleEntries } from '@/ledger/transaction/TransactionDoubleEntries.js';
-import { CustomLedgerSpecification } from '#/customLedger/CustomLedgerSpecification.js';
-import { ConfirmedPayment } from '#/customLedger/importedTypes.js';
 
 export const entriesForPaymentConfirmed = ({
   clientUserId,

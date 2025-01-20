@@ -1,5 +1,5 @@
-import { EntityAccountRef } from '@/ledger/accounts/EntityAccountRef.js';
 import { randomInt, randomString } from '#/helpers/chance.js';
+import { EntityAccountRef } from '@/ledger/accounts/EntityAccountRef.js';
 import { describe, expect, test } from 'vitest';
 
 const ledgerSlug = randomString();

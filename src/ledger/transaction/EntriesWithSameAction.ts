@@ -9,13 +9,13 @@ import { isNonEmptyArray } from '@/utils.js';
  * All money amounts must be of the same currency.
  */
 export class EntriesWithSameAction<
-  O extends DebitEntry<UnitCode> | CreditEntry<UnitCode>,
+  O extends CreditEntry<UnitCode> | DebitEntry<UnitCode>,
 > {
+  public readonly entries: NonEmptyArray<O>;
+
   private readonly action: EntryAction;
 
   private readonly operationsSum: Unit<ExtractUnitCode<O>>;
-
-  public readonly entries: NonEmptyArray<O>;
 
   private constructor(entries: NonEmptyArray<O>) {
     // validate all entries
@@ -58,10 +58,10 @@ export class EntriesWithSameAction<
   public static build<
     C extends UnitCode,
     E extends
-      | DebitEntry<C>
-      | NonEmptyArray<DebitEntry<C>>
       | CreditEntry<C>
-      | NonEmptyArray<CreditEntry<C>>,
+      | DebitEntry<C>
+      | NonEmptyArray<CreditEntry<C>>
+      | NonEmptyArray<DebitEntry<C>>,
   >(entries: E) {
     if (Array.isArray(entries)) {
       return new EntriesWithSameAction(entries);

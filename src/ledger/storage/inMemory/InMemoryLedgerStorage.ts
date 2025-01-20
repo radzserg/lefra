@@ -37,15 +37,11 @@ const intGenerator = () => {
  * This implementation is not persistent and is used for testing.
  */
 export class InMemoryLedgerStorage implements LedgerStorage {
-  public ledgers: PersistedLedger[] = [];
-
-  public currencies: PersistedLedgerCurrency[] = [];
+  public accounts: PersistedLedgerAccount[] = [];
 
   public accountTypes: PersistedLedgerAccountType[] = [];
 
-  public accounts: PersistedLedgerAccount[] = [];
-
-  public transactions: PersistedTransaction[] = [];
+  public currencies: PersistedLedgerCurrency[] = [];
 
   public entries: PersistedEntry[] = [];
 
@@ -54,80 +50,11 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     ledgerId: DB_ID;
   }> = [];
 
+  public ledgers: PersistedLedger[] = [];
+
+  public transactions: PersistedTransaction[] = [];
+
   private readonly idGenerator = intGenerator();
-
-  /**
-   * Inserts a new ledger.
-   */
-  public async insertLedger({
-    description,
-    ledgerCurrencyId,
-    name,
-    slug,
-  }: LedgerInput) {
-    const existedLedger = await this.findLedgerIdBySlug(slug);
-    if (existedLedger) {
-      throw new LedgerError(`Ledger ${slug} already exists`);
-    }
-
-    const persistedLedger = {
-      description,
-      id: this.idGenerator.generateId(),
-      ledgerCurrencyId,
-      name,
-      slug,
-    };
-    this.ledgers.push(persistedLedger);
-    return persistedLedger;
-  }
-
-  public async insertAccountType({
-    description,
-    isEntityLedgerAccount,
-    name,
-    normalBalance,
-    parentLedgerAccountTypeId = null,
-    slug,
-  }: {
-    description: string;
-    isEntityLedgerAccount: boolean;
-    name: string;
-    normalBalance: 'CREDIT' | 'DEBIT';
-    parentLedgerAccountTypeId?: DB_ID | null;
-    slug: string;
-  }) {
-    const existingAccount = await this.findAccountTypeBySlug(slug);
-    if (existingAccount && !existingAccount.isEntityLedgerAccount) {
-      throw new LedgerError(`Account type ${slug} already exists.`);
-    }
-
-    if (parentLedgerAccountTypeId) {
-      const parentAccount = await this.getSavedAccountTypeById(
-        parentLedgerAccountTypeId,
-      );
-      if (!parentAccount) {
-        throw new LedgerError('Parent account type not found');
-      }
-
-      if (parentAccount.normalBalance !== normalBalance) {
-        throw new LedgerError(
-          'Parent account type must have the same normal balance',
-        );
-      }
-    }
-
-    const persistedLedgerAccountType = {
-      description,
-      id: this.idGenerator.generateId(),
-      isEntityLedgerAccount,
-      name,
-      normalBalance,
-      parentLedgerAccountTypeId,
-      slug,
-    };
-    this.accountTypes.push(persistedLedgerAccountType);
-    return persistedLedgerAccountType;
-  }
 
   public async assignAccountTypeToLedger({
     accountTypeId,
@@ -140,169 +67,6 @@ export class InMemoryLedgerStorage implements LedgerStorage {
       ledgerAccountTypeId: accountTypeId,
       ledgerId,
     });
-  }
-
-  public async insertAccount({
-    description,
-    ledgerAccountTypeId,
-    ledgerId,
-    slug,
-  }: InputLedgerAccount) {
-    const existingAccount = await this.findSavedAccount(ledgerId, slug);
-    if (existingAccount) {
-      throw new LedgerUnexpectedError(`Account ${slug} already exists`);
-    }
-
-    const accountType = await this.getSavedAccountTypeById(ledgerAccountTypeId);
-
-    const persistedAccount = {
-      description,
-      id: this.idGenerator.generateId(),
-      ledgerAccountTypeId: accountType.id,
-      ledgerId,
-      slug,
-    };
-
-    this.accounts.push(persistedAccount);
-    return persistedAccount;
-  }
-
-  public async getLedgerIdBySlug(slug: string) {
-    const existingLedger = await this.findLedgerIdBySlug(slug);
-    if (!existingLedger) {
-      throw new LedgerNotFoundError(`Ledger ${slug} not found`);
-    }
-
-    return existingLedger;
-  }
-
-  public async findLedgerIdBySlug(slug: string) {
-    return this.ledgers.find((ledger) => ledger.slug === slug);
-  }
-
-  public async insertCurrency(parameters: InputLedgerCurrency) {
-    if (this.currencies.some((currency) => currency.code === parameters.code)) {
-      throw new LedgerError(`Currency ${parameters.code} already exists`);
-    }
-
-    const persistedCurrency = {
-      code: parameters.code,
-      id: this.idGenerator.generateId(),
-      minimumFractionDigits: parameters.minimumFractionDigits,
-      symbol: parameters.symbol,
-    };
-    this.currencies.push(persistedCurrency);
-    return persistedCurrency;
-  }
-
-  public async insertTransaction(transaction: Transaction) {
-    const { id: ledgerId } = await this.getLedgerIdBySlug(
-      transaction.ledgerSlug,
-    );
-    const savedTransaction: PersistedTransaction = {
-      description: transaction.description,
-      id: this.idGenerator.generateId(),
-      ledgerId,
-      postedAt: transaction.postedAt,
-    };
-
-    await this.saveTransactionLedgerAccounts(transaction.entries);
-    await this.saveTransactionEntries(savedTransaction, transaction.entries);
-
-    this.transactions.push(savedTransaction);
-    return savedTransaction;
-  }
-
-  private async saveTransactionEntries(
-    transaction: PersistedTransaction,
-    entries: Array<Entry<UnitCode>>,
-  ) {
-    const savedEntries: PersistedEntry[] = [];
-    for (const entry of entries) {
-      const existingAccount = await this.findAccount(entry.account);
-      if (!existingAccount) {
-        throw new LedgerNotFoundError(
-          `Account ${entry.account.accountSlug} not found`,
-        );
-      }
-
-      savedEntries.push({
-        action: entry.action,
-        amount: entry.amount,
-        id: this.idGenerator.generateId(),
-        ledgerAccountId: existingAccount.id,
-        ledgerTransactionId: transaction.id,
-      });
-    }
-
-    this.entries.push(...savedEntries);
-  }
-
-  private async saveTransactionLedgerAccounts(entries: Array<Entry<UnitCode>>) {
-    const ledgerAccounts: LedgerAccountRef[] = [];
-    for (const entry of entries) {
-      ledgerAccounts.push(entry.account);
-    }
-
-    await this.findOrInsertLedgerAccounts(ledgerAccounts);
-  }
-
-  private async getSavedAccountTypeById(id: DB_ID) {
-    const foundAccountType = this.accountTypes.find((savedAccountType) => {
-      return savedAccountType.id === id;
-    });
-
-    if (!foundAccountType) {
-      throw new LedgerError(`Account type ID: ${id} not found`);
-    }
-
-    return foundAccountType;
-  }
-
-  private async findOrInsertLedgerAccounts(accounts: LedgerAccountRef[]) {
-    for (const account of accounts) {
-      const existingAccount = await this.findSavedAccountByAccountRef(account);
-      if (existingAccount) {
-        continue;
-      }
-
-      if (!(account instanceof EntityAccountRef)) {
-        throw new LedgerError(
-          `Account ${account.accountSlug} does not exist. Only entity accounts can be inserted`,
-        );
-      }
-
-      const accountType = await this.findAccountTypeBySlug(account.name);
-      if (!accountType) {
-        throw new LedgerError(`Account type ${account.accountSlug} not found`);
-      }
-
-      const { id: ledgerId } = await this.getLedgerIdBySlug(account.ledgerSlug);
-      const accountTypesBelongsToLedger = this.ledgerLedgerAccountTypes.find(
-        (ledgerLedgerAccountType) =>
-          ledgerLedgerAccountType.ledgerId === ledgerId,
-      );
-      if (!accountTypesBelongsToLedger) {
-        throw new LedgerError(
-          `Account type ${account.accountSlug} not found for ledger ${account.ledgerSlug}`,
-        );
-      }
-
-      if (!accountType.isEntityLedgerAccount) {
-        throw new LedgerError(
-          `Account ${account.accountSlug} cannot be inserted. Only entity accounts can be inserted`,
-        );
-      }
-
-      await this.insertAccount({
-        description: accountType.description
-          ? `${accountType.description}. Account created for entity ID:${account.externalId}.`
-          : null,
-        ledgerAccountTypeId: accountType.id,
-        ledgerId,
-        slug: account.accountSlug,
-      });
-    }
   }
 
   public async fetchAccountBalance(
@@ -318,8 +82,8 @@ export class InMemoryLedgerStorage implements LedgerStorage {
       await this.getSavedAccountTypeById(ledgerAccountTypeId);
 
     const normalBalance = ledgerAccountType.normalBalance;
-    let sumDebits: Unit<UnitCode> | null = null;
-    let sumCredits: Unit<UnitCode> | null = null;
+    let sumDebits: null | Unit<UnitCode> = null;
+    let sumCredits: null | Unit<UnitCode> = null;
     for (const entry of this.entries) {
       if (entry.ledgerAccountId !== savedAccount.id) {
         continue;
@@ -390,7 +154,7 @@ export class InMemoryLedgerStorage implements LedgerStorage {
 
   public async findAccount(
     account: LedgerAccountRef,
-  ): Promise<PersistedLedgerAccount | null> {
+  ): Promise<null | PersistedLedgerAccount> {
     const { id: ledgerId } = await this.getLedgerIdBySlug(account.ledgerSlug);
     const foundAccount = this.accounts.find((savedAccount) => {
       return (
@@ -402,65 +166,14 @@ export class InMemoryLedgerStorage implements LedgerStorage {
     return foundAccount ?? null;
   }
 
-  private async findSavedAccountByAccountRef({
-    accountSlug,
-    ledgerSlug,
-  }: LedgerAccountRef) {
-    const ledger = this.ledgers.find(
-      (savedLedger) => savedLedger.slug === ledgerSlug,
-    );
-    if (!ledger) {
-      throw new LedgerNotFoundError(`Ledger ${ledgerSlug} not found`);
-    }
-
-    const foundAccount = this.accounts.find((savedAccount) => {
-      return (
-        savedAccount.slug === accountSlug && savedAccount.ledgerId === ledger.id
-      );
-    });
-
-    return foundAccount ?? null;
-  }
-
-  private async findSavedAccount(ledgerId: DB_ID, accountSlug: string) {
-    const foundAccount = this.accounts.find((savedAccount) => {
-      return (
-        savedAccount.slug === accountSlug && savedAccount.ledgerId === ledgerId
-      );
-    });
-
-    return foundAccount ?? null;
-  }
-
   public async findAccountTypeBySlug(
     slug: string,
-  ): Promise<PersistedLedgerAccountType | null> {
+  ): Promise<null | PersistedLedgerAccountType> {
     const foundAccountType = this.accountTypes.find((savedAccountType) => {
       return savedAccountType.slug === slug;
     });
 
     return foundAccountType ?? null;
-  }
-
-  public async getTransactionEntries(
-    transactionId: DB_ID,
-  ): Promise<PersistedEntry[]> {
-    return this.entries.filter(
-      (entry) => entry.ledgerTransactionId === transactionId,
-    );
-  }
-
-  public async getTransactionById(
-    transactionId: DB_ID,
-  ): Promise<PersistedTransaction> {
-    const transaction = this.transactions.find(
-      (savedTransaction) => savedTransaction.id === transactionId,
-    );
-    if (!transaction) {
-      throw new LedgerNotFoundError(`Transaction ${transactionId} not found`);
-    }
-
-    return transaction;
   }
 
   /**
@@ -483,6 +196,10 @@ export class InMemoryLedgerStorage implements LedgerStorage {
         accountType.isEntityLedgerAccount &&
         ledgerAccountTypeIds.includes(accountType.id),
     );
+  }
+
+  public async findLedgerIdBySlug(slug: string) {
+    return this.ledgers.find((ledger) => ledger.slug === slug);
   }
 
   /**
@@ -522,5 +239,288 @@ export class InMemoryLedgerStorage implements LedgerStorage {
       currencyCode: foundCurrency.code,
       minimumFractionDigits: foundCurrency.minimumFractionDigits,
     };
+  }
+
+  public async getLedgerIdBySlug(slug: string) {
+    const existingLedger = await this.findLedgerIdBySlug(slug);
+    if (!existingLedger) {
+      throw new LedgerNotFoundError(`Ledger ${slug} not found`);
+    }
+
+    return existingLedger;
+  }
+
+  public async getTransactionById(
+    transactionId: DB_ID,
+  ): Promise<PersistedTransaction> {
+    const transaction = this.transactions.find(
+      (savedTransaction) => savedTransaction.id === transactionId,
+    );
+    if (!transaction) {
+      throw new LedgerNotFoundError(`Transaction ${transactionId} not found`);
+    }
+
+    return transaction;
+  }
+
+  public async getTransactionEntries(
+    transactionId: DB_ID,
+  ): Promise<PersistedEntry[]> {
+    return this.entries.filter(
+      (entry) => entry.ledgerTransactionId === transactionId,
+    );
+  }
+
+  public async insertAccount({
+    description,
+    ledgerAccountTypeId,
+    ledgerId,
+    slug,
+  }: InputLedgerAccount) {
+    const existingAccount = await this.findSavedAccount(ledgerId, slug);
+    if (existingAccount) {
+      throw new LedgerUnexpectedError(`Account ${slug} already exists`);
+    }
+
+    const accountType = await this.getSavedAccountTypeById(ledgerAccountTypeId);
+
+    const persistedAccount = {
+      description,
+      id: this.idGenerator.generateId(),
+      ledgerAccountTypeId: accountType.id,
+      ledgerId,
+      slug,
+    };
+
+    this.accounts.push(persistedAccount);
+    return persistedAccount;
+  }
+
+  public async insertAccountType({
+    description,
+    isEntityLedgerAccount,
+    name,
+    normalBalance,
+    parentLedgerAccountTypeId = null,
+    slug,
+  }: {
+    description: string;
+    isEntityLedgerAccount: boolean;
+    name: string;
+    normalBalance: 'CREDIT' | 'DEBIT';
+    parentLedgerAccountTypeId?: DB_ID | null;
+    slug: string;
+  }) {
+    const existingAccount = await this.findAccountTypeBySlug(slug);
+    if (existingAccount && !existingAccount.isEntityLedgerAccount) {
+      throw new LedgerError(`Account type ${slug} already exists.`);
+    }
+
+    if (parentLedgerAccountTypeId) {
+      const parentAccount = await this.getSavedAccountTypeById(
+        parentLedgerAccountTypeId,
+      );
+      if (!parentAccount) {
+        throw new LedgerError('Parent account type not found');
+      }
+
+      if (parentAccount.normalBalance !== normalBalance) {
+        throw new LedgerError(
+          'Parent account type must have the same normal balance',
+        );
+      }
+    }
+
+    const persistedLedgerAccountType = {
+      description,
+      id: this.idGenerator.generateId(),
+      isEntityLedgerAccount,
+      name,
+      normalBalance,
+      parentLedgerAccountTypeId,
+      slug,
+    };
+    this.accountTypes.push(persistedLedgerAccountType);
+    return persistedLedgerAccountType;
+  }
+
+  public async insertCurrency(parameters: InputLedgerCurrency) {
+    if (this.currencies.some((currency) => currency.code === parameters.code)) {
+      throw new LedgerError(`Currency ${parameters.code} already exists`);
+    }
+
+    const persistedCurrency = {
+      code: parameters.code,
+      id: this.idGenerator.generateId(),
+      minimumFractionDigits: parameters.minimumFractionDigits,
+      symbol: parameters.symbol,
+    };
+    this.currencies.push(persistedCurrency);
+    return persistedCurrency;
+  }
+
+  /**
+   * Inserts a new ledger.
+   */
+  public async insertLedger({
+    description,
+    ledgerCurrencyId,
+    name,
+    slug,
+  }: LedgerInput) {
+    const existedLedger = await this.findLedgerIdBySlug(slug);
+    if (existedLedger) {
+      throw new LedgerError(`Ledger ${slug} already exists`);
+    }
+
+    const persistedLedger = {
+      description,
+      id: this.idGenerator.generateId(),
+      ledgerCurrencyId,
+      name,
+      slug,
+    };
+    this.ledgers.push(persistedLedger);
+    return persistedLedger;
+  }
+
+  public async insertTransaction(transaction: Transaction) {
+    const { id: ledgerId } = await this.getLedgerIdBySlug(
+      transaction.ledgerSlug,
+    );
+    const savedTransaction: PersistedTransaction = {
+      description: transaction.description,
+      id: this.idGenerator.generateId(),
+      ledgerId,
+      postedAt: transaction.postedAt,
+    };
+
+    await this.saveTransactionLedgerAccounts(transaction.entries);
+    await this.saveTransactionEntries(savedTransaction, transaction.entries);
+
+    this.transactions.push(savedTransaction);
+    return savedTransaction;
+  }
+
+  private async findOrInsertLedgerAccounts(accounts: LedgerAccountRef[]) {
+    for (const account of accounts) {
+      const existingAccount = await this.findSavedAccountByAccountRef(account);
+      if (existingAccount) {
+        continue;
+      }
+
+      if (!(account instanceof EntityAccountRef)) {
+        throw new LedgerError(
+          `Account ${account.accountSlug} does not exist. Only entity accounts can be inserted`,
+        );
+      }
+
+      const accountType = await this.findAccountTypeBySlug(account.name);
+      if (!accountType) {
+        throw new LedgerError(`Account type ${account.accountSlug} not found`);
+      }
+
+      const { id: ledgerId } = await this.getLedgerIdBySlug(account.ledgerSlug);
+      const accountTypesBelongsToLedger = this.ledgerLedgerAccountTypes.find(
+        (ledgerLedgerAccountType) =>
+          ledgerLedgerAccountType.ledgerId === ledgerId,
+      );
+      if (!accountTypesBelongsToLedger) {
+        throw new LedgerError(
+          `Account type ${account.accountSlug} not found for ledger ${account.ledgerSlug}`,
+        );
+      }
+
+      if (!accountType.isEntityLedgerAccount) {
+        throw new LedgerError(
+          `Account ${account.accountSlug} cannot be inserted. Only entity accounts can be inserted`,
+        );
+      }
+
+      await this.insertAccount({
+        description: accountType.description
+          ? `${accountType.description}. Account created for entity ID:${account.externalId}.`
+          : null,
+        ledgerAccountTypeId: accountType.id,
+        ledgerId,
+        slug: account.accountSlug,
+      });
+    }
+  }
+
+  private async findSavedAccount(ledgerId: DB_ID, accountSlug: string) {
+    const foundAccount = this.accounts.find((savedAccount) => {
+      return (
+        savedAccount.slug === accountSlug && savedAccount.ledgerId === ledgerId
+      );
+    });
+
+    return foundAccount ?? null;
+  }
+
+  private async findSavedAccountByAccountRef({
+    accountSlug,
+    ledgerSlug,
+  }: LedgerAccountRef) {
+    const ledger = this.ledgers.find(
+      (savedLedger) => savedLedger.slug === ledgerSlug,
+    );
+    if (!ledger) {
+      throw new LedgerNotFoundError(`Ledger ${ledgerSlug} not found`);
+    }
+
+    const foundAccount = this.accounts.find((savedAccount) => {
+      return (
+        savedAccount.slug === accountSlug && savedAccount.ledgerId === ledger.id
+      );
+    });
+
+    return foundAccount ?? null;
+  }
+
+  private async getSavedAccountTypeById(id: DB_ID) {
+    const foundAccountType = this.accountTypes.find((savedAccountType) => {
+      return savedAccountType.id === id;
+    });
+
+    if (!foundAccountType) {
+      throw new LedgerError(`Account type ID: ${id} not found`);
+    }
+
+    return foundAccountType;
+  }
+
+  private async saveTransactionEntries(
+    transaction: PersistedTransaction,
+    entries: Array<Entry<UnitCode>>,
+  ) {
+    const savedEntries: PersistedEntry[] = [];
+    for (const entry of entries) {
+      const existingAccount = await this.findAccount(entry.account);
+      if (!existingAccount) {
+        throw new LedgerNotFoundError(
+          `Account ${entry.account.accountSlug} not found`,
+        );
+      }
+
+      savedEntries.push({
+        action: entry.action,
+        amount: entry.amount,
+        id: this.idGenerator.generateId(),
+        ledgerAccountId: existingAccount.id,
+        ledgerTransactionId: transaction.id,
+      });
+    }
+
+    this.entries.push(...savedEntries);
+  }
+
+  private async saveTransactionLedgerAccounts(entries: Array<Entry<UnitCode>>) {
+    const ledgerAccounts: LedgerAccountRef[] = [];
+    for (const entry of entries) {
+      ledgerAccounts.push(entry.account);
+    }
+
+    await this.findOrInsertLedgerAccounts(ledgerAccounts);
   }
 }

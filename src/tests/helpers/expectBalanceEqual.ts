@@ -2,8 +2,8 @@ import { Unit, UnitCode } from '@/ledger/units/Unit.js';
 import { expect } from 'vitest';
 
 export const expectBalanceEqual = (
-  actualBalance: Unit<UnitCode> | null,
-  expectedBalance: Unit<UnitCode> | null,
+  actualBalance: null | Unit<UnitCode>,
+  expectedBalance: null | Unit<UnitCode>,
   accountName: string,
 ) => {
   expect(

@@ -1,5 +1,5 @@
 import { LedgerAccountRef } from '@/ledger/accounts/LedgerAccountRef.js';
-import { DB_ID } from '@/types.js';
+import { type DB_ID } from '@/types.js';
 
 /**
  * Represents a reference to an account associated with an entity. Those accounts
@@ -9,9 +9,9 @@ import { DB_ID } from '@/types.js';
  * For example, USER_RECEIVABLES, TEAM_LOCKED_FUNDS, etc.
  */
 export class EntityAccountRef extends LedgerAccountRef {
-  public readonly type = 'ENTITY' as const;
-
   public readonly name: string;
+
+  public readonly type = 'ENTITY' as const;
 
   public constructor(
     public readonly ledgerSlug: string,

@@ -9,7 +9,7 @@ BigNumber.config({
 });
 
 export type UnitCode = string;
-type OperationArgument<C extends UnitCode> = Unit<C> | number | BigNumber;
+type OperationArgument<C extends UnitCode> = BigNumber | number | Unit<C>;
 
 export class UnitError extends Error {}
 
@@ -54,62 +54,6 @@ export class Unit<C extends UnitCode> {
     }
   }
 
-  public equals(other: Unit<UnitCode>): boolean {
-    if (!this.isSameCurrency(other)) {
-      throw new DifferentCurrencyError(this, other);
-    }
-
-    return this.amount.isEqualTo(other.amount);
-  }
-
-  public isZero(): boolean {
-    return this.amount.isZero();
-  }
-
-  public isPositive(): boolean {
-    return this.amount.isGreaterThan(0);
-  }
-
-  public zeroValue(): Unit<C> {
-    return new Unit(0, this.code, this.minimumFractionDigits);
-  }
-
-  public isSameCurrency(other: Unit<UnitCode>): other is Unit<C> {
-    return this.code === other.code;
-  }
-
-  public isLessThan(argument: OperationArgument<C>): boolean {
-    return this.amount.isLessThan(this.toUnit(argument).amount);
-  }
-
-  public isLessThanOrEqualTo(argument: OperationArgument<C>): boolean {
-    return this.amount.isLessThanOrEqualTo(this.toUnit(argument).amount);
-  }
-
-  public isGreaterThan(argument: OperationArgument<C>): boolean {
-    return this.amount.isGreaterThan(this.toUnit(argument).amount);
-  }
-
-  public isGreaterThanOrEqualTo(argument: OperationArgument<C>): boolean {
-    return this.amount.isGreaterThanOrEqualTo(this.toUnit(argument).amount);
-  }
-
-  public plus(argument: OperationArgument<C>): Unit<C> {
-    return new Unit(
-      this.amount.plus(this.toUnit(argument).amount),
-      this.code,
-      this.minimumFractionDigits,
-    );
-  }
-
-  public minus(argument: OperationArgument<C>): Unit<C> {
-    return new Unit(
-      this.amount.minus(this.toUnit(argument).amount),
-      this.code,
-      this.minimumFractionDigits,
-    );
-  }
-
   public dividedBy(argument: OperationArgument<C>): Unit<C> {
     return new Unit(
       this.amount.dividedBy(this.toUnit(argument).amount),
@@ -118,19 +62,12 @@ export class Unit<C extends UnitCode> {
     );
   }
 
-  public multipliedBy(argument: OperationArgument<C>): Unit<C> {
-    return new Unit(
-      this.amount.multipliedBy(this.toUnit(argument).amount),
-      this.code,
-      this.minimumFractionDigits,
-    );
-  }
+  public equals(other: Unit<UnitCode>): boolean {
+    if (!this.isSameCurrency(other)) {
+      throw new DifferentCurrencyError(this, other);
+    }
 
-  /**
-   * Stringifies the amount with 8 decimal places of precision.
-   */
-  public toFullPrecision(): string {
-    return this.amount.toFixed(NUM_DECIMAL_PLACES);
+    return this.amount.isEqualTo(other.amount);
   }
 
   /**
@@ -151,6 +88,69 @@ export class Unit<C extends UnitCode> {
       this.amount.decimalPlaces(this.minimumFractionDigits).toNumber(),
     );
     return `${this.code}:${value}`;
+  }
+
+  public isGreaterThan(argument: OperationArgument<C>): boolean {
+    return this.amount.isGreaterThan(this.toUnit(argument).amount);
+  }
+
+  public isGreaterThanOrEqualTo(argument: OperationArgument<C>): boolean {
+    return this.amount.isGreaterThanOrEqualTo(this.toUnit(argument).amount);
+  }
+
+  public isLessThan(argument: OperationArgument<C>): boolean {
+    return this.amount.isLessThan(this.toUnit(argument).amount);
+  }
+
+  public isLessThanOrEqualTo(argument: OperationArgument<C>): boolean {
+    return this.amount.isLessThanOrEqualTo(this.toUnit(argument).amount);
+  }
+
+  public isPositive(): boolean {
+    return this.amount.isGreaterThan(0);
+  }
+
+  public isSameCurrency(other: Unit<UnitCode>): other is Unit<C> {
+    return this.code === other.code;
+  }
+
+  public isZero(): boolean {
+    return this.amount.isZero();
+  }
+
+  public minus(argument: OperationArgument<C>): Unit<C> {
+    return new Unit(
+      this.amount.minus(this.toUnit(argument).amount),
+      this.code,
+      this.minimumFractionDigits,
+    );
+  }
+
+  public multipliedBy(argument: OperationArgument<C>): Unit<C> {
+    return new Unit(
+      this.amount.multipliedBy(this.toUnit(argument).amount),
+      this.code,
+      this.minimumFractionDigits,
+    );
+  }
+
+  public plus(argument: OperationArgument<C>): Unit<C> {
+    return new Unit(
+      this.amount.plus(this.toUnit(argument).amount),
+      this.code,
+      this.minimumFractionDigits,
+    );
+  }
+
+  /**
+   * Stringifies the amount with 8 decimal places of precision.
+   */
+  public toFullPrecision(): string {
+    return this.amount.toFixed(NUM_DECIMAL_PLACES);
+  }
+
+  public zeroValue(): Unit<C> {
+    return new Unit(0, this.code, this.minimumFractionDigits);
   }
 
   /**

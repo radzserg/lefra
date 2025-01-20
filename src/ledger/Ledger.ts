@@ -7,20 +7,20 @@ import { Unit, UnitCode } from '@/ledger/units/Unit.js';
 export type ILedger = {
   fetchAccountBalance: (
     account: LedgerAccountRef,
-  ) => Promise<Unit<UnitCode> | null>;
+  ) => Promise<null | Unit<UnitCode>>;
   record: (operation: ILedgerOperation) => Promise<Transaction>;
 };
 
 export class Ledger implements ILedger {
   public constructor(private readonly storage: LedgerStorage) {}
 
+  public async fetchAccountBalance(account: LedgerAccountRef) {
+    return this.storage.fetchAccountBalance(account);
+  }
+
   public async record(operation: ILedgerOperation): Promise<Transaction> {
     const transaction = await operation.createTransaction();
     await this.storage.insertTransaction(transaction);
     return transaction;
-  }
-
-  public async fetchAccountBalance(account: LedgerAccountRef) {
-    return this.storage.fetchAccountBalance(account);
   }
 }

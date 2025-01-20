@@ -5,16 +5,16 @@ import { randomUUID } from 'node:crypto';
 import { DatabasePool, sql } from 'slonik';
 import { z } from 'zod';
 
+type RunWithDatabaseConnectionPoolRoutine = (environment: {
+  pool: DatabasePool;
+  testDatabase: TestDatabase;
+}) => Promise<void>;
+
 type TestDatabase = {
   destroy: () => Promise<void>;
   getConnectionUri: () => string;
   name: () => string;
 };
-
-type RunWithDatabaseConnectionPoolRoutine = (environment: {
-  pool: DatabasePool;
-  testDatabase: TestDatabase;
-}) => Promise<void>;
 const uid = () => {
   const databaseUid = randomUUID().split('-').pop();
 

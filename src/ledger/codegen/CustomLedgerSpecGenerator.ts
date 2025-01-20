@@ -1,6 +1,10 @@
 import { LedgerStorage } from '@/ledger/storage/LedgerStorage.js';
 import * as fs from 'node:fs';
 
+type GenerateCustomLedgerSpecOptions = SaveMode & {
+  className: string;
+  ledgerSlug: string;
+};
 type SaveMode =
   | {
       mode: 'file';
@@ -9,10 +13,6 @@ type SaveMode =
   | {
       mode: 'output';
     };
-type GenerateCustomLedgerSpecOptions = {
-  className: string;
-  ledgerSlug: string;
-} & SaveMode;
 
 export class CustomLedgerSpecGenerator {
   public constructor(private readonly storage: LedgerStorage) {}
@@ -21,7 +21,7 @@ export class CustomLedgerSpecGenerator {
     className,
     ledgerSlug,
     ...props
-  }: GenerateCustomLedgerSpecOptions): Promise<string | null> {
+  }: GenerateCustomLedgerSpecOptions): Promise<null | string> {
     const { id: ledgerId, slug } =
       await this.storage.getLedgerIdBySlug(ledgerSlug);
     const currency = await this.storage.getLedgerCurrency(ledgerId);

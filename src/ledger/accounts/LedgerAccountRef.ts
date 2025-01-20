@@ -1,6 +1,6 @@
 import { LedgerAccountError } from '@/errors.js';
 
-type LedgerAccountRefType = 'SYSTEM' | 'ENTITY';
+type LedgerAccountRefType = 'ENTITY' | 'SYSTEM';
 export const ACCOUNT_NAME_SEPARATOR = '_';
 
 const VALID_NAME_REGEX = new RegExp(

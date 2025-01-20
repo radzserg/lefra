@@ -1,5 +1,5 @@
-import { PostgresLedgerStorage } from '@/ledger/storage/postgres/PostgresLedgerStorage.js';
 import { runWithDatabaseConnectionPool } from '#/helpers/createTestConnection.js';
+import { PostgresLedgerStorage } from '@/ledger/storage/postgres/PostgresLedgerStorage.js';
 import { describe, expect, test } from 'vitest';
 
 /**

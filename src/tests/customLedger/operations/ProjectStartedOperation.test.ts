@@ -1,14 +1,14 @@
-import { LedgerAccountRef } from '@/ledger/accounts/LedgerAccountRef.js';
-import { ledgerAccountsRefBuilder } from '@/ledger/accounts/ledgerAccountsRefBuilder.js';
-import { Ledger } from '@/ledger/Ledger.js';
-import { InMemoryLedgerStorage } from '@/ledger/storage/inMemory/InMemoryLedgerStorage.js';
-import { Unit } from '@/ledger/units/Unit.js';
 import { buildCustomLedger } from '#/customLedger/buildCustomLedger.js';
 import { CustomLedgerSpecification } from '#/customLedger/CustomLedgerSpecification.js';
 import { ProjectStartedOperation } from '#/customLedger/operations/ProjectStartedOperation.js';
 import { assertTransaction } from '#/helpers/assertTransaction.js';
 import { expectBalanceEqual } from '#/helpers/expectBalanceEqual.js';
 import { cad, usd } from '#/helpers/units.js';
+import { LedgerAccountRef } from '@/ledger/accounts/LedgerAccountRef.js';
+import { ledgerAccountsRefBuilder } from '@/ledger/accounts/ledgerAccountsRefBuilder.js';
+import { Ledger } from '@/ledger/Ledger.js';
+import { InMemoryLedgerStorage } from '@/ledger/storage/inMemory/InMemoryLedgerStorage.js';
+import { Unit } from '@/ledger/units/Unit.js';
 import { describe, expect, test } from 'vitest';
 
 const createServices = async () => {
@@ -80,7 +80,7 @@ describe('ProjectStartedOperation', () => {
       ],
     });
 
-    const expectedBalances: Array<[LedgerAccountRef, Unit<'USD'> | null]> = [
+    const expectedBalances: Array<[LedgerAccountRef, null | Unit<'USD'>]> = [
       [account('USER_RECEIVABLES', clientUserId), usd(100)],
       [account('USER_PAYABLES_LOCKED', contractorUserId), usd(50)],
       [account('USER_PAYABLES', contractorUserId), usd(50)],
@@ -272,7 +272,7 @@ describe('ProjectStartedOperation', () => {
       ],
     });
 
-    const expectedBalances: Array<[LedgerAccountRef, Unit<'USD'> | null]> = [
+    const expectedBalances: Array<[LedgerAccountRef, null | Unit<'USD'>]> = [
       [account('USER_RECEIVABLES', clientUserId), usd(100)],
       [account('USER_PAYABLES_LOCKED', contractorUserId), usd(100)],
       [account('SYSTEM_INCOME_PAID_PROJECTS'), usd(100)],

@@ -36,14 +36,14 @@ export type LedgerStorage = {
    */
   findAccount: (
     account: LedgerAccountRef,
-  ) => Promise<PersistedLedgerAccount | null>;
+  ) => Promise<null | PersistedLedgerAccount>;
 
   /**
    * Return the ledger account by slug.
    */
   findAccountTypeBySlug: (
     slug: string,
-  ) => Promise<PersistedLedgerAccountType | null>;
+  ) => Promise<null | PersistedLedgerAccountType>;
 
   /**
    * Return entity account types.
