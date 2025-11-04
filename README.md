@@ -127,7 +127,7 @@ Next, create the main USD ledger for your application.
 ```typescript
 
 const ledger = await storage.insertLedger({
-  description: "The main USD ledger for Firecnc",
+  description: 'The main USD ledger for Firecnc',
   ledgerCurrencyId: usdCurrency.id,
   name: 'Firecnc Platform USD',
   slug: 'FIRECNC_PLATFORM_USD',
