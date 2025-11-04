@@ -123,7 +123,31 @@ To add USD currency for your ledger, you can use the following code:
 const usdCurrency = await storage.insertCurrency({
   code: "USD",
   minimumFractionDigits: 2,
+<<<<<<< HEAD
   symbol: "$",
+=======
+  symbol: '$',
+});
+```
+
+_Alternatively, you can achieve this by running the SQL command below:_ 
+```sql
+INSERT INTO ledger_currency (code, symbol, minimum_fraction_digits) 
+VALUES ('USD', '$', 2);
+```
+
+##### Ledger 
+
+Next, create the main USD ledger for your application.
+
+```typescript
+
+const ledger = await storage.insertLedger({
+  description: 'The main USD ledger for Firecnc',
+  ledgerCurrencyId: usdCurrency.id,
+  name: 'Firecnc Platform USD',
+  slug: 'FIRECNC_PLATFORM_USD',
+>>>>>>> 4dade21 (fix double quote typo)
 });
 ```
 
@@ -411,6 +435,7 @@ await ledger.record(
   }),
 );
 
+<<<<<<< HEAD
 const account = ledgerAccountsRefBuilder(FirecncPlatformUsdLedger);
 const lockedBalance = await ledger.fetchAccountBalance(
   account("OWNERS_ACCOUNTS_PAYABLES_LOCKED", 1),
@@ -431,3 +456,6 @@ const lockedBalance = await ledger.fetchAccountBalance(
 Both come from the same place: too many teams reinventing ledger logic from
 scratch. Pick lefra for full control, Ledfra to be posting transactions this
 afternoon. Questions about either — open an issue or reach me at Ledfra.
+=======
+```
+>>>>>>> 4dade21 (fix double quote typo)
