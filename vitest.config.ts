@@ -12,6 +12,8 @@ export default defineConfig({
     deps: {
       interopDefault: true,
     },
+    // vitest 4 no longer excludes dist/ by default
+    exclude: ['**/node_modules/**', '**/.git/**', '**/dist/**'],
     isolate: false,
     mockReset: true,
     outputFile: './src/__generated__/vitest/results.xml',

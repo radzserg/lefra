@@ -2,7 +2,7 @@ import { LedgerError } from '@/errors.js';
 import { DoubleEntry } from '@/ledger/transaction/DoubleEntry.js';
 import { Entry } from '@/ledger/transaction/Entry.js';
 import { UnitCode } from '@/ledger/units/Unit.js';
-import { isNonEmptyArray } from '@/utils.js';
+import { isNonEmptyArray } from '@/utilities.js';
 
 /**
  * Guarantees that all entries are of the same ledger.

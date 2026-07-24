@@ -12,7 +12,6 @@ import { createFieldNameTransformationInterceptor } from 'slonik-interceptor-fie
 const configuration = {
   interceptors: [
     createFieldNameTransformationInterceptor({
-      format: 'CAMEL_CASE',
       test: (field: Field) => {
         return field.name !== '__typename' && /^[\d_a-z]+$/u.test(field.name);
       },

@@ -10,8 +10,7 @@ export type DebitEntry<C extends UnitCode> = CoreEntry<'DEBIT', C> & {
 };
 
 export type Entry<C extends UnitCode = UnitCode> =
-  | CreditEntry<C>
-  | DebitEntry<C>;
+  CreditEntry<C> | DebitEntry<C>;
 
 type CoreEntry<A extends 'CREDIT' | 'DEBIT', C extends UnitCode> = {
   account: LedgerAccountRef;

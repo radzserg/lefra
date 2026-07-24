@@ -463,7 +463,7 @@ export class PostgresLedgerStorage implements LedgerStorage {
     isEntityLedgerAccount,
     name,
     normalBalance,
-    parentLedgerAccountTypeId = null,
+    parentLedgerAccountTypeId,
     slug,
   }: InputLedgerAccountType): Promise<PersistedLedgerAccountType> {
     const existingAccount = await this.findAccountTypeBySlug(slug);
@@ -701,7 +701,6 @@ export class PostgresLedgerStorage implements LedgerStorage {
       connectionTimeout: 1_000,
       interceptors: [
         createFieldNameTransformationInterceptor({
-          format: 'CAMEL_CASE',
           test: (field: Field) => {
             return (
               field.name !== '__typename' && /^[\d_a-z]+$/u.test(field.name)

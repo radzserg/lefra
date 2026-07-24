@@ -3,7 +3,7 @@ import { LedgerUnexpectedError } from '@/errors.js';
 import { TransactionDoubleEntries } from '@/ledger/transaction/TransactionDoubleEntries.js';
 import { UnitCode } from '@/ledger/units/Unit.js';
 import { NonEmptyArray } from '@/types.js';
-import { isNonEmptyArray } from '@/utils.js';
+import { isNonEmptyArray } from '@/utilities.js';
 
 /**
  * Represents a transaction in the ledger.

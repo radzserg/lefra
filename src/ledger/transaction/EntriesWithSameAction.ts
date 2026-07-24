@@ -2,7 +2,7 @@ import { LedgerError, LedgerUnexpectedError } from '@/errors.js';
 import { CreditEntry, DebitEntry } from '@/ledger/transaction/Entry.js';
 import { Unit, UnitCode } from '@/ledger/units/Unit.js';
 import { EntryAction, ExtractUnitCode, NonEmptyArray } from '@/types.js';
-import { isNonEmptyArray } from '@/utils.js';
+import { isNonEmptyArray } from '@/utilities.js';
 
 /**
  * List of operations of the same type. Either all debit or all credit.

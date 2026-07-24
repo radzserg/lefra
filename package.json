@@ -4,27 +4,28 @@
     "lefra": "./dist/application/bin/lefra.js"
   },
   "dependencies": {
-    "bignumber.js": "^9.1.2",
-    "slonik": "^46.4.0",
-    "slonik-interceptor-field-name-transformation": "^46.4.0",
-    "yargs": "^17.7.2",
-    "zod": "^3.24.1"
+    "bignumber.js": "^11.1.5",
+    "slonik": "^49.10.7",
+    "slonik-interceptor-field-name-transformation": "^49.10.7",
+    "yargs": "^18.0.0",
+    "zod": "^4.4.3"
   },
   "description": "",
+  "engines": {
+    "node": ">=24"
+  },
   "devDependencies": {
-    "@types/node": "^22.10.7",
-    "@types/uuid": "^10.0.0",
-    "@types/yargs": "^17.0.33",
-    "eslint": "^9.18.0",
-    "eslint-config-canonical": "^44.3.39",
-    "eslint-plugin-sql": "^3.2.1",
+    "@types/node": "^26.1.1",
+    "@types/yargs": "^17.0.35",
+    "eslint": "^9.39.5",
+    "eslint-config-canonical": "^47.4.2",
+    "eslint-plugin-sql": "^3.4.1",
     "husky": "^9.1.7",
-    "install": "^0.13.0",
-    "lint-staged": "^15.4.1",
-    "tsc-alias": "^1.8.10",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.3",
-    "vitest": "^3.0.2"
+    "lint-staged": "^17.1.1",
+    "tsc-alias": "^1.9.1",
+    "tsx": "^4.23.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
   },
   "keywords": [
     "ledger",

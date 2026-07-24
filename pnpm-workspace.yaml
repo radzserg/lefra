@@ -1,0 +1,4 @@
+allowBuilds:
+  esbuild: true
+  multiline-ts: true
+  unrs-resolver: true
