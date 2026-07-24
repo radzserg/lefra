@@ -10,7 +10,7 @@
     "yargs": "^18.0.0",
     "zod": "^4.4.3"
   },
-  "description": "",
+  "description": "TypeScript double-entry ledger library for PostgreSQL (see also Ledfra, the hosted version — ledfra.com)",
   "engines": {
     "node": ">=24"
   },
@@ -29,6 +29,7 @@
   },
   "keywords": [
     "ledger",
+    "postgresql",
     "ledger framework",
     "ledger system",
     "bookkeeping",
@@ -80,6 +81,10 @@
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/radzserg/lefra.git"
+  },
   "type": "module",
-  "version": "1.0.1"
+  "version": "1.0.2"
 }

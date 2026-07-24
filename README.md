@@ -1,8 +1,21 @@
 # Lefra: Simplifying Bookkeeping with a Double-Entry Ledger Framework
 
-Lefra: Typescript Ledger Framework. 
+Lefra: Typescript Ledger Framework.
 
 Revolutionize Your Financial Tracking with Lefra: A Comprehensive Guide to Simplify Double-Entry Ledger Management.
+
+> **📣 From the author — if you'd rather not run your own ledger:**
+> lefra is the DIY approach: a library you run against your own Postgres, where you
+> own the schema, migrations, reporting, and operations. Since building it, I've
+> taken everything I learned here (plus years of designing ledger systems) and
+> built **[Ledfra](https://ledfra.com)** — a hosted double-entry ledger API. Same
+> core idea, but the API rejects unbalanced transactions outright, accounts auto-provision
+> from slugs like `liabilities:user/123`, and you get a real-time balance sheet, P&L, and cash flow
+> without building reporting yourself. It's **free during early access**, and
+> there's an [interactive demo](https://ledfra.com) built around a marketplace flow.
+>
+> lefra remains MIT-licensed and self-hosted. If you want full control, you're in
+> the right place — read on.
 
 ## Prerequisites
 
@@ -11,17 +24,17 @@ Revolutionize Your Financial Tracking with Lefra: A Comprehensive Guide to Simpl
 
 ## Understanding the Double-Entry System
 
-A double-entry system is a powerful method for tracking financial transactions in software. It ensures that every 
-transaction records both the source of money and its purpose, preventing common errors and inconsistencies. This 
+A double-entry system is a powerful method for tracking financial transactions in software. It ensures that every
+transaction records both the source of money and its purpose, preventing common errors and inconsistencies. This
 makes it a reliable choice for financial tracking in scalable applications.
 
 [Detailed guidance - How double-entry works](https://radzserg.medium.com/double-entry-accounting-guide-for-software-engineers-part-two-how-double-entry-works-eaa4c6bd27c4)
 
 #### Accounts
 
-An account serves as an isolated container for various forms of value, including fiat currencies, cryptocurrencies, 
-and bonus points. Imagine it as your personal bank checking account, securely holding your money, clearly marked as 
-yours. Accounts can represent a wide range of balances, from an individual's balance in these various forms to different 
+An account serves as an isolated container for various forms of value, including fiat currencies, cryptocurrencies,
+and bonus points. Imagine it as your personal bank checking account, securely holding your money, clearly marked as
+yours. Accounts can represent a wide range of balances, from an individual's balance in these various forms to different
 types of financial metrics. Typically, accounts are used to monitor and manage these balances.
 
 #### Dual Aspect Accounting
@@ -30,40 +43,39 @@ In accounting, a significant innovation is the categorization of accounts into t
 
 ##### Debit Normal Accounts
 
-Debit normal accounts represent funds you own or uses of money. Examples of uses of funds include assets and expenses. 
+Debit normal accounts represent funds you own or uses of money. Examples of uses of funds include assets and expenses.
 Activities like buying inventory, making investments, or even keeping cash in a bank account fall under the category of debit normal accounts.
 
 ##### Credit Normal Accounts
 
-Credit normal accounts represent funds you owe or sources of money. Sources of funds encompass liabilities, equity, 
+Credit normal accounts represent funds you owe or sources of money. Sources of funds encompass liabilities, equity,
 or revenue. This can include bank loans, investors' capital, accumulated profits, or income. Even activities like buying on credit are considered sources of funds because they provide you with financial resources. Accounts representing these balances are categorized as credit normal accounts.
 
 Here's a simplified table to illustrate this concept:
 
 | **Debit Normal Accounts** | **Credit Normal Accounts** |
-|--------------------------|--------------------------|
-| - Assets                | - Liabilities            |
-| - Expenses              | - Equity                 |
-|                        | - Revenue                |
+| ------------------------- | -------------------------- |
+| - Assets                  | - Liabilities              |
+| - Expenses                | - Equity                   |
+|                           | - Revenue                  |
 
-This classification system helps clarify whether an account represents a use or source of funds, providing a fundamental 
+This classification system helps clarify whether an account represents a use or source of funds, providing a fundamental
 framework for accounting transactions.
 
 #### Double Entry Structure
 
-The essence of the double-entry system lies in its structure, where every transaction involves at least two entries, 
-one debiting an account and the other crediting an account. This structure ensures that the total value of debit 
-entries equals the total value of credit entries, maintaining the balance of the accounting equation. In essence, 
-it's like a mathematical equation where both sides must always add up, providing accuracy and consistency in 
+The essence of the double-entry system lies in its structure, where every transaction involves at least two entries,
+one debiting an account and the other crediting an account. This structure ensures that the total value of debit
+entries equals the total value of credit entries, maintaining the balance of the accounting equation. In essence,
+it's like a mathematical equation where both sides must always add up, providing accuracy and consistency in
 financial records.
 
 #### Transactions
 
-Transactions are fundamental events that impact account balances. They consist of entries, with each transaction 
-having at least two entries, each associated with a specific account. For instance, in a scenario where Jim sends 
-$50 to Mary using a mobile payment app, the transaction records entries for both Jim's and Mary's accounts, 
+Transactions are fundamental events that impact account balances. They consist of entries, with each transaction
+having at least two entries, each associated with a specific account. For instance, in a scenario where Jim sends
+$50 to Mary using a mobile payment app, the transaction records entries for both Jim's and Mary's accounts,
 reflecting the change in their respective balances.
-
 
 ## Getting started
 
@@ -77,87 +89,88 @@ To begin using Lefra, you need to set up the necessary ledger structure in your 
 
 ```sh
 export LFR_DATABASE_URL='postgresql://ledger:ledger@localhost:5432/ledger'
-npm lefra init
+npx lefra init
 ```
 
-You can also use the `--dryRun` option with npm lefra init `--dryRun` to review SQL changes before applying them. 
+You can also use the `--dryRun` option with `npx lefra init --dryRun` to review SQL changes before applying them.
 This is especially useful if you have custom migrations in place.
 
 ### Create Your First Ledger
 
-Your ledger's configuration can be customized to align precisely with your unique business needs. To help you get 
-started, let's delve into the process of creating a ledger structure, using the Firecnc application as a practical 
-example. Firecnc facilitates apartment owners in renting their properties to tenants, making it a suitable reference 
-for our demonstration. Below, you'll find a visual representation of a preliminary ledger structure. 
+Your ledger's configuration can be customized to align precisely with your unique business needs. To help you get
+started, let's delve into the process of creating a ledger structure, using the Firecnc application as a practical
+example. Firecnc facilitates apartment owners in renting their properties to tenants, making it a suitable reference
+for our demonstration. Below, you'll find a visual representation of a preliminary ledger structure.
 
-![ledger sample structure](https://github.com/radzserg/lefra/blob/main/docs/Ledger_Sample.jpg)
+![ledger sample structure](https://raw.githubusercontent.com/radzserg/lefra/main/docs/Ledger_Sample.jpg)
 
 **You can find a live Firecnc example [here](https://github.com/radzserg/lefra-example/tree/main)**
 
-##### Create storage 
+##### Create storage
 
 Let's create storage for our ledger.
+
 ```typescript
 const storage = new PostgresLedgerStorage(process.env.LFR_DATABASE_URL!);
 ```
 
-##### Currency 
+##### Currency
 
 Every ledger operates with a specific currency, which can be fiat money, cryptocurrencies, or bonus points.
 To add USD currency for your ledger, you can use the following code:
 
 ```typescript
 const usdCurrency = await storage.insertCurrency({
-  code: 'USD',
+  code: "USD",
   minimumFractionDigits: 2,
-  symbol: '$',
-});
-```
-
-_Alternatively, you can achieve this by running the SQL command below:_ 
-```sql
-INSERT INTO ledger_currency (code, symbol, minimum_fraction_digits) 
-VALUES ('USD', '$', 2);
-```
-
-##### Ledger 
-
-Next, create the main USD ledger for your application.
-
-```typescript
-
-const ledger = await storage.insertLedger({
-  description: "The main USD ledger for Firecnc",
-  ledgerCurrencyId: usdCurrency.id,
-  name: 'Firecnc Platform USD',
-  slug: 'FIRECNC_PLATFORM_USD',
+  symbol: "$",
 });
 ```
 
 _Alternatively, you can achieve this by running the SQL command below:_
+
 ```sql
-INSERT INTO ledger (slug, name, description, ledger_currency_id) 
+INSERT INTO ledger_currency (code, symbol, minimum_fraction_digits)
+VALUES ('USD', '$', 2);
+```
+
+##### Ledger
+
+Next, create the main USD ledger for your application.
+
+```typescript
+const ledger = await storage.insertLedger({
+  description: "The main USD ledger for Firecnc",
+  ledgerCurrencyId: usdCurrency.id,
+  name: "Firecnc Platform USD",
+  slug: "FIRECNC_PLATFORM_USD",
+});
+```
+
+_Alternatively, you can achieve this by running the SQL command below:_
+
+```sql
+INSERT INTO ledger (slug, name, description, ledger_currency_id)
 VALUES ('FIRECNC_PLATFORM_USD', 'Firecnc Platform USD', 'The main USD ledger for Firecnc', ${usdCurrency.id});
 ```
 
-###### Add ledger account types 
+###### Add ledger account types
 
-Now, let's add ledger account types. In this example, we'll create an "Assets" account type. This type represents 
-valuable resources and possessions owned by the company or organization, such as cash, property, equipment, and 
+Now, let's add ledger account types. In this example, we'll create an "Assets" account type. This type represents
+valuable resources and possessions owned by the company or organization, such as cash, property, equipment, and
 investments. Use this code to define the account type:
 
 ```typescript
-
 const accountType = await storage.insertAccountType({
   description:
-    'Accounts in this category represent the valuable resources and possessions owned by the company ' +
-    'or organization. These can include cash, property, equipment, investments, and more. Assets are things of value ' +
+    "Accounts in this category represent the valuable resources and possessions owned by the company " +
+    "or organization. These can include cash, property, equipment, investments, and more. Assets are things of value " +
     "that contribute to the entity's financial well-being.",
   isEntityLedgerAccount: false,
-  name: 'Assets',
-  normalBalance: 'DEBIT' as NormalBalance,
-  parentLedgerAccountTypeSlug: null,
-  slug: 'ASSETS',
+  name: "Assets",
+  normalBalance: "DEBIT" as NormalBalance,
+  parentLedgerAccountTypeId: null,
+  slug: "ASSETS",
 });
 
 // Now let's allow our ledger to use these account types
@@ -168,6 +181,7 @@ await storage.assignAccountTypeToLedger({
 ```
 
 _Alternatively, you can achieve this by running the SQL command below:_
+
 ```sql
 INSERT INTO ledger_account_type(slug, name, normal_balance, is_entity_ledger_account, description, parent_ledger_account_type_id)
 VALUES (
@@ -182,97 +196,91 @@ VALUES (
 INSERT INTO ledger_ledger_account_type (ledger_id, ledger_account_type_id) VALUES (1, 1);
 ```
 
-
-Account types possess the capability to reference parent account types. For instance, the "Payables" account type may be 
+Account types possess the capability to reference parent account types. For instance, the "Payables" account type may be
 linked to parent "Liabilities" account types, creating a hierarchical structure.
 
 There exist two primary categories of account types: "system" and "entity."
 
-System Account Types: These account types represent distinct system accounts within the ledger. They are typically 
+System Account Types: These account types represent distinct system accounts within the ledger. They are typically
 predefined to serve specific system-level functions. Here are some examples:
 
 OWNER_FUNDS: This account type signifies the funds held by the platform's owner.
 EXPENSES_STRIPE_FEES: It records expenses associated with Stripe payment processing fees incurred by the platform.
-CURRENT_ASSETS_STRIPE_PLATFORM_USA: This account type monitors the current assets held by the platform within the 
+CURRENT_ASSETS_STRIPE_PLATFORM_USA: This account type monitors the current assets held by the platform within the
 USA-based Stripe platform.
 Each system account type generally corresponds to one system account.
 
-Entity Account Types: These specific account types are designed for use with entity accounts and are allocated to 
-entities such as users, teams, or workspaces, in accordance with your specific business needs. As an illustration, 
-each user may be linked to a "receivables" account. It's crucial to emphasize that entity accounts (which should not 
-be confused with account types) are dynamically generated as required to align with particular entities. Typically, 
+Entity Account Types: These specific account types are designed for use with entity accounts and are allocated to
+entities such as users, teams, or workspaces, in accordance with your specific business needs. As an illustration,
+each user may be linked to a "receivables" account. It's crucial to emphasize that entity accounts (which should not
+be confused with account types) are dynamically generated as required to align with particular entities. Typically,
 these accounts are referred to using an entity ID format, such as "USER_RECEIVABLES:${userId}" or 
 "TEAM_PAYABLES:${teamId}", enabling precise identification and tracking within the ledger.
 
 ###### Add ledger accounts
 
-Lastly, add the necessary system ledger accounts as required. As mentioned above, there's no need to manually create entity accounts, 
-as they will be generated automatically when necessary. As an illustrative example, let's create an "Owner Funds Account" 
+Lastly, add the necessary system ledger accounts as required. As mentioned above, there's no need to manually create entity accounts,
+as they will be generated automatically when necessary. As an illustrative example, let's create an "Owner Funds Account"
 using the provided code:
-
 
 ```typescript
 await storage.insertAccount({
-  description: 'Owner Funds Account',
-  slug: 'OWNER_FUNDS',
+  description: "Owner Funds Account",
+  slug: "OWNER_FUNDS",
   ledgerAccountTypeId,
   ledgerId,
 });
 ```
 
 _Alternatively, you can achieve this by running the SQL command below:_
+
 ```sql
-INSERT INTO ledger_account (ledger_id, ledger_account_type_id, slug, description) 
+INSERT INTO ledger_account (ledger_id, ledger_account_type_id, slug, description)
 VALUES (1, 1, 'OWNER_FUNDS', 'Owner Funds Account');
 ```
 
 ###### Generate Typescript ledger specification
 
-To complete the process, after adding all account types and accounts to the database, you can generate a specification 
+To complete the process, after adding all account types and accounts to the database, you can generate a specification
 that will improve type checking in your application. Use the following script:
 
 ```sh
-npm generate --className FirecncPlatformUsdLedger --ledgerSlug FIRECNC_PLATFORM_USD --path ./src/ledger/FirecncPlatformUsdLedger.ts
+npx lefra generate --className FirecncPlatformUsdLedger --ledgerSlug FIRECNC_PLATFORM_USD --path ./src/ledger/FirecncPlatformUsdLedger.ts
 ```
 
-This generated specification will enhance the accuracy of type checking and facilitate smoother integration of your 
+This generated specification will enhance the accuracy of type checking and facilitate smoother integration of your
 ledger into your application.
 
 ```typescript
 export const FirecncPlatformUsdLedger = {
-  currencyCode: 'USD',
-  entityAccountTypes: [
-    'OWNERS_ACCOUNTS_PAYABLES',
-    'OWNERS_ACCOUNTS_PAYABLES_LOCKED',
-  ] as const,
-  slug: 'FIRECNC_PLATFORM_USD',
+  currencyCode: "USD",
+  entityAccountTypes: ["OWNERS_ACCOUNTS_PAYABLES", "OWNERS_ACCOUNTS_PAYABLES_LOCKED"] as const,
+  slug: "FIRECNC_PLATFORM_USD",
   systemAccounts: [
-    'OWNER_FUNDS',
-    'EXPENSES_STRIPE_FEES',
-    'LIABILITIES_STRIPE_FEES',
-    'CURRENT_ASSETS_STRIPE_PLATFORM_USA',
-    'SUBSCRIPTION_PROFIT',
-    'BOOKINGS_PROFIT',
-    'REFUNDS',
-    'STRIPE_PAY_IN_FEES',
-    'BOOKING_HOLDINGS',
+    "OWNER_FUNDS",
+    "EXPENSES_STRIPE_FEES",
+    "LIABILITIES_STRIPE_FEES",
+    "CURRENT_ASSETS_STRIPE_PLATFORM_USA",
+    "SUBSCRIPTION_PROFIT",
+    "BOOKINGS_PROFIT",
+    "REFUNDS",
+    "STRIPE_PAY_IN_FEES",
+    "BOOKING_HOLDINGS",
   ] as const,
 };
-
 ```
-
 
 ### Recording Ledger Transactions
 
-A ledger transaction represents a collection of double entries, where each entry consists of a debit and a credit 
+A ledger transaction represents a collection of double entries, where each entry consists of a debit and a credit
 operation. It's essential to note that the sum of credit operations must always be equal to the sum of debit operations for a transaction to maintain balance.
 
 Before diving into transactions, let's start by creating a handy utility function that simplifies currency handling.
 
 ```typescript
-import { Unit } from 'lefra';
+import { Unit } from "lefra";
 export const usd = (amount: number | string) => {
-  return new Unit(amount, 'USD', 2);
+  return new Unit(amount, "USD", 2);
 };
 ```
 
@@ -282,44 +290,52 @@ Now, let's proceed to record the transaction itself. Below is the code illustrat
 const entries = new TransactionDoubleEntries([
   doubleEntry(
     debit(
-      SystemAccountRef('FIRECNC_PLATFORM_USD', 'CURRENT_ASSETS_STRIPE_PLATFORM_USA'),
+      new SystemAccountRef("FIRECNC_PLATFORM_USD", "CURRENT_ASSETS_STRIPE_PLATFORM_USA"),
       usd(100),
     ),
     [
       credit(
-        EntityAccountRef('FIRECNC_PLATFORM_USD', 'OWNERS_ACCOUNTS_PAYABLES_LOCKED', tenantUserId),
+        new EntityAccountRef(
+          "FIRECNC_PLATFORM_USD",
+          "OWNERS_ACCOUNTS_PAYABLES_LOCKED",
+          tenantUserId,
+        ),
         usd(80),
       ),
       credit(
-        EntityAccountRef('FIRECNC_PLATFORM_USD', 'OWNERS_ACCOUNTS_PAYABLES', tenantUserId),
+        new EntityAccountRef("FIRECNC_PLATFORM_USD", "OWNERS_ACCOUNTS_PAYABLES", tenantUserId),
         usd(20),
       ),
     ],
-    'Tenant Payment Received and Held in CURRENT_ASSETS_STRIPE_PLATFORM_USA for Owner',
+    "Tenant Payment Received and Held in CURRENT_ASSETS_STRIPE_PLATFORM_USA for Owner",
   ),
   doubleEntry(
-    debit(SystemAccountRef('FIRECNC_PLATFORM_USD', 'STRIPE_PAY_IN_FEES'), paymentProcessingFee),
-    credit(SystemAccountRef('FIRECNC_PLATFORM_USD', 'STRIPE_PAY_IN_FEES'), paymentProcessingFee),
-    'Recording payment processing fee entry',
+    debit(new SystemAccountRef("FIRECNC_PLATFORM_USD", "STRIPE_PAY_IN_FEES"), paymentProcessingFee),
+    credit(
+      new SystemAccountRef("FIRECNC_PLATFORM_USD", "STRIPE_PAY_IN_FEES"),
+      paymentProcessingFee,
+    ),
+    "Recording payment processing fee entry",
   ),
 ]);
 
-const transaction = new Transaction(entries, `Tenant:${tenantUserId} deposited ${bookingTargetAmount.format()} into the company's current assets`)
-await storage.insertTransaction(entries);
-
+const transaction = new Transaction(
+  entries,
+  `Tenant:${tenantUserId} deposited ${bookingTargetAmount.format()} into the company's current assets`,
+);
+await storage.insertTransaction(transaction);
 ```
 
-### Recording Ledger Transactions using Operations 
+### Recording Ledger Transactions using Operations
 
-Lefra follows the open-close principle, advocating the addition of new operations for various scenarios without 
+Lefra follows the open-close principle, advocating the addition of new operations for various scenarios without
 the need to modify existing code. Let's delve into how this approach works in practice.
 
 ```typescript
+// TenantMakesBookingOperationWithUpfront.ts
 
-# TenantMakesBookingOperationWithUpfront.ts 
-
-import { FirecncPlatformUsdLedger } from '../FirecncPlatformUsdLedger.js';    // let's use our specification
-import { USD } from '../money.js';
+import { FirecncPlatformUsdLedger } from "../FirecncPlatformUsdLedger.js"; // let's use our specification
+import { USD } from "../money.js";
 import {
   credit,
   debit,
@@ -328,7 +344,7 @@ import {
   ledgerAccountsRefBuilder,
   Transaction,
   TransactionDoubleEntries,
-} from 'lefra';
+} from "lefra";
 
 type OperationPayload = {
   bookingTargetAmount: USD;
@@ -338,9 +354,7 @@ type OperationPayload = {
   upfrontPaymentAmount: USD;
 };
 
-export class TenantMakesBookingOperationWithUpfront
-  implements ILedgerOperation
-{
+export class TenantMakesBookingOperationWithUpfront implements ILedgerOperation {
   public constructor(private readonly payload: OperationPayload) {}
 
   public async createTransaction() {
@@ -356,26 +370,23 @@ export class TenantMakesBookingOperationWithUpfront
     const account = ledgerAccountsRefBuilder(FirecncPlatformUsdLedger);
     const entries = new TransactionDoubleEntries([
       doubleEntry(
-        debit(
-          account('CURRENT_ASSETS_STRIPE_PLATFORM_USA'),
-          bookingTargetAmount,
-        ),
+        debit(account("CURRENT_ASSETS_STRIPE_PLATFORM_USA"), bookingTargetAmount),
         [
           credit(
-            account('OWNERS_ACCOUNTS_PAYABLES_LOCKED', tenantUserId),
+            account("OWNERS_ACCOUNTS_PAYABLES_LOCKED", tenantUserId),
             lockedAmount,
           ).mayHaveZero(),
           credit(
-            account('OWNERS_ACCOUNTS_PAYABLES', tenantUserId),
+            account("OWNERS_ACCOUNTS_PAYABLES", tenantUserId),
             upfrontPaymentAmount,
           ).mayHaveZero(),
         ],
-        'Tenant Payment Received and Held in CURRENT_ASSETS_STRIPE_PLATFORM_USA for Owner',
+        "Tenant Payment Received and Held in CURRENT_ASSETS_STRIPE_PLATFORM_USA for Owner",
       ),
       doubleEntry(
-        debit(account('STRIPE_PAY_IN_FEES'), paymentProcessingFee),
-        credit(account('STRIPE_PAY_IN_FEES'), paymentProcessingFee),
-        'Recording payment processing fee entry',
+        debit(account("STRIPE_PAY_IN_FEES"), paymentProcessingFee),
+        credit(account("STRIPE_PAY_IN_FEES"), paymentProcessingFee),
+        "Recording payment processing fee entry",
       ),
     ]);
 
@@ -386,7 +397,7 @@ export class TenantMakesBookingOperationWithUpfront
   }
 }
 
-// use 
+// use
 const storage = new PostgresLedgerStorage(process.env.LFR_DATABASE_URL!);
 const ledger = new Ledger(storage);
 
@@ -398,10 +409,25 @@ await ledger.record(
     tenantUserId: 1,
     upfrontPaymentAmount: usd(30),
   }),
-)
-
-const lockedBalance = await ledger.fetchAccountBalance(
-  account('OWNERS_ACCOUNTS_PAYABLES_LOCKED', 1),
 );
 
+const account = ledgerAccountsRefBuilder(FirecncPlatformUsdLedger);
+const lockedBalance = await ledger.fetchAccountBalance(
+  account("OWNERS_ACCOUNTS_PAYABLES_LOCKED", 1),
+);
 ```
+
+## lefra or Ledfra?
+
+|                                           | **lefra** (this library)     | **[Ledfra](https://ledfra.com)** (hosted) |
+| ----------------------------------------- | ---------------------------- | ----------------------------------------- |
+| Runs                                      | In your app, your PostgreSQL | Managed API                               |
+| Schema & migrations                       | You own them                 | Handled for you                           |
+| Balanced transactions                     | Enforced by the library      | Enforced at the API boundary              |
+| Reporting (balance sheet, P&L, cash flow) | DIY                          | Built-in, real-time                       |
+| Sandboxes / environments                  | DIY                          | Included                                  |
+| Cost                                      | Free (MIT)                   | Free during early access                  |
+
+Both come from the same place: too many teams reinventing ledger logic from
+scratch. Pick lefra for full control, Ledfra to be posting transactions this
+afternoon. Questions about either — open an issue or reach me at Ledfra.
