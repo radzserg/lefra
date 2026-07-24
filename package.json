@@ -53,7 +53,7 @@
       "pnpm lint:format"
     ]
   },
-  "license": "ISC",
+  "license": "MIT",
   "homepage": "https://github.com/radzserg/lefra",
   "name": "lefra",
   "scripts": {
@@ -62,7 +62,8 @@
     "lint:eslint": "eslint .",
     "lint:format": "eslint --fix $FILES",
     "test": "vitest --no-coverage --no-watch",
-    "prepare": "husky"
+    "prepare": "husky",
+    "prepublishOnly": "pnpm build"
   },
   "files": [
     "README.md",
